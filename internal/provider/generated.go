@@ -137,6 +137,63 @@ func (v *ProjectUpdateInput) GetName() string { return v.Name }
 // GetPrDeploys returns ProjectUpdateInput.PrDeploys, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
 
+// Service includes the GraphQL fields of Service requested by the fragment Service.
+type Service struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	ProjectId string `json:"projectId"`
+}
+
+// GetId returns Service.Id, and is useful for accessing the field via an interface.
+func (v *Service) GetId() string { return v.Id }
+
+// GetName returns Service.Name, and is useful for accessing the field via an interface.
+func (v *Service) GetName() string { return v.Name }
+
+// GetProjectId returns Service.ProjectId, and is useful for accessing the field via an interface.
+func (v *Service) GetProjectId() string { return v.ProjectId }
+
+type ServiceCreateInput struct {
+	Branch    string                 `json:"branch"`
+	Name      string                 `json:"name"`
+	ProjectId string                 `json:"projectId"`
+	Source    ServiceSourceInput     `json:"source"`
+	Variables map[string]interface{} `json:"variables"`
+}
+
+// GetBranch returns ServiceCreateInput.Branch, and is useful for accessing the field via an interface.
+func (v *ServiceCreateInput) GetBranch() string { return v.Branch }
+
+// GetName returns ServiceCreateInput.Name, and is useful for accessing the field via an interface.
+func (v *ServiceCreateInput) GetName() string { return v.Name }
+
+// GetProjectId returns ServiceCreateInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *ServiceCreateInput) GetProjectId() string { return v.ProjectId }
+
+// GetSource returns ServiceCreateInput.Source, and is useful for accessing the field via an interface.
+func (v *ServiceCreateInput) GetSource() ServiceSourceInput { return v.Source }
+
+// GetVariables returns ServiceCreateInput.Variables, and is useful for accessing the field via an interface.
+func (v *ServiceCreateInput) GetVariables() map[string]interface{} { return v.Variables }
+
+type ServiceSourceInput struct {
+	Repo string `json:"repo"`
+}
+
+// GetRepo returns ServiceSourceInput.Repo, and is useful for accessing the field via an interface.
+func (v *ServiceSourceInput) GetRepo() string { return v.Repo }
+
+type ServiceUpdateInput struct {
+	Icon string `json:"icon"`
+	Name string `json:"name"`
+}
+
+// GetIcon returns ServiceUpdateInput.Icon, and is useful for accessing the field via an interface.
+func (v *ServiceUpdateInput) GetIcon() string { return v.Icon }
+
+// GetName returns ServiceUpdateInput.Name, and is useful for accessing the field via an interface.
+func (v *ServiceUpdateInput) GetName() string { return v.Name }
+
 // __createEnvironmentInput is used internally by genqlient
 type __createEnvironmentInput struct {
 	Input EnvironmentCreateInput `json:"input"`
@@ -152,6 +209,14 @@ type __createProjectInput struct {
 
 // GetInput returns __createProjectInput.Input, and is useful for accessing the field via an interface.
 func (v *__createProjectInput) GetInput() ProjectCreateInput { return v.Input }
+
+// __createServiceInput is used internally by genqlient
+type __createServiceInput struct {
+	Input ServiceCreateInput `json:"input"`
+}
+
+// GetInput returns __createServiceInput.Input, and is useful for accessing the field via an interface.
+func (v *__createServiceInput) GetInput() ServiceCreateInput { return v.Input }
 
 // __deleteEnvironmentInput is used internally by genqlient
 type __deleteEnvironmentInput struct {
@@ -169,6 +234,14 @@ type __deleteProjectInput struct {
 // GetId returns __deleteProjectInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteProjectInput) GetId() string { return v.Id }
 
+// __deleteServiceInput is used internally by genqlient
+type __deleteServiceInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deleteServiceInput.Id, and is useful for accessing the field via an interface.
+func (v *__deleteServiceInput) GetId() string { return v.Id }
+
 // __getEnvironmentInput is used internally by genqlient
 type __getEnvironmentInput struct {
 	Id string `json:"id"`
@@ -185,6 +258,14 @@ type __getProjectInput struct {
 // GetId returns __getProjectInput.Id, and is useful for accessing the field via an interface.
 func (v *__getProjectInput) GetId() string { return v.Id }
 
+// __getServiceInput is used internally by genqlient
+type __getServiceInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __getServiceInput.Id, and is useful for accessing the field via an interface.
+func (v *__getServiceInput) GetId() string { return v.Id }
+
 // __updateProjectInput is used internally by genqlient
 type __updateProjectInput struct {
 	Id    string             `json:"id"`
@@ -196,6 +277,18 @@ func (v *__updateProjectInput) GetId() string { return v.Id }
 
 // GetInput returns __updateProjectInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateProjectInput) GetInput() ProjectUpdateInput { return v.Input }
+
+// __updateServiceInput is used internally by genqlient
+type __updateServiceInput struct {
+	Id    string             `json:"id"`
+	Input ServiceUpdateInput `json:"input"`
+}
+
+// GetId returns __updateServiceInput.Id, and is useful for accessing the field via an interface.
+func (v *__updateServiceInput) GetId() string { return v.Id }
+
+// GetInput returns __updateServiceInput.Input, and is useful for accessing the field via an interface.
+func (v *__updateServiceInput) GetInput() ServiceUpdateInput { return v.Input }
 
 // createEnvironmentEnvironmentCreateEnvironment includes the requested fields of the GraphQL type Environment.
 type createEnvironmentEnvironmentCreateEnvironment struct {
@@ -367,6 +460,81 @@ func (v *createProjectResponse) GetProjectCreate() createProjectProjectCreatePro
 	return v.ProjectCreate
 }
 
+// createServiceResponse is returned by createService on success.
+type createServiceResponse struct {
+	// Creates a new service.
+	ServiceCreate createServiceServiceCreateService `json:"serviceCreate"`
+}
+
+// GetServiceCreate returns createServiceResponse.ServiceCreate, and is useful for accessing the field via an interface.
+func (v *createServiceResponse) GetServiceCreate() createServiceServiceCreateService {
+	return v.ServiceCreate
+}
+
+// createServiceServiceCreateService includes the requested fields of the GraphQL type Service.
+type createServiceServiceCreateService struct {
+	Service `json:"-"`
+}
+
+// GetId returns createServiceServiceCreateService.Id, and is useful for accessing the field via an interface.
+func (v *createServiceServiceCreateService) GetId() string { return v.Service.Id }
+
+// GetName returns createServiceServiceCreateService.Name, and is useful for accessing the field via an interface.
+func (v *createServiceServiceCreateService) GetName() string { return v.Service.Name }
+
+// GetProjectId returns createServiceServiceCreateService.ProjectId, and is useful for accessing the field via an interface.
+func (v *createServiceServiceCreateService) GetProjectId() string { return v.Service.ProjectId }
+
+func (v *createServiceServiceCreateService) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createServiceServiceCreateService
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createServiceServiceCreateService = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Service)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreateServiceServiceCreateService struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *createServiceServiceCreateService) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createServiceServiceCreateService) __premarshalJSON() (*__premarshalcreateServiceServiceCreateService, error) {
+	var retval __premarshalcreateServiceServiceCreateService
+
+	retval.Id = v.Service.Id
+	retval.Name = v.Service.Name
+	retval.ProjectId = v.Service.ProjectId
+	return &retval, nil
+}
+
 // deleteEnvironmentResponse is returned by deleteEnvironment on success.
 type deleteEnvironmentResponse struct {
 	// Deletes an environment.
@@ -384,6 +552,15 @@ type deleteProjectResponse struct {
 
 // GetProjectDelete returns deleteProjectResponse.ProjectDelete, and is useful for accessing the field via an interface.
 func (v *deleteProjectResponse) GetProjectDelete() bool { return v.ProjectDelete }
+
+// deleteServiceResponse is returned by deleteService on success.
+type deleteServiceResponse struct {
+	// Deletes a service.
+	ServiceDelete bool `json:"serviceDelete"`
+}
+
+// GetServiceDelete returns deleteServiceResponse.ServiceDelete, and is useful for accessing the field via an interface.
+func (v *deleteServiceResponse) GetServiceDelete() bool { return v.ServiceDelete }
 
 // getEnvironmentEnvironment includes the requested fields of the GraphQL type Environment.
 type getEnvironmentEnvironment struct {
@@ -549,6 +726,79 @@ type getProjectResponse struct {
 // GetProject returns getProjectResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectResponse) GetProject() getProjectProject { return v.Project }
 
+// getServiceResponse is returned by getService on success.
+type getServiceResponse struct {
+	// Get a service by ID
+	Service getServiceService `json:"service"`
+}
+
+// GetService returns getServiceResponse.Service, and is useful for accessing the field via an interface.
+func (v *getServiceResponse) GetService() getServiceService { return v.Service }
+
+// getServiceService includes the requested fields of the GraphQL type Service.
+type getServiceService struct {
+	Service `json:"-"`
+}
+
+// GetId returns getServiceService.Id, and is useful for accessing the field via an interface.
+func (v *getServiceService) GetId() string { return v.Service.Id }
+
+// GetName returns getServiceService.Name, and is useful for accessing the field via an interface.
+func (v *getServiceService) GetName() string { return v.Service.Name }
+
+// GetProjectId returns getServiceService.ProjectId, and is useful for accessing the field via an interface.
+func (v *getServiceService) GetProjectId() string { return v.Service.ProjectId }
+
+func (v *getServiceService) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getServiceService
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getServiceService = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Service)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetServiceService struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *getServiceService) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getServiceService) __premarshalJSON() (*__premarshalgetServiceService, error) {
+	var retval __premarshalgetServiceService
+
+	retval.Id = v.Service.Id
+	retval.Name = v.Service.Name
+	retval.ProjectId = v.Service.ProjectId
+	return &retval, nil
+}
+
 // updateProjectProjectUpdateProject includes the requested fields of the GraphQL type Project.
 type updateProjectProjectUpdateProject struct {
 	Project `json:"-"`
@@ -642,6 +892,81 @@ func (v *updateProjectResponse) GetProjectUpdate() updateProjectProjectUpdatePro
 	return v.ProjectUpdate
 }
 
+// updateServiceResponse is returned by updateService on success.
+type updateServiceResponse struct {
+	// Updates a service.
+	ServiceUpdate updateServiceServiceUpdateService `json:"serviceUpdate"`
+}
+
+// GetServiceUpdate returns updateServiceResponse.ServiceUpdate, and is useful for accessing the field via an interface.
+func (v *updateServiceResponse) GetServiceUpdate() updateServiceServiceUpdateService {
+	return v.ServiceUpdate
+}
+
+// updateServiceServiceUpdateService includes the requested fields of the GraphQL type Service.
+type updateServiceServiceUpdateService struct {
+	Service `json:"-"`
+}
+
+// GetId returns updateServiceServiceUpdateService.Id, and is useful for accessing the field via an interface.
+func (v *updateServiceServiceUpdateService) GetId() string { return v.Service.Id }
+
+// GetName returns updateServiceServiceUpdateService.Name, and is useful for accessing the field via an interface.
+func (v *updateServiceServiceUpdateService) GetName() string { return v.Service.Name }
+
+// GetProjectId returns updateServiceServiceUpdateService.ProjectId, and is useful for accessing the field via an interface.
+func (v *updateServiceServiceUpdateService) GetProjectId() string { return v.Service.ProjectId }
+
+func (v *updateServiceServiceUpdateService) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*updateServiceServiceUpdateService
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.updateServiceServiceUpdateService = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Service)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalupdateServiceServiceUpdateService struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *updateServiceServiceUpdateService) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *updateServiceServiceUpdateService) __premarshalJSON() (*__premarshalupdateServiceServiceUpdateService, error) {
+	var retval __premarshalupdateServiceServiceUpdateService
+
+	retval.Id = v.Service.Id
+	retval.Name = v.Service.Name
+	retval.ProjectId = v.Service.ProjectId
+	return &retval, nil
+}
+
 func createEnvironment(
 	ctx context.Context,
 	client graphql.Client,
@@ -721,6 +1046,43 @@ fragment Project on Project {
 	return &data, err
 }
 
+func createService(
+	ctx context.Context,
+	client graphql.Client,
+	input ServiceCreateInput,
+) (*createServiceResponse, error) {
+	req := &graphql.Request{
+		OpName: "createService",
+		Query: `
+mutation createService ($input: ServiceCreateInput!) {
+	serviceCreate(input: $input) {
+		... Service
+	}
+}
+fragment Service on Service {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__createServiceInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deleteEnvironment(
 	ctx context.Context,
 	client graphql.Client,
@@ -770,6 +1132,36 @@ mutation deleteProject ($id: String!) {
 	var err error
 
 	var data deleteProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func deleteService(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deleteServiceResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteService",
+		Query: `
+mutation deleteService ($id: String!) {
+	serviceDelete(id: $id)
+}
+`,
+		Variables: &__deleteServiceInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deleteServiceResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
@@ -860,6 +1252,43 @@ fragment Project on Project {
 	return &data, err
 }
 
+func getService(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*getServiceResponse, error) {
+	req := &graphql.Request{
+		OpName: "getService",
+		Query: `
+query getService ($id: String!) {
+	service(id: $id) {
+		... Service
+	}
+}
+fragment Service on Service {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__getServiceInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data getServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func updateProject(
 	ctx context.Context,
 	client graphql.Client,
@@ -893,6 +1322,45 @@ fragment Project on Project {
 	var err error
 
 	var data updateProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func updateService(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+	input ServiceUpdateInput,
+) (*updateServiceResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateService",
+		Query: `
+mutation updateService ($id: String!, $input: ServiceUpdateInput!) {
+	serviceUpdate(id: $id, input: $input) {
+		... Service
+	}
+}
+fragment Service on Service {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__updateServiceInput{
+			Id:    id,
+			Input: input,
+		},
+	}
+	var err error
+
+	var data updateServiceResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

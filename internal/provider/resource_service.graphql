@@ -1,0 +1,32 @@
+fragment Service on Service {
+  id
+  name
+  projectId
+}
+
+query getService($id: String!) {
+  service(id: $id) {
+    ...Service
+  }
+}
+
+mutation createService(
+  $input: ServiceCreateInput!
+) {
+  serviceCreate(input: $input) {
+    ...Service
+  }
+}
+
+mutation updateService(
+  $id: String!
+  $input: ServiceUpdateInput!
+) {
+  serviceUpdate(id: $id, input: $input) {
+    ...Service
+  }
+}
+
+mutation deleteService($id: String!) {
+  serviceDelete(id: $id)
+}

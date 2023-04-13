@@ -97,6 +97,7 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewEnvironmentResource,
+		NewServiceResource,
 	}
 }
 
