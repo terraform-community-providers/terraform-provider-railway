@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -18,6 +19,10 @@ var (
 	envVarName          = "RAILWAY_TOKEN"
 	errMissingAuthToken = "Required token could not be found. Please set the token using an input variable in the provider configuration block or by using the `" + envVarName + "` environment variable."
 )
+
+func uuidRegex() *regexp.Regexp {
+	return regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+}
 
 var _ provider.Provider = &RailwayProvider{}
 
@@ -89,7 +94,9 @@ func (p *RailwayProvider) Configure(ctx context.Context, req provider.ConfigureR
 }
 
 func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewProjectResource,
+	}
 }
 
 func (p *RailwayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {

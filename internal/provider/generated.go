@@ -11,12 +11,12 @@ import (
 
 // Project includes the GraphQL fields of Project requested by the fragment Project.
 type Project struct {
-	Id          string      `json:"id"`
-	Name        string      `json:"name"`
-	Description *string     `json:"description"`
-	PrDeploys   bool        `json:"prDeploys"`
-	UpstreamUrl *string     `json:"upstreamUrl"`
-	Team        ProjectTeam `json:"team"`
+	Id          string       `json:"id"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	IsPublic    bool         `json:"isPublic"`
+	PrDeploys   bool         `json:"prDeploys"`
+	Team        *ProjectTeam `json:"team"`
 }
 
 // GetId returns Project.Id, and is useful for accessing the field via an interface.
@@ -26,16 +26,58 @@ func (v *Project) GetId() string { return v.Id }
 func (v *Project) GetName() string { return v.Name }
 
 // GetDescription returns Project.Description, and is useful for accessing the field via an interface.
-func (v *Project) GetDescription() *string { return v.Description }
+func (v *Project) GetDescription() string { return v.Description }
+
+// GetIsPublic returns Project.IsPublic, and is useful for accessing the field via an interface.
+func (v *Project) GetIsPublic() bool { return v.IsPublic }
 
 // GetPrDeploys returns Project.PrDeploys, and is useful for accessing the field via an interface.
 func (v *Project) GetPrDeploys() bool { return v.PrDeploys }
 
-// GetUpstreamUrl returns Project.UpstreamUrl, and is useful for accessing the field via an interface.
-func (v *Project) GetUpstreamUrl() *string { return v.UpstreamUrl }
-
 // GetTeam returns Project.Team, and is useful for accessing the field via an interface.
-func (v *Project) GetTeam() ProjectTeam { return v.Team }
+func (v *Project) GetTeam() *ProjectTeam { return v.Team }
+
+type ProjectCreateInput struct {
+	Description string             `json:"description"`
+	IsPublic    bool               `json:"isPublic"`
+	Name        string             `json:"name"`
+	Plugins     []string           `json:"plugins"`
+	PrDeploys   bool               `json:"prDeploys"`
+	Repo        *ProjectCreateRepo `json:"repo"`
+	TeamId      *string            `json:"teamId"`
+}
+
+// GetDescription returns ProjectCreateInput.Description, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetDescription() string { return v.Description }
+
+// GetIsPublic returns ProjectCreateInput.IsPublic, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetIsPublic() bool { return v.IsPublic }
+
+// GetName returns ProjectCreateInput.Name, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetName() string { return v.Name }
+
+// GetPlugins returns ProjectCreateInput.Plugins, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetPlugins() []string { return v.Plugins }
+
+// GetPrDeploys returns ProjectCreateInput.PrDeploys, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetPrDeploys() bool { return v.PrDeploys }
+
+// GetRepo returns ProjectCreateInput.Repo, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetRepo() *ProjectCreateRepo { return v.Repo }
+
+// GetTeamId returns ProjectCreateInput.TeamId, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetTeamId() *string { return v.TeamId }
+
+type ProjectCreateRepo struct {
+	Branch       string `json:"branch"`
+	FullRepoName string `json:"fullRepoName"`
+}
+
+// GetBranch returns ProjectCreateRepo.Branch, and is useful for accessing the field via an interface.
+func (v *ProjectCreateRepo) GetBranch() string { return v.Branch }
+
+// GetFullRepoName returns ProjectCreateRepo.FullRepoName, and is useful for accessing the field via an interface.
+func (v *ProjectCreateRepo) GetFullRepoName() string { return v.FullRepoName }
 
 // ProjectTeam includes the requested fields of the GraphQL type Team.
 type ProjectTeam struct {
@@ -45,6 +87,41 @@ type ProjectTeam struct {
 // GetId returns ProjectTeam.Id, and is useful for accessing the field via an interface.
 func (v *ProjectTeam) GetId() string { return v.Id }
 
+type ProjectUpdateInput struct {
+	Description string `json:"description"`
+	IsPublic    bool   `json:"isPublic"`
+	Name        string `json:"name"`
+	PrDeploys   bool   `json:"prDeploys"`
+}
+
+// GetDescription returns ProjectUpdateInput.Description, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetDescription() string { return v.Description }
+
+// GetIsPublic returns ProjectUpdateInput.IsPublic, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetIsPublic() bool { return v.IsPublic }
+
+// GetName returns ProjectUpdateInput.Name, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetName() string { return v.Name }
+
+// GetPrDeploys returns ProjectUpdateInput.PrDeploys, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
+
+// __createProjectInput is used internally by genqlient
+type __createProjectInput struct {
+	Input ProjectCreateInput `json:"input"`
+}
+
+// GetInput returns __createProjectInput.Input, and is useful for accessing the field via an interface.
+func (v *__createProjectInput) GetInput() ProjectCreateInput { return v.Input }
+
+// __deleteProjectInput is used internally by genqlient
+type __deleteProjectInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deleteProjectInput.Id, and is useful for accessing the field via an interface.
+func (v *__deleteProjectInput) GetId() string { return v.Id }
+
 // __getProjectInput is used internally by genqlient
 type __getProjectInput struct {
 	Id string `json:"id"`
@@ -52,6 +129,120 @@ type __getProjectInput struct {
 
 // GetId returns __getProjectInput.Id, and is useful for accessing the field via an interface.
 func (v *__getProjectInput) GetId() string { return v.Id }
+
+// __updateProjectInput is used internally by genqlient
+type __updateProjectInput struct {
+	Id    string             `json:"id"`
+	Input ProjectUpdateInput `json:"input"`
+}
+
+// GetId returns __updateProjectInput.Id, and is useful for accessing the field via an interface.
+func (v *__updateProjectInput) GetId() string { return v.Id }
+
+// GetInput returns __updateProjectInput.Input, and is useful for accessing the field via an interface.
+func (v *__updateProjectInput) GetInput() ProjectUpdateInput { return v.Input }
+
+// createProjectProjectCreateProject includes the requested fields of the GraphQL type Project.
+type createProjectProjectCreateProject struct {
+	Project `json:"-"`
+}
+
+// GetId returns createProjectProjectCreateProject.Id, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetId() string { return v.Project.Id }
+
+// GetName returns createProjectProjectCreateProject.Name, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetName() string { return v.Project.Name }
+
+// GetDescription returns createProjectProjectCreateProject.Description, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetDescription() string { return v.Project.Description }
+
+// GetIsPublic returns createProjectProjectCreateProject.IsPublic, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetIsPublic() bool { return v.Project.IsPublic }
+
+// GetPrDeploys returns createProjectProjectCreateProject.PrDeploys, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetPrDeploys() bool { return v.Project.PrDeploys }
+
+// GetTeam returns createProjectProjectCreateProject.Team, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetTeam() *ProjectTeam { return v.Project.Team }
+
+func (v *createProjectProjectCreateProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createProjectProjectCreateProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createProjectProjectCreateProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Project)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreateProjectProjectCreateProject struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	Description string `json:"description"`
+
+	IsPublic bool `json:"isPublic"`
+
+	PrDeploys bool `json:"prDeploys"`
+
+	Team *ProjectTeam `json:"team"`
+}
+
+func (v *createProjectProjectCreateProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createProjectProjectCreateProject) __premarshalJSON() (*__premarshalcreateProjectProjectCreateProject, error) {
+	var retval __premarshalcreateProjectProjectCreateProject
+
+	retval.Id = v.Project.Id
+	retval.Name = v.Project.Name
+	retval.Description = v.Project.Description
+	retval.IsPublic = v.Project.IsPublic
+	retval.PrDeploys = v.Project.PrDeploys
+	retval.Team = v.Project.Team
+	return &retval, nil
+}
+
+// createProjectResponse is returned by createProject on success.
+type createProjectResponse struct {
+	// Creates a new project.
+	ProjectCreate createProjectProjectCreateProject `json:"projectCreate"`
+}
+
+// GetProjectCreate returns createProjectResponse.ProjectCreate, and is useful for accessing the field via an interface.
+func (v *createProjectResponse) GetProjectCreate() createProjectProjectCreateProject {
+	return v.ProjectCreate
+}
+
+// deleteProjectResponse is returned by deleteProject on success.
+type deleteProjectResponse struct {
+	// Deletes a project.
+	ProjectDelete bool `json:"projectDelete"`
+}
+
+// GetProjectDelete returns deleteProjectResponse.ProjectDelete, and is useful for accessing the field via an interface.
+func (v *deleteProjectResponse) GetProjectDelete() bool { return v.ProjectDelete }
 
 // getProjectProject includes the requested fields of the GraphQL type Project.
 type getProjectProject struct {
@@ -65,16 +256,16 @@ func (v *getProjectProject) GetId() string { return v.Project.Id }
 func (v *getProjectProject) GetName() string { return v.Project.Name }
 
 // GetDescription returns getProjectProject.Description, and is useful for accessing the field via an interface.
-func (v *getProjectProject) GetDescription() *string { return v.Project.Description }
+func (v *getProjectProject) GetDescription() string { return v.Project.Description }
+
+// GetIsPublic returns getProjectProject.IsPublic, and is useful for accessing the field via an interface.
+func (v *getProjectProject) GetIsPublic() bool { return v.Project.IsPublic }
 
 // GetPrDeploys returns getProjectProject.PrDeploys, and is useful for accessing the field via an interface.
 func (v *getProjectProject) GetPrDeploys() bool { return v.Project.PrDeploys }
 
-// GetUpstreamUrl returns getProjectProject.UpstreamUrl, and is useful for accessing the field via an interface.
-func (v *getProjectProject) GetUpstreamUrl() *string { return v.Project.UpstreamUrl }
-
 // GetTeam returns getProjectProject.Team, and is useful for accessing the field via an interface.
-func (v *getProjectProject) GetTeam() ProjectTeam { return v.Project.Team }
+func (v *getProjectProject) GetTeam() *ProjectTeam { return v.Project.Team }
 
 func (v *getProjectProject) UnmarshalJSON(b []byte) error {
 
@@ -106,13 +297,13 @@ type __premarshalgetProjectProject struct {
 
 	Name string `json:"name"`
 
-	Description *string `json:"description"`
+	Description string `json:"description"`
+
+	IsPublic bool `json:"isPublic"`
 
 	PrDeploys bool `json:"prDeploys"`
 
-	UpstreamUrl *string `json:"upstreamUrl"`
-
-	Team ProjectTeam `json:"team"`
+	Team *ProjectTeam `json:"team"`
 }
 
 func (v *getProjectProject) MarshalJSON() ([]byte, error) {
@@ -129,8 +320,8 @@ func (v *getProjectProject) __premarshalJSON() (*__premarshalgetProjectProject, 
 	retval.Id = v.Project.Id
 	retval.Name = v.Project.Name
 	retval.Description = v.Project.Description
+	retval.IsPublic = v.Project.IsPublic
 	retval.PrDeploys = v.Project.PrDeploys
-	retval.UpstreamUrl = v.Project.UpstreamUrl
 	retval.Team = v.Project.Team
 	return &retval, nil
 }
@@ -143,6 +334,171 @@ type getProjectResponse struct {
 
 // GetProject returns getProjectResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectResponse) GetProject() getProjectProject { return v.Project }
+
+// updateProjectProjectUpdateProject includes the requested fields of the GraphQL type Project.
+type updateProjectProjectUpdateProject struct {
+	Project `json:"-"`
+}
+
+// GetId returns updateProjectProjectUpdateProject.Id, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetId() string { return v.Project.Id }
+
+// GetName returns updateProjectProjectUpdateProject.Name, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetName() string { return v.Project.Name }
+
+// GetDescription returns updateProjectProjectUpdateProject.Description, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetDescription() string { return v.Project.Description }
+
+// GetIsPublic returns updateProjectProjectUpdateProject.IsPublic, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetIsPublic() bool { return v.Project.IsPublic }
+
+// GetPrDeploys returns updateProjectProjectUpdateProject.PrDeploys, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetPrDeploys() bool { return v.Project.PrDeploys }
+
+// GetTeam returns updateProjectProjectUpdateProject.Team, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetTeam() *ProjectTeam { return v.Project.Team }
+
+func (v *updateProjectProjectUpdateProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*updateProjectProjectUpdateProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.updateProjectProjectUpdateProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Project)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalupdateProjectProjectUpdateProject struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	Description string `json:"description"`
+
+	IsPublic bool `json:"isPublic"`
+
+	PrDeploys bool `json:"prDeploys"`
+
+	Team *ProjectTeam `json:"team"`
+}
+
+func (v *updateProjectProjectUpdateProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *updateProjectProjectUpdateProject) __premarshalJSON() (*__premarshalupdateProjectProjectUpdateProject, error) {
+	var retval __premarshalupdateProjectProjectUpdateProject
+
+	retval.Id = v.Project.Id
+	retval.Name = v.Project.Name
+	retval.Description = v.Project.Description
+	retval.IsPublic = v.Project.IsPublic
+	retval.PrDeploys = v.Project.PrDeploys
+	retval.Team = v.Project.Team
+	return &retval, nil
+}
+
+// updateProjectResponse is returned by updateProject on success.
+type updateProjectResponse struct {
+	// Updates a project.
+	ProjectUpdate updateProjectProjectUpdateProject `json:"projectUpdate"`
+}
+
+// GetProjectUpdate returns updateProjectResponse.ProjectUpdate, and is useful for accessing the field via an interface.
+func (v *updateProjectResponse) GetProjectUpdate() updateProjectProjectUpdateProject {
+	return v.ProjectUpdate
+}
+
+func createProject(
+	ctx context.Context,
+	client graphql.Client,
+	input ProjectCreateInput,
+) (*createProjectResponse, error) {
+	req := &graphql.Request{
+		OpName: "createProject",
+		Query: `
+mutation createProject ($input: ProjectCreateInput!) {
+	projectCreate(input: $input) {
+		... Project
+	}
+}
+fragment Project on Project {
+	id
+	name
+	description
+	isPublic
+	prDeploys
+	team {
+		id
+	}
+}
+`,
+		Variables: &__createProjectInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func deleteProject(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deleteProjectResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteProject",
+		Query: `
+mutation deleteProject ($id: String!) {
+	projectDelete(id: $id)
+}
+`,
+		Variables: &__deleteProjectInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deleteProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
 
 func getProject(
 	ctx context.Context,
@@ -161,8 +517,8 @@ fragment Project on Project {
 	id
 	name
 	description
+	isPublic
 	prDeploys
-	upstreamUrl
 	team {
 		id
 	}
@@ -175,6 +531,50 @@ fragment Project on Project {
 	var err error
 
 	var data getProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func updateProject(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+	input ProjectUpdateInput,
+) (*updateProjectResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateProject",
+		Query: `
+mutation updateProject ($id: String!, $input: ProjectUpdateInput!) {
+	projectUpdate(id: $id, input: $input) {
+		... Project
+	}
+}
+fragment Project on Project {
+	id
+	name
+	description
+	isPublic
+	prDeploys
+	team {
+		id
+	}
+}
+`,
+		Variables: &__updateProjectInput{
+			Id:    id,
+			Input: input,
+		},
+	}
+	var err error
+
+	var data updateProjectResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
