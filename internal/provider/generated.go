@@ -9,6 +9,37 @@ import (
 	"github.com/Khan/genqlient/graphql"
 )
 
+// Environment includes the GraphQL fields of Environment requested by the fragment Environment.
+type Environment struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	ProjectId string `json:"projectId"`
+}
+
+// GetId returns Environment.Id, and is useful for accessing the field via an interface.
+func (v *Environment) GetId() string { return v.Id }
+
+// GetName returns Environment.Name, and is useful for accessing the field via an interface.
+func (v *Environment) GetName() string { return v.Name }
+
+// GetProjectId returns Environment.ProjectId, and is useful for accessing the field via an interface.
+func (v *Environment) GetProjectId() string { return v.ProjectId }
+
+type EnvironmentCreateInput struct {
+	Ephemeral bool   `json:"ephemeral"`
+	Name      string `json:"name"`
+	ProjectId string `json:"projectId"`
+}
+
+// GetEphemeral returns EnvironmentCreateInput.Ephemeral, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetEphemeral() bool { return v.Ephemeral }
+
+// GetName returns EnvironmentCreateInput.Name, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetName() string { return v.Name }
+
+// GetProjectId returns EnvironmentCreateInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetProjectId() string { return v.ProjectId }
+
 // Project includes the GraphQL fields of Project requested by the fragment Project.
 type Project struct {
 	Id          string       `json:"id"`
@@ -106,6 +137,14 @@ func (v *ProjectUpdateInput) GetName() string { return v.Name }
 // GetPrDeploys returns ProjectUpdateInput.PrDeploys, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
 
+// __createEnvironmentInput is used internally by genqlient
+type __createEnvironmentInput struct {
+	Input EnvironmentCreateInput `json:"input"`
+}
+
+// GetInput returns __createEnvironmentInput.Input, and is useful for accessing the field via an interface.
+func (v *__createEnvironmentInput) GetInput() EnvironmentCreateInput { return v.Input }
+
 // __createProjectInput is used internally by genqlient
 type __createProjectInput struct {
 	Input ProjectCreateInput `json:"input"`
@@ -114,6 +153,14 @@ type __createProjectInput struct {
 // GetInput returns __createProjectInput.Input, and is useful for accessing the field via an interface.
 func (v *__createProjectInput) GetInput() ProjectCreateInput { return v.Input }
 
+// __deleteEnvironmentInput is used internally by genqlient
+type __deleteEnvironmentInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deleteEnvironmentInput.Id, and is useful for accessing the field via an interface.
+func (v *__deleteEnvironmentInput) GetId() string { return v.Id }
+
 // __deleteProjectInput is used internally by genqlient
 type __deleteProjectInput struct {
 	Id string `json:"id"`
@@ -121,6 +168,14 @@ type __deleteProjectInput struct {
 
 // GetId returns __deleteProjectInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteProjectInput) GetId() string { return v.Id }
+
+// __getEnvironmentInput is used internally by genqlient
+type __getEnvironmentInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __getEnvironmentInput.Id, and is useful for accessing the field via an interface.
+func (v *__getEnvironmentInput) GetId() string { return v.Id }
 
 // __getProjectInput is used internally by genqlient
 type __getProjectInput struct {
@@ -141,6 +196,83 @@ func (v *__updateProjectInput) GetId() string { return v.Id }
 
 // GetInput returns __updateProjectInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateProjectInput) GetInput() ProjectUpdateInput { return v.Input }
+
+// createEnvironmentEnvironmentCreateEnvironment includes the requested fields of the GraphQL type Environment.
+type createEnvironmentEnvironmentCreateEnvironment struct {
+	Environment `json:"-"`
+}
+
+// GetId returns createEnvironmentEnvironmentCreateEnvironment.Id, and is useful for accessing the field via an interface.
+func (v *createEnvironmentEnvironmentCreateEnvironment) GetId() string { return v.Environment.Id }
+
+// GetName returns createEnvironmentEnvironmentCreateEnvironment.Name, and is useful for accessing the field via an interface.
+func (v *createEnvironmentEnvironmentCreateEnvironment) GetName() string { return v.Environment.Name }
+
+// GetProjectId returns createEnvironmentEnvironmentCreateEnvironment.ProjectId, and is useful for accessing the field via an interface.
+func (v *createEnvironmentEnvironmentCreateEnvironment) GetProjectId() string {
+	return v.Environment.ProjectId
+}
+
+func (v *createEnvironmentEnvironmentCreateEnvironment) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createEnvironmentEnvironmentCreateEnvironment
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createEnvironmentEnvironmentCreateEnvironment = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Environment)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreateEnvironmentEnvironmentCreateEnvironment struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *createEnvironmentEnvironmentCreateEnvironment) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createEnvironmentEnvironmentCreateEnvironment) __premarshalJSON() (*__premarshalcreateEnvironmentEnvironmentCreateEnvironment, error) {
+	var retval __premarshalcreateEnvironmentEnvironmentCreateEnvironment
+
+	retval.Id = v.Environment.Id
+	retval.Name = v.Environment.Name
+	retval.ProjectId = v.Environment.ProjectId
+	return &retval, nil
+}
+
+// createEnvironmentResponse is returned by createEnvironment on success.
+type createEnvironmentResponse struct {
+	// Creates a new environment.
+	EnvironmentCreate createEnvironmentEnvironmentCreateEnvironment `json:"environmentCreate"`
+}
+
+// GetEnvironmentCreate returns createEnvironmentResponse.EnvironmentCreate, and is useful for accessing the field via an interface.
+func (v *createEnvironmentResponse) GetEnvironmentCreate() createEnvironmentEnvironmentCreateEnvironment {
+	return v.EnvironmentCreate
+}
 
 // createProjectProjectCreateProject includes the requested fields of the GraphQL type Project.
 type createProjectProjectCreateProject struct {
@@ -235,6 +367,15 @@ func (v *createProjectResponse) GetProjectCreate() createProjectProjectCreatePro
 	return v.ProjectCreate
 }
 
+// deleteEnvironmentResponse is returned by deleteEnvironment on success.
+type deleteEnvironmentResponse struct {
+	// Deletes an environment.
+	EnvironmentDelete bool `json:"environmentDelete"`
+}
+
+// GetEnvironmentDelete returns deleteEnvironmentResponse.EnvironmentDelete, and is useful for accessing the field via an interface.
+func (v *deleteEnvironmentResponse) GetEnvironmentDelete() bool { return v.EnvironmentDelete }
+
 // deleteProjectResponse is returned by deleteProject on success.
 type deleteProjectResponse struct {
 	// Deletes a project.
@@ -243,6 +384,79 @@ type deleteProjectResponse struct {
 
 // GetProjectDelete returns deleteProjectResponse.ProjectDelete, and is useful for accessing the field via an interface.
 func (v *deleteProjectResponse) GetProjectDelete() bool { return v.ProjectDelete }
+
+// getEnvironmentEnvironment includes the requested fields of the GraphQL type Environment.
+type getEnvironmentEnvironment struct {
+	Environment `json:"-"`
+}
+
+// GetId returns getEnvironmentEnvironment.Id, and is useful for accessing the field via an interface.
+func (v *getEnvironmentEnvironment) GetId() string { return v.Environment.Id }
+
+// GetName returns getEnvironmentEnvironment.Name, and is useful for accessing the field via an interface.
+func (v *getEnvironmentEnvironment) GetName() string { return v.Environment.Name }
+
+// GetProjectId returns getEnvironmentEnvironment.ProjectId, and is useful for accessing the field via an interface.
+func (v *getEnvironmentEnvironment) GetProjectId() string { return v.Environment.ProjectId }
+
+func (v *getEnvironmentEnvironment) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getEnvironmentEnvironment
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getEnvironmentEnvironment = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Environment)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetEnvironmentEnvironment struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *getEnvironmentEnvironment) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getEnvironmentEnvironment) __premarshalJSON() (*__premarshalgetEnvironmentEnvironment, error) {
+	var retval __premarshalgetEnvironmentEnvironment
+
+	retval.Id = v.Environment.Id
+	retval.Name = v.Environment.Name
+	retval.ProjectId = v.Environment.ProjectId
+	return &retval, nil
+}
+
+// getEnvironmentResponse is returned by getEnvironment on success.
+type getEnvironmentResponse struct {
+	// Find a single environment
+	Environment getEnvironmentEnvironment `json:"environment"`
+}
+
+// GetEnvironment returns getEnvironmentResponse.Environment, and is useful for accessing the field via an interface.
+func (v *getEnvironmentResponse) GetEnvironment() getEnvironmentEnvironment { return v.Environment }
 
 // getProjectProject includes the requested fields of the GraphQL type Project.
 type getProjectProject struct {
@@ -428,6 +642,43 @@ func (v *updateProjectResponse) GetProjectUpdate() updateProjectProjectUpdatePro
 	return v.ProjectUpdate
 }
 
+func createEnvironment(
+	ctx context.Context,
+	client graphql.Client,
+	input EnvironmentCreateInput,
+) (*createEnvironmentResponse, error) {
+	req := &graphql.Request{
+		OpName: "createEnvironment",
+		Query: `
+mutation createEnvironment ($input: EnvironmentCreateInput!) {
+	environmentCreate(input: $input) {
+		... Environment
+	}
+}
+fragment Environment on Environment {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__createEnvironmentInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createEnvironmentResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func createProject(
 	ctx context.Context,
 	client graphql.Client,
@@ -470,6 +721,36 @@ fragment Project on Project {
 	return &data, err
 }
 
+func deleteEnvironment(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deleteEnvironmentResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteEnvironment",
+		Query: `
+mutation deleteEnvironment ($id: String!) {
+	environmentDelete(id: $id)
+}
+`,
+		Variables: &__deleteEnvironmentInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deleteEnvironmentResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deleteProject(
 	ctx context.Context,
 	client graphql.Client,
@@ -489,6 +770,43 @@ mutation deleteProject ($id: String!) {
 	var err error
 
 	var data deleteProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getEnvironment(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*getEnvironmentResponse, error) {
+	req := &graphql.Request{
+		OpName: "getEnvironment",
+		Query: `
+query getEnvironment ($id: String!) {
+	environment(id: $id) {
+		... Environment
+	}
+}
+fragment Environment on Environment {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__getEnvironmentInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data getEnvironmentResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

@@ -1,0 +1,23 @@
+fragment Environment on Environment {
+  id
+  name
+  projectId
+}
+
+query getEnvironment($id: String!) {
+  environment(id: $id) {
+    ...Environment
+  }
+}
+
+mutation createEnvironment(
+  $input: EnvironmentCreateInput!
+) {
+  environmentCreate(input: $input) {
+    ...Environment
+  }
+}
+
+mutation deleteEnvironment($id: String!) {
+  environmentDelete(id: $id)
+}
