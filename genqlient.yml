@@ -1,0 +1,4 @@
+schema: schema.graphql
+operations:
+  - internal/provider/*.graphql
+generated: internal/provider/generated.go

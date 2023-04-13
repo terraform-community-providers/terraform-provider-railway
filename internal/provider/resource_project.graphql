@@ -1,0 +1,18 @@
+# @genqlient(for: "Project.description", pointer: true)
+# @genqlient(for: "Project.upstreamUrl", pointer: true)
+fragment Project on Project {
+  id
+  name
+  description
+  prDeploys
+  upstreamUrl
+  team {
+    id
+  }
+}
+
+query getProject($id: String!) {
+  project(id: $id) {
+    ...Project
+  }
+}
