@@ -1,3 +1,1 @@
-## 0.1.0 (Unreleased)
-
-FEATURES:
+## 0.1.0 (First release)

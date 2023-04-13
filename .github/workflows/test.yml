@@ -1,8 +1,4 @@
-# Terraform Provider testing workflow.
 name: Tests
-
-# This GitHub action runs your tests for each pull request and push.
-# Optionally, you can turn it on using a schedule for regular testing.
 on:
   pull_request:
     paths-ignore:
@@ -10,72 +6,66 @@ on:
   push:
     paths-ignore:
       - 'README.md'
-
-# Testing only needs permissions to read the repository contents.
+concurrency:
+  group: test-${{ github.ref }}
 permissions:
   contents: read
-
 jobs:
-  # Ensure project builds before running testing matrix
   build:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3.5.1
-      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install go
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
           cache: true
-      - run: go mod download
-      - run: go build -v .
-      - name: Run linters
-        uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5 # v3.4.0
-        with:
-          version: latest
-
+      - name: Install deps
+        run: go mod download
+      - name: Build
+        run: go build -v .
   generate:
+    name: Generated code check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3.5.1
-      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install go
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
           cache: true
-      - run: go generate ./...
-      - name: git diff
+      - name: Check generated code
         run: |
+          go generate ./...
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
-
-  # Run acceptance tests in a matrix with Terraform CLI versions
   test:
-    name: Terraform Provider Acceptance Tests
+    name: Terraform Provider Acceptance Test
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        # list whatever Terraform versions here you would like to support
-        terraform:
-          - '1.0.*'
-          - '1.1.*'
-          - '1.2.*'
-          - '1.3.*'
-          - '1.4.*'
     steps:
-      - uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3.5.1
-      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install go
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
           cache: true
-      - uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2.0.3
+      - name: Install terraform
+        uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ matrix.terraform }}
+          terraform_version: 1.4.*
           terraform_wrapper: false
-      - run: go mod download
-      - env:
-          TF_ACC: "1"
+      - name: Install deps
+        run: go mod download
+      - name: Test
+        env:
+          TF_ACC: 1
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10
