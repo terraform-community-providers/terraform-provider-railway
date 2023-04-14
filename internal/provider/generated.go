@@ -40,6 +40,52 @@ func (v *EnvironmentCreateInput) GetName() string { return v.Name }
 // GetProjectId returns EnvironmentCreateInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *EnvironmentCreateInput) GetProjectId() string { return v.ProjectId }
 
+// Plugin includes the GraphQL fields of Plugin requested by the fragment Plugin.
+type Plugin struct {
+	Id           string        `json:"id"`
+	Name         string        `json:"name"`
+	FriendlyName string        `json:"friendlyName"`
+	Project      PluginProject `json:"project"`
+}
+
+// GetId returns Plugin.Id, and is useful for accessing the field via an interface.
+func (v *Plugin) GetId() string { return v.Id }
+
+// GetName returns Plugin.Name, and is useful for accessing the field via an interface.
+func (v *Plugin) GetName() string { return v.Name }
+
+// GetFriendlyName returns Plugin.FriendlyName, and is useful for accessing the field via an interface.
+func (v *Plugin) GetFriendlyName() string { return v.FriendlyName }
+
+// GetProject returns Plugin.Project, and is useful for accessing the field via an interface.
+func (v *Plugin) GetProject() PluginProject { return v.Project }
+
+type PluginCreateInput struct {
+	Name      string `json:"name"`
+	ProjectId string `json:"projectId"`
+}
+
+// GetName returns PluginCreateInput.Name, and is useful for accessing the field via an interface.
+func (v *PluginCreateInput) GetName() string { return v.Name }
+
+// GetProjectId returns PluginCreateInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *PluginCreateInput) GetProjectId() string { return v.ProjectId }
+
+// PluginProject includes the requested fields of the GraphQL type Project.
+type PluginProject struct {
+	Id string `json:"id"`
+}
+
+// GetId returns PluginProject.Id, and is useful for accessing the field via an interface.
+func (v *PluginProject) GetId() string { return v.Id }
+
+type PluginUpdateInput struct {
+	FriendlyName string `json:"friendlyName"`
+}
+
+// GetFriendlyName returns PluginUpdateInput.FriendlyName, and is useful for accessing the field via an interface.
+func (v *PluginUpdateInput) GetFriendlyName() string { return v.FriendlyName }
+
 // Project includes the GraphQL fields of Project requested by the fragment Project.
 type Project struct {
 	Id          string       `json:"id"`
@@ -202,6 +248,14 @@ type __createEnvironmentInput struct {
 // GetInput returns __createEnvironmentInput.Input, and is useful for accessing the field via an interface.
 func (v *__createEnvironmentInput) GetInput() EnvironmentCreateInput { return v.Input }
 
+// __createPluginInput is used internally by genqlient
+type __createPluginInput struct {
+	Input PluginCreateInput `json:"input"`
+}
+
+// GetInput returns __createPluginInput.Input, and is useful for accessing the field via an interface.
+func (v *__createPluginInput) GetInput() PluginCreateInput { return v.Input }
+
 // __createProjectInput is used internally by genqlient
 type __createProjectInput struct {
 	Input ProjectCreateInput `json:"input"`
@@ -225,6 +279,14 @@ type __deleteEnvironmentInput struct {
 
 // GetId returns __deleteEnvironmentInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteEnvironmentInput) GetId() string { return v.Id }
+
+// __deletePluginInput is used internally by genqlient
+type __deletePluginInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deletePluginInput.Id, and is useful for accessing the field via an interface.
+func (v *__deletePluginInput) GetId() string { return v.Id }
 
 // __deleteProjectInput is used internally by genqlient
 type __deleteProjectInput struct {
@@ -250,6 +312,14 @@ type __getEnvironmentInput struct {
 // GetId returns __getEnvironmentInput.Id, and is useful for accessing the field via an interface.
 func (v *__getEnvironmentInput) GetId() string { return v.Id }
 
+// __getPluginInput is used internally by genqlient
+type __getPluginInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __getPluginInput.Id, and is useful for accessing the field via an interface.
+func (v *__getPluginInput) GetId() string { return v.Id }
+
 // __getProjectInput is used internally by genqlient
 type __getProjectInput struct {
 	Id string `json:"id"`
@@ -265,6 +335,18 @@ type __getServiceInput struct {
 
 // GetId returns __getServiceInput.Id, and is useful for accessing the field via an interface.
 func (v *__getServiceInput) GetId() string { return v.Id }
+
+// __updatePluginInput is used internally by genqlient
+type __updatePluginInput struct {
+	Id    string            `json:"id"`
+	Input PluginUpdateInput `json:"input"`
+}
+
+// GetId returns __updatePluginInput.Id, and is useful for accessing the field via an interface.
+func (v *__updatePluginInput) GetId() string { return v.Id }
+
+// GetInput returns __updatePluginInput.Input, and is useful for accessing the field via an interface.
+func (v *__updatePluginInput) GetInput() PluginUpdateInput { return v.Input }
 
 // __updateProjectInput is used internally by genqlient
 type __updateProjectInput struct {
@@ -365,6 +447,87 @@ type createEnvironmentResponse struct {
 // GetEnvironmentCreate returns createEnvironmentResponse.EnvironmentCreate, and is useful for accessing the field via an interface.
 func (v *createEnvironmentResponse) GetEnvironmentCreate() createEnvironmentEnvironmentCreateEnvironment {
 	return v.EnvironmentCreate
+}
+
+// createPluginPluginCreatePlugin includes the requested fields of the GraphQL type Plugin.
+type createPluginPluginCreatePlugin struct {
+	Plugin `json:"-"`
+}
+
+// GetId returns createPluginPluginCreatePlugin.Id, and is useful for accessing the field via an interface.
+func (v *createPluginPluginCreatePlugin) GetId() string { return v.Plugin.Id }
+
+// GetName returns createPluginPluginCreatePlugin.Name, and is useful for accessing the field via an interface.
+func (v *createPluginPluginCreatePlugin) GetName() string { return v.Plugin.Name }
+
+// GetFriendlyName returns createPluginPluginCreatePlugin.FriendlyName, and is useful for accessing the field via an interface.
+func (v *createPluginPluginCreatePlugin) GetFriendlyName() string { return v.Plugin.FriendlyName }
+
+// GetProject returns createPluginPluginCreatePlugin.Project, and is useful for accessing the field via an interface.
+func (v *createPluginPluginCreatePlugin) GetProject() PluginProject { return v.Plugin.Project }
+
+func (v *createPluginPluginCreatePlugin) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createPluginPluginCreatePlugin
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createPluginPluginCreatePlugin = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Plugin)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreatePluginPluginCreatePlugin struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	FriendlyName string `json:"friendlyName"`
+
+	Project PluginProject `json:"project"`
+}
+
+func (v *createPluginPluginCreatePlugin) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createPluginPluginCreatePlugin) __premarshalJSON() (*__premarshalcreatePluginPluginCreatePlugin, error) {
+	var retval __premarshalcreatePluginPluginCreatePlugin
+
+	retval.Id = v.Plugin.Id
+	retval.Name = v.Plugin.Name
+	retval.FriendlyName = v.Plugin.FriendlyName
+	retval.Project = v.Plugin.Project
+	return &retval, nil
+}
+
+// createPluginResponse is returned by createPlugin on success.
+type createPluginResponse struct {
+	// Creates a new plugin.
+	PluginCreate createPluginPluginCreatePlugin `json:"pluginCreate"`
+}
+
+// GetPluginCreate returns createPluginResponse.PluginCreate, and is useful for accessing the field via an interface.
+func (v *createPluginResponse) GetPluginCreate() createPluginPluginCreatePlugin {
+	return v.PluginCreate
 }
 
 // createProjectProjectCreateProject includes the requested fields of the GraphQL type Project.
@@ -544,6 +707,15 @@ type deleteEnvironmentResponse struct {
 // GetEnvironmentDelete returns deleteEnvironmentResponse.EnvironmentDelete, and is useful for accessing the field via an interface.
 func (v *deleteEnvironmentResponse) GetEnvironmentDelete() bool { return v.EnvironmentDelete }
 
+// deletePluginResponse is returned by deletePlugin on success.
+type deletePluginResponse struct {
+	// Deletes a plugin.
+	PluginDelete bool `json:"pluginDelete"`
+}
+
+// GetPluginDelete returns deletePluginResponse.PluginDelete, and is useful for accessing the field via an interface.
+func (v *deletePluginResponse) GetPluginDelete() bool { return v.PluginDelete }
+
 // deleteProjectResponse is returned by deleteProject on success.
 type deleteProjectResponse struct {
 	// Deletes a project.
@@ -634,6 +806,85 @@ type getEnvironmentResponse struct {
 
 // GetEnvironment returns getEnvironmentResponse.Environment, and is useful for accessing the field via an interface.
 func (v *getEnvironmentResponse) GetEnvironment() getEnvironmentEnvironment { return v.Environment }
+
+// getPluginPlugin includes the requested fields of the GraphQL type Plugin.
+type getPluginPlugin struct {
+	Plugin `json:"-"`
+}
+
+// GetId returns getPluginPlugin.Id, and is useful for accessing the field via an interface.
+func (v *getPluginPlugin) GetId() string { return v.Plugin.Id }
+
+// GetName returns getPluginPlugin.Name, and is useful for accessing the field via an interface.
+func (v *getPluginPlugin) GetName() string { return v.Plugin.Name }
+
+// GetFriendlyName returns getPluginPlugin.FriendlyName, and is useful for accessing the field via an interface.
+func (v *getPluginPlugin) GetFriendlyName() string { return v.Plugin.FriendlyName }
+
+// GetProject returns getPluginPlugin.Project, and is useful for accessing the field via an interface.
+func (v *getPluginPlugin) GetProject() PluginProject { return v.Plugin.Project }
+
+func (v *getPluginPlugin) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getPluginPlugin
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getPluginPlugin = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Plugin)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetPluginPlugin struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	FriendlyName string `json:"friendlyName"`
+
+	Project PluginProject `json:"project"`
+}
+
+func (v *getPluginPlugin) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getPluginPlugin) __premarshalJSON() (*__premarshalgetPluginPlugin, error) {
+	var retval __premarshalgetPluginPlugin
+
+	retval.Id = v.Plugin.Id
+	retval.Name = v.Plugin.Name
+	retval.FriendlyName = v.Plugin.FriendlyName
+	retval.Project = v.Plugin.Project
+	return &retval, nil
+}
+
+// getPluginResponse is returned by getPlugin on success.
+type getPluginResponse struct {
+	// Get a plugin by ID.
+	Plugin getPluginPlugin `json:"plugin"`
+}
+
+// GetPlugin returns getPluginResponse.Plugin, and is useful for accessing the field via an interface.
+func (v *getPluginResponse) GetPlugin() getPluginPlugin { return v.Plugin }
 
 // getProjectProject includes the requested fields of the GraphQL type Project.
 type getProjectProject struct {
@@ -797,6 +1048,87 @@ func (v *getServiceService) __premarshalJSON() (*__premarshalgetServiceService, 
 	retval.Name = v.Service.Name
 	retval.ProjectId = v.Service.ProjectId
 	return &retval, nil
+}
+
+// updatePluginPluginUpdatePlugin includes the requested fields of the GraphQL type Plugin.
+type updatePluginPluginUpdatePlugin struct {
+	Plugin `json:"-"`
+}
+
+// GetId returns updatePluginPluginUpdatePlugin.Id, and is useful for accessing the field via an interface.
+func (v *updatePluginPluginUpdatePlugin) GetId() string { return v.Plugin.Id }
+
+// GetName returns updatePluginPluginUpdatePlugin.Name, and is useful for accessing the field via an interface.
+func (v *updatePluginPluginUpdatePlugin) GetName() string { return v.Plugin.Name }
+
+// GetFriendlyName returns updatePluginPluginUpdatePlugin.FriendlyName, and is useful for accessing the field via an interface.
+func (v *updatePluginPluginUpdatePlugin) GetFriendlyName() string { return v.Plugin.FriendlyName }
+
+// GetProject returns updatePluginPluginUpdatePlugin.Project, and is useful for accessing the field via an interface.
+func (v *updatePluginPluginUpdatePlugin) GetProject() PluginProject { return v.Plugin.Project }
+
+func (v *updatePluginPluginUpdatePlugin) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*updatePluginPluginUpdatePlugin
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.updatePluginPluginUpdatePlugin = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Plugin)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalupdatePluginPluginUpdatePlugin struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	FriendlyName string `json:"friendlyName"`
+
+	Project PluginProject `json:"project"`
+}
+
+func (v *updatePluginPluginUpdatePlugin) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *updatePluginPluginUpdatePlugin) __premarshalJSON() (*__premarshalupdatePluginPluginUpdatePlugin, error) {
+	var retval __premarshalupdatePluginPluginUpdatePlugin
+
+	retval.Id = v.Plugin.Id
+	retval.Name = v.Plugin.Name
+	retval.FriendlyName = v.Plugin.FriendlyName
+	retval.Project = v.Plugin.Project
+	return &retval, nil
+}
+
+// updatePluginResponse is returned by updatePlugin on success.
+type updatePluginResponse struct {
+	// Updates an existing plugin.
+	PluginUpdate updatePluginPluginUpdatePlugin `json:"pluginUpdate"`
+}
+
+// GetPluginUpdate returns updatePluginResponse.PluginUpdate, and is useful for accessing the field via an interface.
+func (v *updatePluginResponse) GetPluginUpdate() updatePluginPluginUpdatePlugin {
+	return v.PluginUpdate
 }
 
 // updateProjectProjectUpdateProject includes the requested fields of the GraphQL type Project.
@@ -1004,6 +1336,46 @@ fragment Environment on Environment {
 	return &data, err
 }
 
+func createPlugin(
+	ctx context.Context,
+	client graphql.Client,
+	input PluginCreateInput,
+) (*createPluginResponse, error) {
+	req := &graphql.Request{
+		OpName: "createPlugin",
+		Query: `
+mutation createPlugin ($input: PluginCreateInput!) {
+	pluginCreate(input: $input) {
+		... Plugin
+	}
+}
+fragment Plugin on Plugin {
+	id
+	name
+	friendlyName
+	project {
+		id
+	}
+}
+`,
+		Variables: &__createPluginInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createPluginResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func createProject(
 	ctx context.Context,
 	client graphql.Client,
@@ -1113,6 +1485,36 @@ mutation deleteEnvironment ($id: String!) {
 	return &data, err
 }
 
+func deletePlugin(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deletePluginResponse, error) {
+	req := &graphql.Request{
+		OpName: "deletePlugin",
+		Query: `
+mutation deletePlugin ($id: String!) {
+	pluginDelete(id: $id)
+}
+`,
+		Variables: &__deletePluginInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deletePluginResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deleteProject(
 	ctx context.Context,
 	client graphql.Client,
@@ -1210,6 +1612,46 @@ fragment Environment on Environment {
 	return &data, err
 }
 
+func getPlugin(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*getPluginResponse, error) {
+	req := &graphql.Request{
+		OpName: "getPlugin",
+		Query: `
+query getPlugin ($id: String!) {
+	plugin(id: $id) {
+		... Plugin
+	}
+}
+fragment Plugin on Plugin {
+	id
+	name
+	friendlyName
+	project {
+		id
+	}
+}
+`,
+		Variables: &__getPluginInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data getPluginResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func getProject(
 	ctx context.Context,
 	client graphql.Client,
@@ -1278,6 +1720,48 @@ fragment Service on Service {
 	var err error
 
 	var data getServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func updatePlugin(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+	input PluginUpdateInput,
+) (*updatePluginResponse, error) {
+	req := &graphql.Request{
+		OpName: "updatePlugin",
+		Query: `
+mutation updatePlugin ($id: String!, $input: PluginUpdateInput!) {
+	pluginUpdate(id: $id, input: $input) {
+		... Plugin
+	}
+}
+fragment Plugin on Plugin {
+	id
+	name
+	friendlyName
+	project {
+		id
+	}
+}
+`,
+		Variables: &__updatePluginInput{
+			Id:    id,
+			Input: input,
+		},
+	}
+	var err error
+
+	var data updatePluginResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

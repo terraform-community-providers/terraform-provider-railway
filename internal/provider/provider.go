@@ -98,6 +98,7 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 		NewProjectResource,
 		NewEnvironmentResource,
 		NewServiceResource,
+		NewPluginResource,
 	}
 }
 

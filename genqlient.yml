@@ -5,3 +5,5 @@ generated: internal/provider/generated.go
 bindings:
   ServiceVariables:
     type: map[string]interface{}
+  PluginType:
+    type: string

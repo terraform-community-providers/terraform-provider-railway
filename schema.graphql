@@ -1438,6 +1438,9 @@ type Query {
   """Get the current status of the platform"""
   platformStatus: PlatformStatus!
 
+  """Get a plugin by ID."""
+  plugin(id: String!): Plugin!
+
   """Fetch logs for a plugin"""
   pluginLogs(
     endDate: DateTime
