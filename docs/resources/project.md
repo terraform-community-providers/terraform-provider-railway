@@ -27,6 +27,7 @@ resource "railway_project" "example" {
 
 ### Optional
 
+- `default_environment` (Attributes) Default environment of the project. When multiple exist, the oldest is considered. (see [below for nested schema](#nestedatt--default_environment))
 - `description` (String) Description of the project.
 - `has_pr_deploys` (Boolean) Whether the project has PR deploys enabled. **Default** `false`.
 - `private` (Boolean) Privacy of the project. **Default** `true`.
@@ -35,6 +36,17 @@ resource "railway_project" "example" {
 ### Read-Only
 
 - `id` (String) Identifier of the project.
+
+<a id="nestedatt--default_environment"></a>
+### Nested Schema for `default_environment`
+
+Optional:
+
+- `name` (String) Name of the default environment.
+
+Read-Only:
+
+- `id` (String) Identifier of the default environment.
 
 ## Import
 

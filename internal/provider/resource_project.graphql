@@ -8,6 +8,14 @@ fragment Project on Project {
   team {
     id
   }
+  environments {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
 }
 
 query getProject($id: String!) {
@@ -26,6 +34,7 @@ mutation createProject(
   }
 }
 
+# @genqlient(for: "ProjectUpdateInput.baseEnvironmentId", pointer: true, omitempty: true)
 mutation updateProject(
   $id: String!
   $input: ProjectUpdateInput!

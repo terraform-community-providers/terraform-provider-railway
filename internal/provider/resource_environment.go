@@ -113,7 +113,7 @@ func (r *EnvironmentResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	tflog.Trace(ctx, "created a environment")
+	tflog.Trace(ctx, "created an environment")
 
 	environment := response.EnvironmentCreate.Environment
 
@@ -177,7 +177,7 @@ func (r *EnvironmentResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	tflog.Trace(ctx, "deleted a environment")
+	tflog.Trace(ctx, "deleted an environment")
 }
 
 func (r *EnvironmentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
