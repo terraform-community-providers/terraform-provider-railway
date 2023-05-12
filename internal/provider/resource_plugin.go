@@ -110,8 +110,9 @@ func (r *PluginResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	input := PluginCreateInput{
-		Name:      data.Type.ValueString(),
-		ProjectId: data.ProjectId.ValueString(),
+		FriendlyName: data.Name.ValueString(),
+		Name:         data.Type.ValueString(),
+		ProjectId:    data.ProjectId.ValueString(),
 	}
 
 	response, err := createPlugin(ctx, *r.client, input)
@@ -123,13 +124,7 @@ func (r *PluginResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	tflog.Trace(ctx, "created a plugin")
 
-	updateInput := PluginUpdateInput{
-		FriendlyName: data.Name.ValueString(),
-	}
-
-	updateResponse, err := updatePlugin(ctx, *r.client, response.PluginCreate.Plugin.Id, updateInput)
-
-	plugin := updateResponse.PluginUpdate.Plugin
+	plugin := response.PluginCreate.Plugin
 
 	data.Id = types.StringValue(plugin.Id)
 	data.Name = types.StringValue(plugin.FriendlyName)

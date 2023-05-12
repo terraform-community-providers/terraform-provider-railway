@@ -61,9 +61,13 @@ func (v *Plugin) GetFriendlyName() string { return v.FriendlyName }
 func (v *Plugin) GetProject() PluginProject { return v.Project }
 
 type PluginCreateInput struct {
-	Name      string `json:"name"`
-	ProjectId string `json:"projectId"`
+	FriendlyName string `json:"friendlyName"`
+	Name         string `json:"name"`
+	ProjectId    string `json:"projectId"`
 }
+
+// GetFriendlyName returns PluginCreateInput.FriendlyName, and is useful for accessing the field via an interface.
+func (v *PluginCreateInput) GetFriendlyName() string { return v.FriendlyName }
 
 // GetName returns PluginCreateInput.Name, and is useful for accessing the field via an interface.
 func (v *PluginCreateInput) GetName() string { return v.Name }
@@ -88,12 +92,13 @@ func (v *PluginUpdateInput) GetFriendlyName() string { return v.FriendlyName }
 
 // Project includes the GraphQL fields of Project requested by the fragment Project.
 type Project struct {
-	Id          string       `json:"id"`
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	IsPublic    bool         `json:"isPublic"`
-	PrDeploys   bool         `json:"prDeploys"`
-	Team        *ProjectTeam `json:"team"`
+	Id           string                                           `json:"id"`
+	Name         string                                           `json:"name"`
+	Description  string                                           `json:"description"`
+	IsPublic     bool                                             `json:"isPublic"`
+	PrDeploys    bool                                             `json:"prDeploys"`
+	Team         *ProjectTeam                                     `json:"team"`
+	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
 
 // GetId returns Project.Id, and is useful for accessing the field via an interface.
@@ -114,15 +119,24 @@ func (v *Project) GetPrDeploys() bool { return v.PrDeploys }
 // GetTeam returns Project.Team, and is useful for accessing the field via an interface.
 func (v *Project) GetTeam() *ProjectTeam { return v.Team }
 
-type ProjectCreateInput struct {
-	Description string             `json:"description"`
-	IsPublic    bool               `json:"isPublic"`
-	Name        string             `json:"name"`
-	Plugins     []string           `json:"plugins"`
-	PrDeploys   bool               `json:"prDeploys"`
-	Repo        *ProjectCreateRepo `json:"repo"`
-	TeamId      *string            `json:"teamId"`
+// GetEnvironments returns Project.Environments, and is useful for accessing the field via an interface.
+func (v *Project) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
+	return v.Environments
 }
+
+type ProjectCreateInput struct {
+	DefaultEnvironmentName string             `json:"defaultEnvironmentName"`
+	Description            string             `json:"description"`
+	IsPublic               bool               `json:"isPublic"`
+	Name                   string             `json:"name"`
+	Plugins                []string           `json:"plugins"`
+	PrDeploys              bool               `json:"prDeploys"`
+	Repo                   *ProjectCreateRepo `json:"repo"`
+	TeamId                 *string            `json:"teamId"`
+}
+
+// GetDefaultEnvironmentName returns ProjectCreateInput.DefaultEnvironmentName, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetDefaultEnvironmentName() string { return v.DefaultEnvironmentName }
 
 // GetDescription returns ProjectCreateInput.Description, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetDescription() string { return v.Description }
@@ -156,6 +170,42 @@ func (v *ProjectCreateRepo) GetBranch() string { return v.Branch }
 // GetFullRepoName returns ProjectCreateRepo.FullRepoName, and is useful for accessing the field via an interface.
 func (v *ProjectCreateRepo) GetFullRepoName() string { return v.FullRepoName }
 
+// ProjectEnvironmentsProjectEnvironmentsConnection includes the requested fields of the GraphQL type ProjectEnvironmentsConnection.
+type ProjectEnvironmentsProjectEnvironmentsConnection struct {
+	Edges []ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdge `json:"edges"`
+}
+
+// GetEdges returns ProjectEnvironmentsProjectEnvironmentsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *ProjectEnvironmentsProjectEnvironmentsConnection) GetEdges() []ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdge {
+	return v.Edges
+}
+
+// ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdge includes the requested fields of the GraphQL type ProjectEnvironmentsConnectionEdge.
+type ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdge struct {
+	Node ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment `json:"node"`
+}
+
+// GetNode returns ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdge) GetNode() ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment {
+	return v.Node
+}
+
+// ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment includes the requested fields of the GraphQL type Environment.
+type ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// GetId returns ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment.Id, and is useful for accessing the field via an interface.
+func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment) GetId() string {
+	return v.Id
+}
+
+// GetName returns ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment.Name, and is useful for accessing the field via an interface.
+func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment) GetName() string {
+	return v.Name
+}
+
 // ProjectTeam includes the requested fields of the GraphQL type Team.
 type ProjectTeam struct {
 	Id string `json:"id"`
@@ -165,11 +215,15 @@ type ProjectTeam struct {
 func (v *ProjectTeam) GetId() string { return v.Id }
 
 type ProjectUpdateInput struct {
-	Description string `json:"description"`
-	IsPublic    bool   `json:"isPublic"`
-	Name        string `json:"name"`
-	PrDeploys   bool   `json:"prDeploys"`
+	BaseEnvironmentId *string `json:"baseEnvironmentId,omitempty"`
+	Description       string  `json:"description"`
+	IsPublic          bool    `json:"isPublic"`
+	Name              string  `json:"name"`
+	PrDeploys         bool    `json:"prDeploys"`
 }
+
+// GetBaseEnvironmentId returns ProjectUpdateInput.BaseEnvironmentId, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetBaseEnvironmentId() *string { return v.BaseEnvironmentId }
 
 // GetDescription returns ProjectUpdateInput.Description, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetDescription() string { return v.Description }
@@ -553,6 +607,11 @@ func (v *createProjectProjectCreateProject) GetPrDeploys() bool { return v.Proje
 // GetTeam returns createProjectProjectCreateProject.Team, and is useful for accessing the field via an interface.
 func (v *createProjectProjectCreateProject) GetTeam() *ProjectTeam { return v.Project.Team }
 
+// GetEnvironments returns createProjectProjectCreateProject.Environments, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
+	return v.Project.Environments
+}
+
 func (v *createProjectProjectCreateProject) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -590,6 +649,8 @@ type __premarshalcreateProjectProjectCreateProject struct {
 	PrDeploys bool `json:"prDeploys"`
 
 	Team *ProjectTeam `json:"team"`
+
+	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
 
 func (v *createProjectProjectCreateProject) MarshalJSON() ([]byte, error) {
@@ -609,6 +670,7 @@ func (v *createProjectProjectCreateProject) __premarshalJSON() (*__premarshalcre
 	retval.IsPublic = v.Project.IsPublic
 	retval.PrDeploys = v.Project.PrDeploys
 	retval.Team = v.Project.Team
+	retval.Environments = v.Project.Environments
 	return &retval, nil
 }
 
@@ -909,6 +971,11 @@ func (v *getProjectProject) GetPrDeploys() bool { return v.Project.PrDeploys }
 // GetTeam returns getProjectProject.Team, and is useful for accessing the field via an interface.
 func (v *getProjectProject) GetTeam() *ProjectTeam { return v.Project.Team }
 
+// GetEnvironments returns getProjectProject.Environments, and is useful for accessing the field via an interface.
+func (v *getProjectProject) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
+	return v.Project.Environments
+}
+
 func (v *getProjectProject) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -946,6 +1013,8 @@ type __premarshalgetProjectProject struct {
 	PrDeploys bool `json:"prDeploys"`
 
 	Team *ProjectTeam `json:"team"`
+
+	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
 
 func (v *getProjectProject) MarshalJSON() ([]byte, error) {
@@ -965,6 +1034,7 @@ func (v *getProjectProject) __premarshalJSON() (*__premarshalgetProjectProject, 
 	retval.IsPublic = v.Project.IsPublic
 	retval.PrDeploys = v.Project.PrDeploys
 	retval.Team = v.Project.Team
+	retval.Environments = v.Project.Environments
 	return &retval, nil
 }
 
@@ -1154,6 +1224,11 @@ func (v *updateProjectProjectUpdateProject) GetPrDeploys() bool { return v.Proje
 // GetTeam returns updateProjectProjectUpdateProject.Team, and is useful for accessing the field via an interface.
 func (v *updateProjectProjectUpdateProject) GetTeam() *ProjectTeam { return v.Project.Team }
 
+// GetEnvironments returns updateProjectProjectUpdateProject.Environments, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
+	return v.Project.Environments
+}
+
 func (v *updateProjectProjectUpdateProject) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -1191,6 +1266,8 @@ type __premarshalupdateProjectProjectUpdateProject struct {
 	PrDeploys bool `json:"prDeploys"`
 
 	Team *ProjectTeam `json:"team"`
+
+	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
 
 func (v *updateProjectProjectUpdateProject) MarshalJSON() ([]byte, error) {
@@ -1210,6 +1287,7 @@ func (v *updateProjectProjectUpdateProject) __premarshalJSON() (*__premarshalupd
 	retval.IsPublic = v.Project.IsPublic
 	retval.PrDeploys = v.Project.PrDeploys
 	retval.Team = v.Project.Team
+	retval.Environments = v.Project.Environments
 	return &retval, nil
 }
 
@@ -1397,6 +1475,14 @@ fragment Project on Project {
 	prDeploys
 	team {
 		id
+	}
+	environments {
+		edges {
+			node {
+				id
+				name
+			}
+		}
 	}
 }
 `,
@@ -1674,6 +1760,14 @@ fragment Project on Project {
 	team {
 		id
 	}
+	environments {
+		edges {
+			node {
+				id
+				name
+			}
+		}
+	}
 }
 `,
 		Variables: &__getProjectInput{
@@ -1795,6 +1889,14 @@ fragment Project on Project {
 	prDeploys
 	team {
 		id
+	}
+	environments {
+		edges {
+			node {
+				id
+				name
+			}
+		}
 	}
 }
 `,

@@ -21,6 +21,8 @@ func TestAccProjectResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_project.test", "description", ""),
 					resource.TestCheckResourceAttr("railway_project.test", "private", "true"),
 					resource.TestCheckResourceAttr("railway_project.test", "has_pr_deploys", "false"),
+					resource.TestMatchResourceAttr("railway_project.test", "default_environment.id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_project.test", "default_environment.name", "production"),
 				),
 			},
 			// ImportState testing
@@ -38,17 +40,21 @@ func TestAccProjectResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_project.test", "description", ""),
 					resource.TestCheckResourceAttr("railway_project.test", "private", "true"),
 					resource.TestCheckResourceAttr("railway_project.test", "has_pr_deploys", "false"),
+					resource.TestMatchResourceAttr("railway_project.test", "default_environment.id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_project.test", "default_environment.name", "production"),
 				),
 			},
 			// Update and Read testing
 			{
-				Config: testAccProjectResourceConfigNonDefault("nue-todo-app"),
+				Config: testAccProjectResourceConfigNonDefault("nue-todo-app", "production"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_project.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_project.test", "name", "nue-todo-app"),
 					resource.TestCheckResourceAttr("railway_project.test", "description", "nice project"),
 					resource.TestCheckResourceAttr("railway_project.test", "private", "false"),
 					resource.TestCheckResourceAttr("railway_project.test", "has_pr_deploys", "true"),
+					resource.TestMatchResourceAttr("railway_project.test", "default_environment.id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_project.test", "default_environment.name", "production"),
 				),
 			},
 			// ImportState testing
@@ -69,13 +75,15 @@ func TestAccProjectResourceNonDefault(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccProjectResourceConfigNonDefault("todo-app"),
+				Config: testAccProjectResourceConfigNonDefault("todo-app", "staging"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_project.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_project.test", "name", "todo-app"),
 					resource.TestCheckResourceAttr("railway_project.test", "description", "nice project"),
 					resource.TestCheckResourceAttr("railway_project.test", "private", "false"),
 					resource.TestCheckResourceAttr("railway_project.test", "has_pr_deploys", "true"),
+					resource.TestMatchResourceAttr("railway_project.test", "default_environment.id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_project.test", "default_environment.name", "staging"),
 				),
 			},
 			// ImportState testing
@@ -86,24 +94,28 @@ func TestAccProjectResourceNonDefault(t *testing.T) {
 			},
 			// Update with same values
 			{
-				Config: testAccProjectResourceConfigNonDefault("todo-app"),
+				Config: testAccProjectResourceConfigNonDefault("todo-app", "staging"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_project.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_project.test", "name", "todo-app"),
 					resource.TestCheckResourceAttr("railway_project.test", "description", "nice project"),
 					resource.TestCheckResourceAttr("railway_project.test", "private", "false"),
 					resource.TestCheckResourceAttr("railway_project.test", "has_pr_deploys", "true"),
+					resource.TestMatchResourceAttr("railway_project.test", "default_environment.id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_project.test", "default_environment.name", "staging"),
 				),
 			},
 			// Update with null values
 			{
-				Config: testAccProjectResourceConfigDefault("nue-todo-app"),
+				Config: testAccProjectResourceConfigDefaultEnvironmentName("nue-todo-app", "staging"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_project.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_project.test", "name", "nue-todo-app"),
 					resource.TestCheckResourceAttr("railway_project.test", "description", ""),
 					resource.TestCheckResourceAttr("railway_project.test", "private", "true"),
 					resource.TestCheckResourceAttr("railway_project.test", "has_pr_deploys", "false"),
+					resource.TestMatchResourceAttr("railway_project.test", "default_environment.id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_project.test", "default_environment.name", "staging"),
 				),
 			},
 			// ImportState testing
@@ -125,13 +137,29 @@ resource "railway_project" "test" {
 `, name)
 }
 
-func testAccProjectResourceConfigNonDefault(name string) string {
+func testAccProjectResourceConfigDefaultEnvironmentName(name string, environmentName string) string {
+	return fmt.Sprintf(`
+resource "railway_project" "test" {
+  name = "%s"
+
+  default_environment = {
+    name = "%s"
+  }
+}
+`, name, environmentName)
+}
+
+func testAccProjectResourceConfigNonDefault(name string, environmentName string) string {
 	return fmt.Sprintf(`
 resource "railway_project" "test" {
   name = "%s"
   description = "nice project"
   private = false
   has_pr_deploys = true
+
+  default_environment = {
+	name = "%s"
+  }
 }
-`, name)
+`, name, environmentName)
 }

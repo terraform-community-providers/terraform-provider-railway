@@ -6,6 +6,7 @@ import (
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -15,7 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/terraform-community-providers/terraform-plugin-framework-utils/modifiers"
 )
 
 var _ resource.Resource = &ProjectResource{}
@@ -29,13 +32,24 @@ type ProjectResource struct {
 	client *graphql.Client
 }
 
+type ProejctResourceDefaultEnvironmentModel struct {
+	Id   types.String `tfsdk:"id"`
+	Name types.String `tfsdk:"name"`
+}
+
+var defaultEnvironmentAttrTypes = map[string]attr.Type{
+	"id":   types.StringType,
+	"name": types.StringType,
+}
+
 type ProjectResourceModel struct {
-	Id           types.String `tfsdk:"id"`
-	Name         types.String `tfsdk:"name"`
-	Description  types.String `tfsdk:"description"`
-	Private      types.Bool   `tfsdk:"private"`
-	HasPrDeploys types.Bool   `tfsdk:"has_pr_deploys"`
-	TeamId       types.String `tfsdk:"team_id"`
+	Id                 types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	Description        types.String `tfsdk:"description"`
+	Private            types.Bool   `tfsdk:"private"`
+	HasPrDeploys       types.Bool   `tfsdk:"has_pr_deploys"`
+	TeamId             types.String `tfsdk:"team_id"`
+	DefaultEnvironment types.Object `tfsdk:"default_environment"`
 }
 
 func (r *ProjectResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -88,6 +102,35 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
 				},
 			},
+			"default_environment": schema.SingleNestedAttribute{
+				MarkdownDescription: "Default environment of the project. When multiple exist, the oldest is considered.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Object{
+					modifiers.UnknownAttributesOnUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						MarkdownDescription: "Identifier of the default environment.",
+						Computed:            true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						MarkdownDescription: "Name of the default environment.",
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers: []planmodifier.String{
+							modifiers.DefaultString("production"),
+							stringplanmodifier.RequiresReplace(),
+						},
+						Validators: []validator.String{
+							stringvalidator.UTF8LengthAtLeast(1),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -114,6 +157,7 @@ func (r *ProjectResource) Configure(ctx context.Context, req resource.ConfigureR
 
 func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data *ProjectResourceModel
+	var defaultEnvironmentData *ProejctResourceDefaultEnvironmentModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -128,6 +172,14 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		PrDeploys:   data.HasPrDeploys.ValueBool(),
 		TeamId:      data.TeamId.ValueStringPointer(),
 	}
+
+	resp.Diagnostics.Append(data.DefaultEnvironment.As(ctx, &defaultEnvironmentData, basetypes.ObjectAsOptions{})...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	input.DefaultEnvironmentName = defaultEnvironmentData.Name.ValueString()
 
 	response, err := createProject(ctx, *r.client, input)
 
@@ -149,6 +201,21 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	if project.Team != nil {
 		data.TeamId = types.StringValue(project.Team.Id)
 	}
+
+	noOfEnvironments := len(project.Environments.Edges)
+
+	if noOfEnvironments != 1 {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Expected exactly one environment, got %d", noOfEnvironments))
+		return
+	}
+
+	data.DefaultEnvironment = types.ObjectValueMust(
+		defaultEnvironmentAttrTypes,
+		map[string]attr.Value{
+			"id":   types.StringValue(project.Environments.Edges[0].Node.Id),
+			"name": types.StringValue(project.Environments.Edges[0].Node.Name),
+		},
+	)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -181,11 +248,27 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		data.TeamId = types.StringValue(project.Team.Id)
 	}
 
+	noOfEnvironments := len(project.Environments.Edges)
+
+	if noOfEnvironments < 1 {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Expected at least one environment, got %d", noOfEnvironments))
+		return
+	}
+
+	data.DefaultEnvironment = types.ObjectValueMust(
+		defaultEnvironmentAttrTypes,
+		map[string]attr.Value{
+			"id":   types.StringValue(project.Environments.Edges[0].Node.Id),
+			"name": types.StringValue(project.Environments.Edges[0].Node.Name),
+		},
+	)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data *ProjectResourceModel
+	var defaultEnvironmentData *ProejctResourceDefaultEnvironmentModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -200,6 +283,12 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		PrDeploys:   data.HasPrDeploys.ValueBool(),
 	}
 
+	resp.Diagnostics.Append(data.DefaultEnvironment.As(ctx, &defaultEnvironmentData, basetypes.ObjectAsOptions{})...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	response, err := updateProject(ctx, *r.client, data.Id.ValueString(), input)
 
 	if err != nil {
@@ -211,6 +300,13 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	project := response.ProjectUpdate.Project
 
+	noOfEnvironments := len(project.Environments.Edges)
+
+	if noOfEnvironments < 1 {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Expected at least one environment, got %d", noOfEnvironments))
+		return
+	}
+
 	data.Id = types.StringValue(project.Id)
 	data.Name = types.StringValue(project.Name)
 	data.Description = types.StringValue(project.Description)
@@ -220,6 +316,14 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	if project.Team != nil {
 		data.TeamId = types.StringValue(project.Team.Id)
 	}
+
+	data.DefaultEnvironment = types.ObjectValueMust(
+		defaultEnvironmentAttrTypes,
+		map[string]attr.Value{
+			"id":   types.StringValue(project.Environments.Edges[0].Node.Id),
+			"name": types.StringValue(project.Environments.Edges[0].Node.Name),
+		},
+	)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

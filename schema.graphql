@@ -55,6 +55,12 @@ The `BigInt` scalar type represents non-fractional signed whole numeric values.
 """
 scalar BigInt
 
+"""The billing period for a customers subscription."""
+type BillingPeriod {
+  end: DateTime!
+  start: DateTime!
+}
+
 enum Builder {
   HEROKU
   NIXPACKS
@@ -134,6 +140,7 @@ input CustomDomainCreateInput {
 type Customer implements Node {
   appliedCredits: Float!
   billingEmail: String
+  billingPeriod: BillingPeriod!
   creditBalance: Float!
   credits(after: String, before: String, first: Int, last: Int): CustomerCreditsConnection!
   defaultPaymentMethod: PaymentMethod
@@ -175,6 +182,7 @@ type CustomerInvoice {
 }
 
 type CustomerSubscription {
+  billingCycleAnchor: DateTime!
   cancelAt: String
   couponId: String
   id: String!
@@ -231,6 +239,7 @@ enum DeploymentStatus {
   DEPLOYING
   FAILED
   INITIALIZING
+  QUEUED
   REMOVED
   REMOVING
   SKIPPED
@@ -618,6 +627,7 @@ type MetricsResult {
 """A property that can be used to group metrics."""
 enum MetricTag {
   DEPLOYMENT_ID
+  DEPLOYMENT_INSTANCE_ID
   ENVIRONMENT_ID
   KEY_UNSPECIFIED
   PLUGIN_ID
@@ -1013,6 +1023,7 @@ type Plugin implements Node {
 }
 
 input PluginCreateInput {
+  friendlyName: String
   name: String!
   projectId: String!
 }
@@ -1068,6 +1079,7 @@ input PreferencesUpdateData {
 }
 
 type Project implements Node {
+  baseEnvironment: Environment
   createdAt: DateTime!
   deletedAt: DateTime
   deploymentTriggers(after: String, before: String, first: Int, last: Int): ProjectDeploymentTriggersConnection!
@@ -1093,6 +1105,7 @@ type Project implements Node {
 }
 
 input ProjectCreateInput {
+  defaultEnvironmentName: String
   description: String
   isPublic: Boolean
   name: String
@@ -1243,6 +1256,7 @@ input ProjectTransferToTeamInput {
 }
 
 input ProjectUpdateInput {
+  baseEnvironmentId: String
   description: String
   isPublic: Boolean
   name: String
@@ -1494,6 +1508,9 @@ type Query {
   """Checks if a service domain is available"""
   serviceDomainAvailable(domain: String!): DomainAvailable!
 
+  """Get a service instance belonging to a service and environment"""
+  serviceInstance(environmentId: String!, serviceId: String!): ServiceInstance!
+
   """Check if the upstream repo for a service has an update available"""
   serviceInstanceIsUpdatable(environmentId: String!, serviceId: String!): Boolean!
 
@@ -1581,9 +1598,6 @@ type Query {
 
   """Get information about the user's Vercel accounts"""
   vercelInfo: VercelInfo!
-
-  """Returns the state of the user's verification status"""
-  verificationStatus: VerificationStatus!
 
   """Get all webhooks for a project"""
   webhooks(after: String, before: String, first: Int, last: Int, projectId: String!): QueryWebhooksConnection!
@@ -2392,10 +2406,6 @@ type VercelProject {
   accountId: String!
   id: String!
   name: String!
-}
-
-type VerificationStatus {
-  github: Boolean!
 }
 
 input WebhookCreateInput {
