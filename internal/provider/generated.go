@@ -5,6 +5,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/Khan/genqlient/graphql"
 )
@@ -192,8 +193,9 @@ func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironment
 
 // ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment includes the requested fields of the GraphQL type Environment.
 type ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 // GetId returns ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment.Id, and is useful for accessing the field via an interface.
@@ -204,6 +206,11 @@ func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironment
 // GetName returns ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment.Name, and is useful for accessing the field via an interface.
 func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment) GetName() string {
 	return v.Name
+}
+
+// GetCreatedAt returns ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment.CreatedAt, and is useful for accessing the field via an interface.
+func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment) GetCreatedAt() time.Time {
+	return v.CreatedAt
 }
 
 // ProjectTeam includes the requested fields of the GraphQL type Team.
@@ -1481,6 +1488,7 @@ fragment Project on Project {
 			node {
 				id
 				name
+				createdAt
 			}
 		}
 	}
@@ -1765,6 +1773,7 @@ fragment Project on Project {
 			node {
 				id
 				name
+				createdAt
 			}
 		}
 	}
@@ -1895,6 +1904,7 @@ fragment Project on Project {
 			node {
 				id
 				name
+				createdAt
 			}
 		}
 	}

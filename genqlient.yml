@@ -7,3 +7,5 @@ bindings:
     type: map[string]interface{}
   PluginType:
     type: string
+  DateTime:
+    type: time.Time

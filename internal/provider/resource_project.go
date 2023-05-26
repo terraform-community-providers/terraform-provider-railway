@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -254,6 +255,11 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Expected at least one environment, got %d", noOfEnvironments))
 		return
 	}
+
+	// Mark the oldest environment as the default
+	sort.SliceStable(project.Environments.Edges, func(i, j int) bool {
+		return project.Environments.Edges[i].Node.CreatedAt.Before(project.Environments.Edges[j].Node.CreatedAt)
+	})
 
 	data.DefaultEnvironment = types.ObjectValueMust(
 		defaultEnvironmentAttrTypes,
