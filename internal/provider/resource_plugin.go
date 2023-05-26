@@ -40,7 +40,7 @@ func (r *PluginResource) Metadata(ctx context.Context, req resource.MetadataRequ
 
 func (r *PluginResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway project.",
+		MarkdownDescription: "Railway plugin.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the plugin.",
