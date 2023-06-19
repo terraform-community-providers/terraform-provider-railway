@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -19,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/terraform-community-providers/terraform-plugin-framework-utils/modifiers"
 )
 
 var _ resource.Resource = &ProjectResource{}
@@ -107,9 +107,15 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				MarkdownDescription: "Default environment of the project. When multiple exist, the oldest is considered.",
 				Optional:            true,
 				Computed:            true,
-				PlanModifiers: []planmodifier.Object{
-					modifiers.UnknownAttributesOnUnknown(),
-				},
+				Default: objectdefault.StaticValue(
+					types.ObjectValueMust(
+						defaultEnvironmentAttrTypes,
+						map[string]attr.Value{
+							"id":   types.StringUnknown(),
+							"name": types.StringValue("production"),
+						},
+					),
+				),
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						MarkdownDescription: "Identifier of the default environment.",
@@ -122,8 +128,8 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 						MarkdownDescription: "Name of the default environment.",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString("production"),
 						PlanModifiers: []planmodifier.String{
-							modifiers.DefaultString("production"),
 							stringplanmodifier.RequiresReplace(),
 						},
 						Validators: []validator.String{
