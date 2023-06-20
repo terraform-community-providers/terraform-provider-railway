@@ -16,47 +16,47 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-var _ resource.Resource = &ServiceResource{}
-var _ resource.ResourceWithImportState = &ServiceResource{}
+var _ resource.Resource = &EnvironmentVariableResource{}
+var _ resource.ResourceWithImportState = &EnvironmentVariableResource{}
 
-func NewServiceResource() resource.Resource {
-	return &ServiceResource{}
+func NewEnvironmentVariableResource() resource.Resource {
+	return &EnvironmentVariableResource{}
 }
 
-type ServiceResource struct {
+type EnvironmentVariableResource struct {
 	client *graphql.Client
 }
 
-type ServiceResourceModel struct {
-	Id        types.String `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	ProjectId types.String `tfsdk:"project_id"`
+type EnvironmentVariableResourceModel struct {
+	Id            types.String `tfsdk:"id"`
+	Name          types.String `tfsdk:"name"`
+	EnvironmentId types.String `tfsdk:"environment_id"`
 }
 
-func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_service"
+func (r *EnvironmentVariableResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_environment_variable"
 }
 
-func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *EnvironmentVariableResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway service.",
+		MarkdownDescription: "Railway project.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the service.",
+				MarkdownDescription: "Identifier of the variable.",
 				Computed:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the service.",
+				MarkdownDescription: "Name of the variable.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
 				},
 			},
-			"project_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the project the service belongs to.",
+			"environment_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the environment the variable belongs to.",
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -69,7 +69,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 	}
 }
 
-func (r *ServiceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *EnvironmentVariableResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -89,8 +89,8 @@ func (r *ServiceResource) Configure(ctx context.Context, req resource.ConfigureR
 	r.client = client
 }
 
-func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *ServiceResourceModel
+func (r *EnvironmentVariableResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *EnvironmentVariableResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -121,8 +121,8 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *ServiceResourceModel
+func (r *EnvironmentVariableResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *EnvironmentVariableResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -146,8 +146,8 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *ServiceResourceModel
+func (r *EnvironmentVariableResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *EnvironmentVariableResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -177,8 +177,8 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *ServiceResourceModel
+func (r *EnvironmentVariableResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *EnvironmentVariableResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -196,6 +196,6 @@ func (r *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest
 	tflog.Trace(ctx, "deleted a service")
 }
 
-func (r *ServiceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *EnvironmentVariableResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

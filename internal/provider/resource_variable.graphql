@@ -1,0 +1,29 @@
+fragment Variable on Variable {
+  id
+  name
+  updatedAt
+  serviceId
+  environmentId
+}
+
+query getVariable($id: String!) {
+  service(id: $id) {
+    ...Variable
+  }
+}
+
+# @genqlient(for: "VariableUpsertInput.serviceId", pointer: true)
+mutation upsertVariable(
+  $input: VariableUpsertInput!
+) {
+  variableUpsert(input: $input) {
+    ...Variable
+  }
+}
+
+# @genqlient(for: "VariableDeleteInput.serviceId", pointer: true)
+mutation deleteVariable(
+  $input: VariableDeleteInput!
+) {
+  variableDelete(input: $input)
+}

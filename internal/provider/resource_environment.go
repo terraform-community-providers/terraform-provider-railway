@@ -39,7 +39,7 @@ func (r *EnvironmentResource) Metadata(ctx context.Context, req resource.Metadat
 
 func (r *EnvironmentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway project.",
+		MarkdownDescription: "Railway environment.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the environment.",
