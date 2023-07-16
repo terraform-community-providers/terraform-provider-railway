@@ -40,10 +40,10 @@ func TestAccPluginResourceDefault(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccPluginResourceConfigDefault("nue-auth"),
+				Config: testAccPluginResourceConfigDefault("new-auth"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_plugin.test", "id", uuidRegex()),
-					resource.TestCheckResourceAttr("railway_plugin.test", "name", "nue-auth"),
+					resource.TestCheckResourceAttr("railway_plugin.test", "name", "new-auth"),
 					resource.TestCheckResourceAttr("railway_plugin.test", "type", "postgresql"),
 					resource.TestCheckResourceAttr("railway_plugin.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 				),

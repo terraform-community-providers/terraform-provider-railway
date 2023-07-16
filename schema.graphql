@@ -89,6 +89,28 @@ enum CertificateStatus {
   UNRECOGNIZED
 }
 
+"""
+[Experimental] A changeset represents a single change to a service, plugin or variable.
+"""
+type Changeset implements Node {
+  createdAt: DateTime!
+  id: ID!
+  mergedFrom: Environment
+  payload: JSON!
+  plugin: Plugin
+  service: Service
+  user: User
+}
+
+"""
+[Experimental] An accumulated set of changes calculated from comparing two environments.
+"""
+type ChangesetDiff {
+  payload: JSON!
+  plugin: Plugin
+  service: Service
+}
+
 type CnameCheck {
   link: String
   message: String!
@@ -101,6 +123,12 @@ enum CnameCheckStatus {
   INVALID
   VALID
   WAITING
+}
+
+type Container implements Node {
+  environmentId: String!
+  id: ID!
+  pluginId: String!
 }
 
 type Credit implements Node {
@@ -118,6 +146,7 @@ enum CreditType {
   CREDIT
   DEBIT
   STRIPE
+  WAIVED
 }
 
 type CustomDomain implements Domain {
@@ -147,6 +176,8 @@ type Customer implements Node {
   defaultPaymentMethodId: String
   id: ID!
   invoices: [CustomerInvoice!]!
+  isPrepaying: Boolean!
+  isTrialing: Boolean!
   isUsageSubscriber: Boolean!
   remainingUsageCreditBalance: Float!
   state: SubscriptionState!
@@ -184,7 +215,9 @@ type CustomerInvoice {
 type CustomerSubscription {
   billingCycleAnchor: DateTime!
   cancelAt: String
+  cancelAtPeriodEnd: Boolean!
   couponId: String
+  discounts: [SubscriptionDiscount!]!
   id: String!
   items: [SubscriptionItem!]!
   latestInvoiceId: String!
@@ -201,6 +234,7 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the
 scalar DateTime
 
 type Deployment implements Node {
+  canRedeploy: Boolean!
   canRollback: Boolean!
   createdAt: DateTime!
   creator: User
@@ -340,6 +374,10 @@ type DomainWithStatus {
 }
 
 type Environment implements Node {
+  """
+  [Experimental] Returns the diff between this environment and its parent one.
+  """
+  changes: [ChangesetDiff!]!
   createdAt: DateTime!
   deletedAt: DateTime
   deploymentTriggers(after: String, before: String, first: Int, last: Int): EnvironmentDeploymentTriggersConnection!
@@ -350,6 +388,8 @@ type Environment implements Node {
   name: String!
   projectId: String!
   serviceInstances(after: String, before: String, first: Int, last: Int): EnvironmentServiceInstancesConnection!
+  sourceEnvironment: Environment
+  unmergedChangesCount: Int
   updatedAt: DateTime!
   variables(after: String, before: String, first: Int, last: Int): EnvironmentVariablesConnection!
 }
@@ -358,6 +398,13 @@ input EnvironmentCreateInput {
   ephemeral: Boolean
   name: String!
   projectId: String!
+
+  """
+  [Experimental] Specifying this field will create a new environment that is a
+  fork of the specified environment. Changes made to forked environments will
+  not affect other environments, and vice versa.
+  """
+  sourceEnvironmentId: String
 }
 
 type EnvironmentDeploymentsConnection {
@@ -578,15 +625,54 @@ enum KeyType {
   UNRECOGNIZED
 }
 
+"""The result of a logs query."""
 type Log {
+  """The contents of the log message"""
   message: String!
+
+  """The severity of the log message (eg. err)"""
   severity: String
+
+  """The tags that were associated with the log"""
+  tags: LogTags
+
+  """The timestamp of the log message in format RFC3339 (nano)"""
   timestamp: String!
 }
 
 input LoginSessionAuthInput {
   code: String!
   hostname: String
+}
+
+"""The tags associated with a specific log"""
+type LogTags {
+  deploymentId: String
+  deploymentInstanceId: String
+  environmentId: String
+  projectId: String
+  serviceId: String
+}
+
+type Maintenance {
+  id: String!
+  message: String!
+  status: MaintenanceStatus!
+  url: String!
+}
+
+enum MaintenanceStatus {
+  COMPLETED
+  INPROGRESS
+  NOTSTARTEDYET
+}
+
+input MergeChange {
+  action: String!
+  name: String!
+  serviceId: String
+  type: String!
+  value: String!
 }
 
 """A single sample of a metric."""
@@ -603,6 +689,8 @@ type Metric {
 """A thing that can be measured on Railway."""
 enum MetricMeasurement {
   CPU_USAGE
+  DISK_USAGE_GB
+  EPHEMERAL_DISK_USAGE_GB
   MEASUREMENT_UNSPECIFIED
   MEMORY_USAGE_GB
   NETWORK_RX_GB
@@ -634,6 +722,7 @@ enum MetricTag {
   PROJECT_ID
   SERVICE_ID
   UNRECOGNIZED
+  VOLUME_ID
 }
 
 """The tags that were used to group the metric."""
@@ -643,6 +732,7 @@ type MetricTags {
   pluginId: String
   projectId: String
   serviceId: String
+  volumeId: String
 }
 
 input MissingCommandAlertInput {
@@ -665,6 +755,9 @@ type Mutation {
 
   """Deletes a custom domain."""
   customDomainDelete(id: String!): Boolean!
+
+  """Migrate a customer to the hobby plan"""
+  customerMigrateToHobbyPlan(id: String!): Boolean!
 
   """Cancels a deployment."""
   deploymentCancel(id: String!): Boolean!
@@ -703,6 +796,9 @@ type Mutation {
 
   """Deletes an environment."""
   environmentDelete(id: String!): Boolean!
+
+  """[Experimental] Merges the current environment with the parent one."""
+  environmentMerge(changes: [MergeChange!], id: String!): Boolean!
 
   """Deploys all connected triggers for an environment."""
   environmentTriggersDeploy(input: EnvironmentTriggersDeployInput!): Boolean!
@@ -764,7 +860,7 @@ type Mutation {
   pluginCreate(input: PluginCreateInput!): Plugin!
 
   """Deletes a plugin."""
-  pluginDelete(id: String!): Boolean!
+  pluginDelete(environmentId: String, id: String!): Boolean!
 
   """Reset envs and container for a plugin in an environment"""
   pluginReset(id: String!, input: ResetPluginInput!): Boolean!
@@ -780,6 +876,21 @@ type Mutation {
 
   """Update the email preferences for a user"""
   preferencesUpdate(input: PreferencesUpdateData!): Preferences!
+
+  """Create or get a private network."""
+  privateNetworkCreateOrGet(input: PrivateNetworkCreateOrGetInput!): PrivateNetwork!
+
+  """Create or get a private network endpoint."""
+  privateNetworkEndpointCreateOrGet(input: PrivateNetworkEndpointCreateOrGetInput!): PrivateNetworkEndpoint!
+
+  """Delete a private network endpoint."""
+  privateNetworkEndpointDelete(id: String!): Boolean!
+
+  """Rename a private network endpoint."""
+  privateNetworkEndpointRename(dnsName: String!, id: String!, privateNetworkId: String!): Boolean!
+
+  """Delete all private networks for an environment."""
+  privateNetworksForEnvironmentDelete(environmentId: String!): Boolean!
 
   """Claims a project."""
   projectClaim(id: String!): Project!
@@ -835,14 +946,22 @@ type Mutation {
   """Updates the ReferralInfo for the authenticated user."""
   referralInfoUpdate(input: ReferralInfoUpdateInput!): ReferralInfo!
 
-  """Connect a service to a repo"""
+  """Connect a service to a source"""
   serviceConnect(id: String!, input: ServiceConnectInput!): Service!
 
   """Creates a new service."""
   serviceCreate(input: ServiceCreateInput!): Service!
 
   """Deletes a service."""
-  serviceDelete(id: String!): Boolean!
+  serviceDelete(
+    """
+    [Experimental] Environment ID. If the environment is a forked environment,
+    the service will only be deleted in the specified environment, otherwise it
+    will deleted in all environments that are not forks of other environments
+    """
+    environmentId: String
+    id: String!
+  ): Boolean!
 
   """Disconnect a service from a repo"""
   serviceDisconnect(id: String!): Service!
@@ -860,7 +979,16 @@ type Mutation {
   serviceInstanceRedeploy(environmentId: String!, serviceId: String!): Boolean!
 
   """Update a service instance"""
-  serviceInstanceUpdate(input: ServiceInstanceUpdateInput!, serviceId: String!): Boolean!
+  serviceInstanceUpdate(
+    """
+    [Experiemental] Environment ID. If the environment is a fork, the service
+    will only be updated in it. Otherwise it will updated in all environments
+    that are not forks of other environments
+    """
+    environmentId: String
+    input: ServiceInstanceUpdateInput!
+    serviceId: String!
+  ): Boolean!
 
   """Remove the upstream URL from all service instances for this service"""
   serviceRemoveUpstreamUrl(id: String!): Service!
@@ -875,7 +1003,7 @@ type Mutation {
   sharedVariableConfigure(input: SharedVariableConfigureInput!): Variable!
 
   """Creates a support request."""
-  supportRequest(input: SupportRequestInput!): Boolean!
+  supportRequest(input: SupportRequestFormType!): Boolean!
 
   """Create a team"""
   teamCreate(input: TeamCreateInput!): Team!
@@ -961,9 +1089,6 @@ type Mutation {
   """Update currently logged in user"""
   userUpdate(input: UserUpdateInput!): User
 
-  """Waitlist the user"""
-  userWaitlist(email: String!): User!
-
   """Upserts a collection of variables."""
   variableCollectionUpsert(input: VariableCollectionUpsertInput!): Boolean!
 
@@ -972,6 +1097,29 @@ type Mutation {
 
   """Upserts a variable."""
   variableUpsert(input: VariableUpsertInput!): Boolean!
+
+  """Create a persistent volume in a project"""
+  volumeCreate(input: VolumeCreateInput!): Volume!
+
+  """Delete a persistent volume in a project"""
+  volumeDelete(volumeId: String!): Boolean!
+
+  """
+  Update a volume instance. If no environmentId is provided, all volume instances for the volume will be updated.
+  """
+  volumeInstanceUpdate(
+    """
+    The environment of the volume instance to update. In null, all instances for the volume will be updated
+    """
+    environmentId: String
+    input: VolumeInstanceUpdateInput!
+
+    """The id of the volume to update"""
+    volumeId: String!
+  ): Boolean!
+
+  """Update a persistent volume in a project"""
+  volumeUpdate(input: VolumeUpdateInput!, volumeId: String!): Volume!
 
   """Create a webhook on a project"""
   webhookCreate(input: WebhookCreateInput!): ProjectWebhook!
@@ -1008,9 +1156,11 @@ type PaymentMethodCard {
 type PlatformStatus {
   incident: Incident
   isStable: Boolean!
+  maintenance: Maintenance
 }
 
 type Plugin implements Node {
+  containers(after: String, before: String, first: Int, last: Int): PluginContainersConnection!
   createdAt: DateTime!
   deletedAt: DateTime
   friendlyName: String!
@@ -1022,7 +1172,18 @@ type Plugin implements Node {
   variables(after: String, before: String, first: Int, last: Int): PluginVariablesConnection!
 }
 
+type PluginContainersConnection {
+  edges: [PluginContainersConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type PluginContainersConnectionEdge {
+  cursor: String!
+  node: Container!
+}
+
 input PluginCreateInput {
+  environmentId: String
   friendlyName: String
   name: String!
   projectId: String!
@@ -1078,6 +1239,43 @@ input PreferencesUpdateData {
   usageEmail: Boolean
 }
 
+type PrivateNetwork {
+  createdAt: DateTime
+  deletedAt: DateTime
+  dnsName: String!
+  environmentId: String!
+  name: String!
+  networkId: BigInt!
+  projectId: String!
+  publicId: String!
+  tags: [String!]!
+}
+
+input PrivateNetworkCreateOrGetInput {
+  environmentId: String!
+  name: String!
+  projectId: String!
+  tags: [String!]!
+}
+
+type PrivateNetworkEndpoint {
+  createdAt: DateTime
+  deletedAt: DateTime
+  dnsName: String!
+  privateIps: [String!]!
+  publicId: String!
+  serviceInstanceId: String!
+  tags: [String!]!
+}
+
+input PrivateNetworkEndpointCreateOrGetInput {
+  environmentId: String!
+  privateNetworkId: String!
+  serviceId: String!
+  serviceName: String!
+  tags: [String!]!
+}
+
 type Project implements Node {
   baseEnvironment: Environment
   createdAt: DateTime!
@@ -1095,12 +1293,14 @@ type Project implements Node {
   name: String!
   plugins(after: String, before: String, first: Int, last: Int): ProjectPluginsConnection!
   prDeploys: Boolean!
+  prForks: Boolean!
   projectPermissions(after: String, before: String, first: Int, last: Int): ProjectProjectPermissionsConnection!
   services(after: String, before: String, first: Int, last: Int): ProjectServicesConnection!
   team: Team
   teamId: String
   updatedAt: DateTime!
   upstreamUrl: String
+  volumes(after: String, before: String, first: Int, last: Int): ProjectVolumesConnection!
   webhooks(after: String, before: String, first: Int, last: Int): ProjectWebhooksConnection!
 }
 
@@ -1261,6 +1461,19 @@ input ProjectUpdateInput {
   isPublic: Boolean
   name: String
   prDeploys: Boolean
+
+  """[Experimental] Will be deprecated eventually"""
+  prForks: Boolean
+}
+
+type ProjectVolumesConnection {
+  edges: [ProjectVolumesConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectVolumesConnectionEdge {
+  cursor: String!
+  node: Volume!
 }
 
 type ProjectWebhook implements Node {
@@ -1313,6 +1526,9 @@ type Query {
 
   """Gets the image URL for a Notion image block"""
   changelogBlockImage(id: String!): String!
+
+  """Gets the history of changesets for an environment."""
+  changesets(after: String, before: String, environmentId: String!, first: Int, last: Int, projectId: String!): QueryChangesetsConnection!
 
   """Checks if a custom domain is available."""
   customDomainAvailable(domain: String!): DomainAvailable!
@@ -1442,9 +1658,13 @@ type Query {
     startDate: DateTime!
     teamId: String
     userId: String
+    volumeId: String
   ): [MetricsResult!]!
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
+
+  """Get a user's Plain Customer ID given their Discord ID."""
+  plainCustomerIdForDiscordId(discordId: String!): String!
 
   """Get a user JWT token for a Discord id"""
   plainJWTForDiscordId(discordId: String!): String!
@@ -1471,6 +1691,15 @@ type Query {
 
   """Get the email preferences for a user"""
   preferences(token: String): Preferences!
+
+  """Get a private network endpoint for a service instance."""
+  privateNetworkEndpoint(environmentId: String!, privateNetworkId: String!, serviceId: String!): PrivateNetworkEndpoint
+
+  """Check if an endpoint name is available."""
+  privateNetworkEndpointNameAvailable(environmentId: String!, prefix: String!, privateNetworkId: String!): Boolean!
+
+  """List private networks for an environment."""
+  privateNetworks(environmentId: String!): [PrivateNetwork!]!
 
   """Get a project by ID"""
   project(id: String!): Project!
@@ -1614,6 +1843,16 @@ type QueryApiTokensConnection {
 type QueryApiTokensConnectionEdge {
   cursor: String!
   node: ApiToken!
+}
+
+type QueryChangesetsConnection {
+  edges: [QueryChangesetsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryChangesetsConnectionEdge {
+  cursor: String!
+  node: Changeset!
 }
 
 type QueryDeploymentsConnection {
@@ -1818,14 +2057,21 @@ type Service implements Node {
 
 input ServiceConnectInput {
   """The branch to connect to. e.g. 'main'"""
-  branch: String!
+  branch: String
 
   """The full name of the repo to connect to. e.g. 'railwayapp/starters'"""
-  repo: String!
+  repo: String
 }
 
 input ServiceCreateInput {
   branch: String
+
+  """
+  [Experimental] Environment ID. If the specified environment is a fork, the
+  service will only be created in it. Otherwise it will created in all
+  environments that are not forks of other environments
+  """
+  environmentId: String
   name: String
   projectId: String!
   source: ServiceSourceInput
@@ -1868,6 +2114,7 @@ type ServiceInstance implements Node {
   buildCommand: String
   builder: Builder!
   createdAt: DateTime!
+  cronSchedule: String
   deletedAt: DateTime
   domains: AllDomains!
   environmentId: String!
@@ -1891,6 +2138,7 @@ type ServiceInstance implements Node {
 input ServiceInstanceUpdateInput {
   buildCommand: String
   builder: Builder
+  cronSchedule: String
   healthcheckPath: String
   healthcheckTimeout: Int
   nixpacksPlan: JSON
@@ -1924,12 +2172,14 @@ type ServiceServiceInstancesConnectionEdge {
 }
 
 type ServiceSource {
+  image: String
   repo: String
   template: TemplateServiceSource
 }
 
 input ServiceSourceInput {
-  repo: String!
+  image: String
+  repo: String
 }
 
 input ServiceUpdateInput {
@@ -2012,6 +2262,10 @@ type Subscription {
   ): [Log!]!
 }
 
+type SubscriptionDiscount {
+  couponId: String!
+}
+
 type SubscriptionItem {
   itemId: String!
   priceId: String!
@@ -2027,11 +2281,7 @@ enum SubscriptionState {
   UNPAID
 }
 
-input SupportRequestInput {
-  isPurchasing: Boolean
-  isTechnical: Boolean
-  text: String!
-}
+scalar SupportRequestFormType
 
 type Team implements Node {
   avatar: String
@@ -2100,8 +2350,8 @@ input TeamUpdateInput {
 }
 
 input TeamUserInviteInput {
+  code: String!
   email: String!
-  link: String!
 }
 
 input TeamUserRemoveInput {
@@ -2158,7 +2408,7 @@ input TemplateDeployInput {
 
 type TemplateDeployPayload {
   projectId: String!
-  workflowId: String!
+  workflowId: String
 }
 
 input TemplateDeployService {
@@ -2167,13 +2417,14 @@ input TemplateDeployService {
   healthcheckPath: String
   id: String
   isPrivate: Boolean
-  name: String!
-  owner: String!
+  name: String
+  owner: String
   rootDirectory: String
   serviceName: String!
   startCommand: String
   template: String!
   variables: ServiceVariables
+  volumes: [TemplateVolume!]
 }
 
 input TemplateGenerateInput {
@@ -2245,6 +2496,8 @@ input TemplateUpdateInput {
   services: [TemplateServiceUpdateInput!]!
 }
 
+scalar TemplateVolume
+
 type TwoFactorInfo {
   hasRecoveryCodes: Boolean!
   isVerified: Boolean!
@@ -2267,6 +2520,29 @@ input TwoFactorInfoValidateInput {
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
+type UsageAnomaly implements Node {
+  actedOn: DateTime
+  action: UsageAnomalyAction
+  actorId: String
+  flaggedAt: DateTime!
+  flaggedFor: UsageAnomalyFlagReason!
+  id: ID!
+}
+
+"""Possible actions for a UsageAnomaly."""
+enum UsageAnomalyAction {
+  ALLOWED
+  AUTOBANNED
+  BANNED
+}
+
+"""Possible flag reasons for a UsageAnomaly."""
+enum UsageAnomalyFlagReason {
+  HIGH_CPU_USAGE
+  HIGH_DISK_USAGE
+  HIGH_NETWORK_USAGE
+}
+
 type User implements Node {
   agreedFairUse: Boolean!
   avatar: String
@@ -2281,6 +2557,8 @@ type User implements Node {
   id: ID!
   isAdmin: Boolean!
   isDevPlan: Boolean!
+  isEligibleForFreeHobbyPlan: Boolean!
+  isOnHobbyPlan: Boolean!
   isVerified: Boolean!
   lastLogin: DateTime!
   name: String
@@ -2299,8 +2577,8 @@ type UserCost {
 }
 
 enum UserFlag {
-  API_PREVIEW
   BETA
+  PRICING_PREVIEW
 }
 
 input UserFlagsRemoveInput {
@@ -2406,6 +2684,69 @@ type VercelProject {
   accountId: String!
   id: String!
   name: String!
+}
+
+type Volume implements Node {
+  createdAt: DateTime!
+  id: ID!
+  name: String!
+  project: Project!
+  projectId: String!
+  volumeInstances(after: String, before: String, first: Int, last: Int): VolumeVolumeInstancesConnection!
+}
+
+input VolumeCreateInput {
+  """The path in the container to mount the volume to"""
+  mountPath: String!
+
+  """The project to create the volume in"""
+  projectId: String!
+
+  """
+  The service to attach the volume to. If not provided, the volume will be disconnected.
+  """
+  serviceId: String
+}
+
+type VolumeInstance implements Node {
+  createdAt: DateTime!
+  currentSizeMB: Float!
+  environment: Environment!
+  environmentId: String!
+  id: ID!
+  mountPath: String!
+  service: Service!
+  serviceId: String
+  sizeMB: Int!
+  volume: Volume!
+  volumeId: String!
+}
+
+input VolumeInstanceUpdateInput {
+  """
+  The mount path of the volume instance. If not provided, the mount path will not be updated.
+  """
+  mountPath: String
+
+  """
+  The service to attach the volume to. If not provided, the volume will be disconnected.
+  """
+  serviceId: String
+}
+
+input VolumeUpdateInput {
+  """The name of the volume"""
+  name: String
+}
+
+type VolumeVolumeInstancesConnection {
+  edges: [VolumeVolumeInstancesConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type VolumeVolumeInstancesConnectionEdge {
+  cursor: String!
+  node: VolumeInstance!
 }
 
 input WebhookCreateInput {

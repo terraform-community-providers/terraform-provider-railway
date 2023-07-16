@@ -30,6 +30,10 @@ type EnvironmentCreateInput struct {
 	Ephemeral bool   `json:"ephemeral"`
 	Name      string `json:"name"`
 	ProjectId string `json:"projectId"`
+	// [Experimental] Specifying this field will create a new environment that is a
+	// fork of the specified environment. Changes made to forked environments will
+	// not affect other environments, and vice versa.
+	SourceEnvironmentId string `json:"sourceEnvironmentId"`
 }
 
 // GetEphemeral returns EnvironmentCreateInput.Ephemeral, and is useful for accessing the field via an interface.
@@ -40,6 +44,9 @@ func (v *EnvironmentCreateInput) GetName() string { return v.Name }
 
 // GetProjectId returns EnvironmentCreateInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *EnvironmentCreateInput) GetProjectId() string { return v.ProjectId }
+
+// GetSourceEnvironmentId returns EnvironmentCreateInput.SourceEnvironmentId, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetSourceEnvironmentId() string { return v.SourceEnvironmentId }
 
 // Plugin includes the GraphQL fields of Plugin requested by the fragment Plugin.
 type Plugin struct {
@@ -62,10 +69,14 @@ func (v *Plugin) GetFriendlyName() string { return v.FriendlyName }
 func (v *Plugin) GetProject() PluginProject { return v.Project }
 
 type PluginCreateInput struct {
-	FriendlyName string `json:"friendlyName"`
-	Name         string `json:"name"`
-	ProjectId    string `json:"projectId"`
+	EnvironmentId string `json:"environmentId"`
+	FriendlyName  string `json:"friendlyName"`
+	Name          string `json:"name"`
+	ProjectId     string `json:"projectId"`
 }
+
+// GetEnvironmentId returns PluginCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *PluginCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
 
 // GetFriendlyName returns PluginCreateInput.FriendlyName, and is useful for accessing the field via an interface.
 func (v *PluginCreateInput) GetFriendlyName() string { return v.FriendlyName }
@@ -227,6 +238,8 @@ type ProjectUpdateInput struct {
 	IsPublic          bool    `json:"isPublic"`
 	Name              string  `json:"name"`
 	PrDeploys         bool    `json:"prDeploys"`
+	// [Experimental] Will be deprecated eventually
+	PrForks bool `json:"prForks"`
 }
 
 // GetBaseEnvironmentId returns ProjectUpdateInput.BaseEnvironmentId, and is useful for accessing the field via an interface.
@@ -243,6 +256,9 @@ func (v *ProjectUpdateInput) GetName() string { return v.Name }
 
 // GetPrDeploys returns ProjectUpdateInput.PrDeploys, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
+
+// GetPrForks returns ProjectUpdateInput.PrForks, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetPrForks() bool { return v.PrForks }
 
 // Service includes the GraphQL fields of Service requested by the fragment Service.
 type Service struct {
@@ -261,15 +277,22 @@ func (v *Service) GetName() string { return v.Name }
 func (v *Service) GetProjectId() string { return v.ProjectId }
 
 type ServiceCreateInput struct {
-	Branch    string                 `json:"branch"`
-	Name      string                 `json:"name"`
-	ProjectId string                 `json:"projectId"`
-	Source    ServiceSourceInput     `json:"source"`
-	Variables map[string]interface{} `json:"variables"`
+	Branch string `json:"branch"`
+	// [Experimental] Environment ID. If the specified environment is a fork, the
+	// service will only be created in it. Otherwise it will created in all
+	// environments that are not forks of other environments
+	EnvironmentId string                 `json:"environmentId"`
+	Name          string                 `json:"name"`
+	ProjectId     string                 `json:"projectId"`
+	Source        ServiceSourceInput     `json:"source"`
+	Variables     map[string]interface{} `json:"variables"`
 }
 
 // GetBranch returns ServiceCreateInput.Branch, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetBranch() string { return v.Branch }
+
+// GetEnvironmentId returns ServiceCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *ServiceCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
 
 // GetName returns ServiceCreateInput.Name, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetName() string { return v.Name }
@@ -284,8 +307,12 @@ func (v *ServiceCreateInput) GetSource() ServiceSourceInput { return v.Source }
 func (v *ServiceCreateInput) GetVariables() map[string]interface{} { return v.Variables }
 
 type ServiceSourceInput struct {
-	Repo string `json:"repo"`
+	Image string `json:"image"`
+	Repo  string `json:"repo"`
 }
+
+// GetImage returns ServiceSourceInput.Image, and is useful for accessing the field via an interface.
+func (v *ServiceSourceInput) GetImage() string { return v.Image }
 
 // GetRepo returns ServiceSourceInput.Repo, and is useful for accessing the field via an interface.
 func (v *ServiceSourceInput) GetRepo() string { return v.Repo }
