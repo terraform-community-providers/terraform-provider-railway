@@ -1961,7 +1961,7 @@ func getPluginVariables(
 		OpName: "getPluginVariables",
 		Query: `
 query getPluginVariables ($projectId: String!, $environmentId: String!, $pluginId: String!) {
-	variables(environmentId: $environmentId, projectId: $projectId, pluginId: $pluginId, unrendered: true)
+	variables(environmentId: $environmentId, projectId: $projectId, pluginId: $pluginId, unrendered: false)
 }
 `,
 		Variables: &__getPluginVariablesInput{
