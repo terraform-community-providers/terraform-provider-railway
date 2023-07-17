@@ -1,0 +1,26 @@
+query getVariables(
+  $projectId: String!
+  $environmentId: String!
+  $serviceId: String!
+) {
+  variables(
+    environmentId: $environmentId
+    projectId: $projectId
+    serviceId: $serviceId
+    unrendered: true
+  )
+}
+
+# @genqlient(for: "VariableUpsertInput.serviceId", pointer: true)
+mutation upsertVariable(
+  $input: VariableUpsertInput!
+) {
+  variableUpsert(input: $input)
+}
+
+# @genqlient(for: "VariableDeleteInput.serviceId", pointer: true)
+mutation deleteVariable(
+  $input: VariableDeleteInput!
+) {
+  variableDelete(input: $input)
+}

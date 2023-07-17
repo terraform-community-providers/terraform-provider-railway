@@ -3,12 +3,12 @@
 page_title: "railway_environment Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway project.
+  Railway environment.
 ---
 
 # railway_environment (Resource)
 
-Railway project.
+Railway environment.
 
 ## Example Usage
 

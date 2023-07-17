@@ -328,6 +328,48 @@ func (v *ServiceUpdateInput) GetIcon() string { return v.Icon }
 // GetName returns ServiceUpdateInput.Name, and is useful for accessing the field via an interface.
 func (v *ServiceUpdateInput) GetName() string { return v.Name }
 
+type VariableDeleteInput struct {
+	EnvironmentId string  `json:"environmentId"`
+	Name          string  `json:"name"`
+	ProjectId     string  `json:"projectId"`
+	ServiceId     *string `json:"serviceId"`
+}
+
+// GetEnvironmentId returns VariableDeleteInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *VariableDeleteInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetName returns VariableDeleteInput.Name, and is useful for accessing the field via an interface.
+func (v *VariableDeleteInput) GetName() string { return v.Name }
+
+// GetProjectId returns VariableDeleteInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *VariableDeleteInput) GetProjectId() string { return v.ProjectId }
+
+// GetServiceId returns VariableDeleteInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *VariableDeleteInput) GetServiceId() *string { return v.ServiceId }
+
+type VariableUpsertInput struct {
+	EnvironmentId string  `json:"environmentId"`
+	Name          string  `json:"name"`
+	ProjectId     string  `json:"projectId"`
+	ServiceId     *string `json:"serviceId"`
+	Value         string  `json:"value"`
+}
+
+// GetEnvironmentId returns VariableUpsertInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *VariableUpsertInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetName returns VariableUpsertInput.Name, and is useful for accessing the field via an interface.
+func (v *VariableUpsertInput) GetName() string { return v.Name }
+
+// GetProjectId returns VariableUpsertInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *VariableUpsertInput) GetProjectId() string { return v.ProjectId }
+
+// GetServiceId returns VariableUpsertInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *VariableUpsertInput) GetServiceId() *string { return v.ServiceId }
+
+// GetValue returns VariableUpsertInput.Value, and is useful for accessing the field via an interface.
+func (v *VariableUpsertInput) GetValue() string { return v.Value }
+
 // __createEnvironmentInput is used internally by genqlient
 type __createEnvironmentInput struct {
 	Input EnvironmentCreateInput `json:"input"`
@@ -392,6 +434,14 @@ type __deleteServiceInput struct {
 // GetId returns __deleteServiceInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteServiceInput) GetId() string { return v.Id }
 
+// __deleteVariableInput is used internally by genqlient
+type __deleteVariableInput struct {
+	Input VariableDeleteInput `json:"input"`
+}
+
+// GetInput returns __deleteVariableInput.Input, and is useful for accessing the field via an interface.
+func (v *__deleteVariableInput) GetInput() VariableDeleteInput { return v.Input }
+
 // __getEnvironmentInput is used internally by genqlient
 type __getEnvironmentInput struct {
 	Id string `json:"id"`
@@ -408,6 +458,22 @@ type __getPluginInput struct {
 // GetId returns __getPluginInput.Id, and is useful for accessing the field via an interface.
 func (v *__getPluginInput) GetId() string { return v.Id }
 
+// __getPluginVariablesInput is used internally by genqlient
+type __getPluginVariablesInput struct {
+	ProjectId     string `json:"projectId"`
+	EnvironmentId string `json:"environmentId"`
+	PluginId      string `json:"pluginId"`
+}
+
+// GetProjectId returns __getPluginVariablesInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__getPluginVariablesInput) GetProjectId() string { return v.ProjectId }
+
+// GetEnvironmentId returns __getPluginVariablesInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getPluginVariablesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetPluginId returns __getPluginVariablesInput.PluginId, and is useful for accessing the field via an interface.
+func (v *__getPluginVariablesInput) GetPluginId() string { return v.PluginId }
+
 // __getProjectInput is used internally by genqlient
 type __getProjectInput struct {
 	Id string `json:"id"`
@@ -423,6 +489,34 @@ type __getServiceInput struct {
 
 // GetId returns __getServiceInput.Id, and is useful for accessing the field via an interface.
 func (v *__getServiceInput) GetId() string { return v.Id }
+
+// __getSharedVariablesInput is used internally by genqlient
+type __getSharedVariablesInput struct {
+	ProjectId     string `json:"projectId"`
+	EnvironmentId string `json:"environmentId"`
+}
+
+// GetProjectId returns __getSharedVariablesInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__getSharedVariablesInput) GetProjectId() string { return v.ProjectId }
+
+// GetEnvironmentId returns __getSharedVariablesInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getSharedVariablesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// __getVariablesInput is used internally by genqlient
+type __getVariablesInput struct {
+	ProjectId     string `json:"projectId"`
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetProjectId returns __getVariablesInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__getVariablesInput) GetProjectId() string { return v.ProjectId }
+
+// GetEnvironmentId returns __getVariablesInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getVariablesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __getVariablesInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__getVariablesInput) GetServiceId() string { return v.ServiceId }
 
 // __updatePluginInput is used internally by genqlient
 type __updatePluginInput struct {
@@ -459,6 +553,14 @@ func (v *__updateServiceInput) GetId() string { return v.Id }
 
 // GetInput returns __updateServiceInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateServiceInput) GetInput() ServiceUpdateInput { return v.Input }
+
+// __upsertVariableInput is used internally by genqlient
+type __upsertVariableInput struct {
+	Input VariableUpsertInput `json:"input"`
+}
+
+// GetInput returns __upsertVariableInput.Input, and is useful for accessing the field via an interface.
+func (v *__upsertVariableInput) GetInput() VariableUpsertInput { return v.Input }
 
 // createEnvironmentEnvironmentCreateEnvironment includes the requested fields of the GraphQL type Environment.
 type createEnvironmentEnvironmentCreateEnvironment struct {
@@ -830,6 +932,15 @@ type deleteServiceResponse struct {
 // GetServiceDelete returns deleteServiceResponse.ServiceDelete, and is useful for accessing the field via an interface.
 func (v *deleteServiceResponse) GetServiceDelete() bool { return v.ServiceDelete }
 
+// deleteVariableResponse is returned by deleteVariable on success.
+type deleteVariableResponse struct {
+	// Deletes a variable.
+	VariableDelete bool `json:"variableDelete"`
+}
+
+// GetVariableDelete returns deleteVariableResponse.VariableDelete, and is useful for accessing the field via an interface.
+func (v *deleteVariableResponse) GetVariableDelete() bool { return v.VariableDelete }
+
 // getEnvironmentEnvironment includes the requested fields of the GraphQL type Environment.
 type getEnvironmentEnvironment struct {
 	Environment `json:"-"`
@@ -981,6 +1092,15 @@ type getPluginResponse struct {
 
 // GetPlugin returns getPluginResponse.Plugin, and is useful for accessing the field via an interface.
 func (v *getPluginResponse) GetPlugin() getPluginPlugin { return v.Plugin }
+
+// getPluginVariablesResponse is returned by getPluginVariables on success.
+type getPluginVariablesResponse struct {
+	// All variables by pluginId or serviceId. If neither are provided, all shared variables are returned.
+	Variables map[string]interface{} `json:"variables"`
+}
+
+// GetVariables returns getPluginVariablesResponse.Variables, and is useful for accessing the field via an interface.
+func (v *getPluginVariablesResponse) GetVariables() map[string]interface{} { return v.Variables }
 
 // getProjectProject includes the requested fields of the GraphQL type Project.
 type getProjectProject struct {
@@ -1153,6 +1273,24 @@ func (v *getServiceService) __premarshalJSON() (*__premarshalgetServiceService, 
 	retval.ProjectId = v.Service.ProjectId
 	return &retval, nil
 }
+
+// getSharedVariablesResponse is returned by getSharedVariables on success.
+type getSharedVariablesResponse struct {
+	// All variables by pluginId or serviceId. If neither are provided, all shared variables are returned.
+	Variables map[string]interface{} `json:"variables"`
+}
+
+// GetVariables returns getSharedVariablesResponse.Variables, and is useful for accessing the field via an interface.
+func (v *getSharedVariablesResponse) GetVariables() map[string]interface{} { return v.Variables }
+
+// getVariablesResponse is returned by getVariables on success.
+type getVariablesResponse struct {
+	// All variables by pluginId or serviceId. If neither are provided, all shared variables are returned.
+	Variables map[string]interface{} `json:"variables"`
+}
+
+// GetVariables returns getVariablesResponse.Variables, and is useful for accessing the field via an interface.
+func (v *getVariablesResponse) GetVariables() map[string]interface{} { return v.Variables }
 
 // updatePluginPluginUpdatePlugin includes the requested fields of the GraphQL type Plugin.
 type updatePluginPluginUpdatePlugin struct {
@@ -1410,6 +1548,15 @@ func (v *updateServiceServiceUpdateService) __premarshalJSON() (*__premarshalupd
 	retval.ProjectId = v.Service.ProjectId
 	return &retval, nil
 }
+
+// upsertVariableResponse is returned by upsertVariable on success.
+type upsertVariableResponse struct {
+	// Upserts a variable.
+	VariableUpsert bool `json:"variableUpsert"`
+}
+
+// GetVariableUpsert returns upsertVariableResponse.VariableUpsert, and is useful for accessing the field via an interface.
+func (v *upsertVariableResponse) GetVariableUpsert() bool { return v.VariableUpsert }
 
 func createEnvironment(
 	ctx context.Context,
@@ -1696,6 +1843,36 @@ mutation deleteService ($id: String!) {
 	return &data, err
 }
 
+func deleteVariable(
+	ctx context.Context,
+	client graphql.Client,
+	input VariableDeleteInput,
+) (*deleteVariableResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteVariable",
+		Query: `
+mutation deleteVariable ($input: VariableDeleteInput!) {
+	variableDelete(input: $input)
+}
+`,
+		Variables: &__deleteVariableInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data deleteVariableResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func getEnvironment(
 	ctx context.Context,
 	client graphql.Client,
@@ -1762,6 +1939,40 @@ fragment Plugin on Plugin {
 	var err error
 
 	var data getPluginResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getPluginVariables(
+	ctx context.Context,
+	client graphql.Client,
+	projectId string,
+	environmentId string,
+	pluginId string,
+) (*getPluginVariablesResponse, error) {
+	req := &graphql.Request{
+		OpName: "getPluginVariables",
+		Query: `
+query getPluginVariables ($projectId: String!, $environmentId: String!, $pluginId: String!) {
+	variables(environmentId: $environmentId, projectId: $projectId, pluginId: $pluginId, unrendered: true)
+}
+`,
+		Variables: &__getPluginVariablesInput{
+			ProjectId:     projectId,
+			EnvironmentId: environmentId,
+			PluginId:      pluginId,
+		},
+	}
+	var err error
+
+	var data getPluginVariablesResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
@@ -1850,6 +2061,72 @@ fragment Service on Service {
 	var err error
 
 	var data getServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getSharedVariables(
+	ctx context.Context,
+	client graphql.Client,
+	projectId string,
+	environmentId string,
+) (*getSharedVariablesResponse, error) {
+	req := &graphql.Request{
+		OpName: "getSharedVariables",
+		Query: `
+query getSharedVariables ($projectId: String!, $environmentId: String!) {
+	variables(environmentId: $environmentId, projectId: $projectId, unrendered: true)
+}
+`,
+		Variables: &__getSharedVariablesInput{
+			ProjectId:     projectId,
+			EnvironmentId: environmentId,
+		},
+	}
+	var err error
+
+	var data getSharedVariablesResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getVariables(
+	ctx context.Context,
+	client graphql.Client,
+	projectId string,
+	environmentId string,
+	serviceId string,
+) (*getVariablesResponse, error) {
+	req := &graphql.Request{
+		OpName: "getVariables",
+		Query: `
+query getVariables ($projectId: String!, $environmentId: String!, $serviceId: String!) {
+	variables(environmentId: $environmentId, projectId: $projectId, serviceId: $serviceId, unrendered: true)
+}
+`,
+		Variables: &__getVariablesInput{
+			ProjectId:     projectId,
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+		},
+	}
+	var err error
+
+	var data getVariablesResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
@@ -1984,6 +2261,36 @@ fragment Service on Service {
 	var err error
 
 	var data updateServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func upsertVariable(
+	ctx context.Context,
+	client graphql.Client,
+	input VariableUpsertInput,
+) (*upsertVariableResponse, error) {
+	req := &graphql.Request{
+		OpName: "upsertVariable",
+		Query: `
+mutation upsertVariable ($input: VariableUpsertInput!) {
+	variableUpsert(input: $input)
+}
+`,
+		Variables: &__upsertVariableInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data upsertVariableResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

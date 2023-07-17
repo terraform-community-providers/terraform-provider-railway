@@ -3,12 +3,12 @@
 page_title: "railway_service Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway project.
+  Railway service.
 ---
 
 # railway_service (Resource)
 
-Railway project.
+Railway service.
 
 ## Example Usage
 
