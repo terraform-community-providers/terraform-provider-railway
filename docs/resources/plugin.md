@@ -3,12 +3,12 @@
 page_title: "railway_plugin Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway project.
+  Railway plugin.
 ---
 
 # railway_plugin (Resource)
 
-Railway project.
+Railway plugin.
 
 ## Example Usage
 

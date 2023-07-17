@@ -1,0 +1,7 @@
+query getSharedVariables($projectId: String!, $environmentId: String!) {
+  variables(
+    environmentId: $environmentId
+    projectId: $projectId
+    unrendered: true
+  )
+}
