@@ -25,6 +25,7 @@ func TestAccEnvironmentResourceDefault(t *testing.T) {
 			{
 				ResourceName:      "railway_environment.test",
 				ImportState:       true,
+				ImportStateId:     "0bb01547-570d-4109-a5e8-138691f6a2d1:integration",
 				ImportStateVerify: true,
 			},
 			// Update with default values
@@ -35,12 +36,6 @@ func TestAccEnvironmentResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_environment.test", "name", "integration"),
 					resource.TestCheckResourceAttr("railway_environment.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 				),
-			},
-			// ImportState testing
-			{
-				ResourceName:      "railway_environment.test",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 			// Delete testing automatically occurs in TestCase
 		},

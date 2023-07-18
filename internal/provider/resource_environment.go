@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -181,5 +182,39 @@ func (r *EnvironmentResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 func (r *EnvironmentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	parts := strings.Split(req.ID, ":")
+
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected Import Identifier",
+			fmt.Sprintf("Expected import identifier with format: project_id:name. Got: %q", req.ID),
+		)
+
+		return
+	}
+
+	environmentId, err := findEnvironment(ctx, *r.client, parts[0], parts[1])
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read environment, got error: %s", err))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), environmentId)...)
+}
+
+func findEnvironment(ctx context.Context, client graphql.Client, projectId string, name string) (*string, error) {
+	response, err := getEnvironments(ctx, client, projectId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, environment := range response.Environments.Edges {
+		if environment.Node.Name == name {
+			return &environment.Node.Id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("environment doesn't exist in the project")
 }

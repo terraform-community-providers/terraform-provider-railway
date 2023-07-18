@@ -36,5 +36,5 @@ resource "railway_environment" "example" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import railway_environment.example 8ebab3fe-1368-46a8-bedd-ec0b064c12db
+terraform import railway_environment.example 0bb01547-570d-4109-a5e8-138691f6a2d1:staging
 ```
