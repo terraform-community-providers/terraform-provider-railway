@@ -450,6 +450,14 @@ type __getEnvironmentInput struct {
 // GetId returns __getEnvironmentInput.Id, and is useful for accessing the field via an interface.
 func (v *__getEnvironmentInput) GetId() string { return v.Id }
 
+// __getEnvironmentsInput is used internally by genqlient
+type __getEnvironmentsInput struct {
+	ProjectId string `json:"projectId"`
+}
+
+// GetProjectId returns __getEnvironmentsInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__getEnvironmentsInput) GetProjectId() string { return v.ProjectId }
+
 // __getPluginInput is used internally by genqlient
 type __getPluginInput struct {
 	Id string `json:"id"`
@@ -1013,6 +1021,107 @@ type getEnvironmentResponse struct {
 
 // GetEnvironment returns getEnvironmentResponse.Environment, and is useful for accessing the field via an interface.
 func (v *getEnvironmentResponse) GetEnvironment() getEnvironmentEnvironment { return v.Environment }
+
+// getEnvironmentsEnvironmentsQueryEnvironmentsConnection includes the requested fields of the GraphQL type QueryEnvironmentsConnection.
+type getEnvironmentsEnvironmentsQueryEnvironmentsConnection struct {
+	Edges []getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge `json:"edges"`
+}
+
+// GetEdges returns getEnvironmentsEnvironmentsQueryEnvironmentsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnection) GetEdges() []getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge {
+	return v.Edges
+}
+
+// getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge includes the requested fields of the GraphQL type QueryEnvironmentsConnectionEdge.
+type getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge struct {
+	Node getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment `json:"node"`
+}
+
+// GetNode returns getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge) GetNode() getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment {
+	return v.Node
+}
+
+// getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment includes the requested fields of the GraphQL type Environment.
+type getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment struct {
+	Environment `json:"-"`
+}
+
+// GetId returns getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment.Id, and is useful for accessing the field via an interface.
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) GetId() string {
+	return v.Environment.Id
+}
+
+// GetName returns getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment.Name, and is useful for accessing the field via an interface.
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) GetName() string {
+	return v.Environment.Name
+}
+
+// GetProjectId returns getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment.ProjectId, and is useful for accessing the field via an interface.
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) GetProjectId() string {
+	return v.Environment.ProjectId
+}
+
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Environment)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) __premarshalJSON() (*__premarshalgetEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment, error) {
+	var retval __premarshalgetEnvironmentsEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment
+
+	retval.Id = v.Environment.Id
+	retval.Name = v.Environment.Name
+	retval.ProjectId = v.Environment.ProjectId
+	return &retval, nil
+}
+
+// getEnvironmentsResponse is returned by getEnvironments on success.
+type getEnvironmentsResponse struct {
+	// Gets all environments for a project.
+	Environments getEnvironmentsEnvironmentsQueryEnvironmentsConnection `json:"environments"`
+}
+
+// GetEnvironments returns getEnvironmentsResponse.Environments, and is useful for accessing the field via an interface.
+func (v *getEnvironmentsResponse) GetEnvironments() getEnvironmentsEnvironmentsQueryEnvironmentsConnection {
+	return v.Environments
+}
 
 // getPluginPlugin includes the requested fields of the GraphQL type Plugin.
 type getPluginPlugin struct {
@@ -1899,6 +2008,47 @@ fragment Environment on Environment {
 	var err error
 
 	var data getEnvironmentResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getEnvironments(
+	ctx context.Context,
+	client graphql.Client,
+	projectId string,
+) (*getEnvironmentsResponse, error) {
+	req := &graphql.Request{
+		OpName: "getEnvironments",
+		Query: `
+query getEnvironments ($projectId: String!) {
+	environments(projectId: $projectId) {
+		edges {
+			node {
+				... Environment
+			}
+		}
+	}
+}
+fragment Environment on Environment {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__getEnvironmentsInput{
+			ProjectId: projectId,
+		},
+	}
+	var err error
+
+	var data getEnvironmentsResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

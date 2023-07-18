@@ -10,6 +10,16 @@ query getEnvironment($id: String!) {
   }
 }
 
+query getEnvironments($projectId: String!) {
+  environments(projectId: $projectId) {
+    edges {
+      node {
+        ...Environment
+      }
+    }
+  }
+}
+
 mutation createEnvironment(
   $input: EnvironmentCreateInput!
 ) {
