@@ -1,0 +1,53 @@
+fragment DeploymentTrigger on DeploymentTrigger {
+  id
+  provider
+  repository
+  branch
+  checkSuites
+  projectId
+  serviceId
+  environmentId
+}
+
+query listDeploymentTriggers(
+  $projectId: String!
+  $environmentId: String!
+  $serviceId: String!
+) {
+  deploymentTriggers(
+    environmentId: $environmentId
+    projectId: $projectId
+    serviceId: $serviceId
+  ) {
+    edges {
+      node {
+        ...DeploymentTrigger
+      }
+    }
+  }
+}
+
+# @genqlient(for: "DeploymentTriggerCreateInput.rootDirectory", omitempty: true, pointer: true)
+mutation createDeploymentTrigger(
+  $input: DeploymentTriggerCreateInput!
+) {
+  deploymentTriggerCreate(input: $input) {
+    ...DeploymentTrigger
+  }
+}
+
+# @genqlient(for: "DeploymentTriggerUpdateInput.rootDirectory", omitempty: true, pointer: true)
+mutation updateDeploymentTrigger(
+  $id: String!
+  $input: DeploymentTriggerUpdateInput!
+) {
+  deploymentTriggerUpdate(id: $id, input: $input) {
+    ...DeploymentTrigger
+  }
+}
+
+mutation deleteDeploymentTrigger(
+  $id: String!
+) {
+  deploymentTriggerDelete(id: $id)
+}

@@ -27,8 +27,8 @@ type PluginVariableDataSourceModel struct {
 	Id            types.String `tfsdk:"id"`
 	Name          types.String `tfsdk:"name"`
 	Value         types.String `tfsdk:"value"`
-	PluginId      types.String `tfsdk:"plugin_id"`
 	EnvironmentId types.String `tfsdk:"environment_id"`
+	PluginId      types.String `tfsdk:"plugin_id"`
 	ProjectId     types.String `tfsdk:"project_id"`
 }
 
@@ -56,15 +56,15 @@ func (d *PluginVariableDataSource) Schema(ctx context.Context, req datasource.Sc
 				Computed:            true,
 				Sensitive:           true,
 			},
-			"plugin_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the plugin the variable belongs to.",
+			"environment_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the environment the variable belongs to.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
 				},
 			},
-			"environment_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the environment the variable belongs to.",
+			"plugin_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the plugin the variable belongs to.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),

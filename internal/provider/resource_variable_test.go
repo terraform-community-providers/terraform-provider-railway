@@ -19,8 +19,8 @@ func TestAccVariableResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_variable.test", "id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97:d0519b29-5d12-4857-a5dd-76fa7418336c:REDIS_URL"),
 					resource.TestCheckResourceAttr("railway_variable.test", "name", "REDIS_URL"),
 					resource.TestCheckResourceAttr("railway_variable.test", "value", "1234567890"),
-					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
 					resource.TestCheckResourceAttr("railway_variable.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
 					resource.TestCheckResourceAttr("railway_variable.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 				),
 			},
@@ -38,8 +38,8 @@ func TestAccVariableResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_variable.test", "id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97:d0519b29-5d12-4857-a5dd-76fa7418336c:REDIS_URL"),
 					resource.TestCheckResourceAttr("railway_variable.test", "name", "REDIS_URL"),
 					resource.TestCheckResourceAttr("railway_variable.test", "value", "1234567890"),
-					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
 					resource.TestCheckResourceAttr("railway_variable.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
 					resource.TestCheckResourceAttr("railway_variable.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 				),
 			},
@@ -50,8 +50,8 @@ func TestAccVariableResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_variable.test", "id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97:d0519b29-5d12-4857-a5dd-76fa7418336c:REDIS_URL"),
 					resource.TestCheckResourceAttr("railway_variable.test", "name", "REDIS_URL"),
 					resource.TestCheckResourceAttr("railway_variable.test", "value", "${{redis.REDIS_URL}}"),
-					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
 					resource.TestCheckResourceAttr("railway_variable.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
 					resource.TestCheckResourceAttr("railway_variable.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 				),
 			},
@@ -72,8 +72,8 @@ func testAccVariableResourceConfigDefault(value string) string {
 resource "railway_variable" "test" {
   name = "REDIS_URL"
   value = "%s"
-  service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
+  service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
   project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
 }
 `, value)

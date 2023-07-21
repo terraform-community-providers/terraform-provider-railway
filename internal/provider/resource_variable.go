@@ -32,8 +32,8 @@ type VariableResourceModel struct {
 	Id            types.String `tfsdk:"id"`
 	Name          types.String `tfsdk:"name"`
 	Value         types.String `tfsdk:"value"`
-	ServiceId     types.String `tfsdk:"service_id"`
 	EnvironmentId types.String `tfsdk:"environment_id"`
+	ServiceId     types.String `tfsdk:"service_id"`
 	ProjectId     types.String `tfsdk:"project_id"`
 }
 
@@ -64,8 +64,8 @@ func (r *VariableResource) Schema(ctx context.Context, req resource.SchemaReques
 				Required:            true,
 				Sensitive:           true,
 			},
-			"service_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the service the variable belongs to.",
+			"environment_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the environment the variable belongs to.",
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -74,8 +74,8 @@ func (r *VariableResource) Schema(ctx context.Context, req resource.SchemaReques
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
 				},
 			},
-			"environment_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the environment the variable belongs to.",
+			"service_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the service the variable belongs to.",
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
