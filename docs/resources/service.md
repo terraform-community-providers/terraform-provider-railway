@@ -4,11 +4,14 @@ page_title: "railway_service Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
   Railway service.
+  ⚠️ NOTE: All the other settings not specified here are recommended to be specified in the Railway config file.
 ---
 
 # railway_service (Resource)
 
 Railway service.
+
+> ⚠️ **NOTE:** All the other settings not specified here are recommended to be specified in the Railway config file.
 
 ## Example Usage
 
@@ -26,6 +29,14 @@ resource "railway_service" "example" {
 
 - `name` (String) Name of the service.
 - `project_id` (String) Identifier of the project the service belongs to.
+
+### Optional
+
+- `config_path` (String) Path to the Railway config file.
+- `cron_schedule` (String) Cron schedule of the service.
+- `root_directory` (String) Directory to user for the service.
+- `source_image` (String) Source image of the service. Conflicts with `source_repo`.
+- `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
 
 ### Read-Only
 

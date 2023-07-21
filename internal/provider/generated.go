@@ -10,6 +10,14 @@ import (
 	"github.com/Khan/genqlient/graphql"
 )
 
+type Builder string
+
+const (
+	BuilderHeroku   Builder = "HEROKU"
+	BuilderNixpacks Builder = "NIXPACKS"
+	BuilderPaketo   Builder = "PAKETO"
+)
+
 // Environment includes the GraphQL fields of Environment requested by the fragment Environment.
 type Environment struct {
 	Id        string `json:"id"`
@@ -260,6 +268,14 @@ func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
 // GetPrForks returns ProjectUpdateInput.PrForks, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrForks() bool { return v.PrForks }
 
+type RestartPolicyType string
+
+const (
+	RestartPolicyTypeAlways    RestartPolicyType = "ALWAYS"
+	RestartPolicyTypeNever     RestartPolicyType = "NEVER"
+	RestartPolicyTypeOnFailure RestartPolicyType = "ON_FAILURE"
+)
+
 // Service includes the GraphQL fields of Service requested by the fragment Service.
 type Service struct {
 	Id        string `json:"id"`
@@ -284,7 +300,7 @@ type ServiceCreateInput struct {
 	EnvironmentId string                 `json:"environmentId"`
 	Name          string                 `json:"name"`
 	ProjectId     string                 `json:"projectId"`
-	Source        ServiceSourceInput     `json:"source"`
+	Source        *ServiceSourceInput    `json:"source,omitempty"`
 	Variables     map[string]interface{} `json:"variables"`
 }
 
@@ -301,21 +317,80 @@ func (v *ServiceCreateInput) GetName() string { return v.Name }
 func (v *ServiceCreateInput) GetProjectId() string { return v.ProjectId }
 
 // GetSource returns ServiceCreateInput.Source, and is useful for accessing the field via an interface.
-func (v *ServiceCreateInput) GetSource() ServiceSourceInput { return v.Source }
+func (v *ServiceCreateInput) GetSource() *ServiceSourceInput { return v.Source }
 
 // GetVariables returns ServiceCreateInput.Variables, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetVariables() map[string]interface{} { return v.Variables }
 
+type ServiceInstanceUpdateInput struct {
+	BuildCommand            *string                 `json:"buildCommand,omitempty"`
+	Builder                 *Builder                `json:"builder,omitempty"`
+	CronSchedule            *string                 `json:"cronSchedule"`
+	HealthcheckPath         *string                 `json:"healthcheckPath,omitempty"`
+	HealthcheckTimeout      *int                    `json:"healthcheckTimeout,omitempty"`
+	NixpacksPlan            *map[string]interface{} `json:"nixpacksPlan,omitempty"`
+	RailwayConfigFile       string                  `json:"railwayConfigFile"`
+	RestartPolicyMaxRetries *int                    `json:"restartPolicyMaxRetries,omitempty"`
+	RestartPolicyType       *RestartPolicyType      `json:"restartPolicyType,omitempty"`
+	RootDirectory           string                  `json:"rootDirectory"`
+	Source                  *ServiceSourceInput     `json:"source"`
+	StartCommand            *string                 `json:"startCommand,omitempty"`
+	WatchPatterns           []string                `json:"watchPatterns"`
+}
+
+// GetBuildCommand returns ServiceInstanceUpdateInput.BuildCommand, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetBuildCommand() *string { return v.BuildCommand }
+
+// GetBuilder returns ServiceInstanceUpdateInput.Builder, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetBuilder() *Builder { return v.Builder }
+
+// GetCronSchedule returns ServiceInstanceUpdateInput.CronSchedule, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetCronSchedule() *string { return v.CronSchedule }
+
+// GetHealthcheckPath returns ServiceInstanceUpdateInput.HealthcheckPath, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetHealthcheckPath() *string { return v.HealthcheckPath }
+
+// GetHealthcheckTimeout returns ServiceInstanceUpdateInput.HealthcheckTimeout, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetHealthcheckTimeout() *int { return v.HealthcheckTimeout }
+
+// GetNixpacksPlan returns ServiceInstanceUpdateInput.NixpacksPlan, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetNixpacksPlan() *map[string]interface{} { return v.NixpacksPlan }
+
+// GetRailwayConfigFile returns ServiceInstanceUpdateInput.RailwayConfigFile, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() string { return v.RailwayConfigFile }
+
+// GetRestartPolicyMaxRetries returns ServiceInstanceUpdateInput.RestartPolicyMaxRetries, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetRestartPolicyMaxRetries() *int {
+	return v.RestartPolicyMaxRetries
+}
+
+// GetRestartPolicyType returns ServiceInstanceUpdateInput.RestartPolicyType, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetRestartPolicyType() *RestartPolicyType {
+	return v.RestartPolicyType
+}
+
+// GetRootDirectory returns ServiceInstanceUpdateInput.RootDirectory, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetRootDirectory() string { return v.RootDirectory }
+
+// GetSource returns ServiceInstanceUpdateInput.Source, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.Source }
+
+// GetStartCommand returns ServiceInstanceUpdateInput.StartCommand, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetStartCommand() *string { return v.StartCommand }
+
+// GetWatchPatterns returns ServiceInstanceUpdateInput.WatchPatterns, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetWatchPatterns() []string { return v.WatchPatterns }
+
 type ServiceSourceInput struct {
-	Image string `json:"image"`
-	Repo  string `json:"repo"`
+	Image *string `json:"image"`
+	Repo  *string `json:"repo"`
 }
 
 // GetImage returns ServiceSourceInput.Image, and is useful for accessing the field via an interface.
-func (v *ServiceSourceInput) GetImage() string { return v.Image }
+func (v *ServiceSourceInput) GetImage() *string { return v.Image }
 
 // GetRepo returns ServiceSourceInput.Repo, and is useful for accessing the field via an interface.
-func (v *ServiceSourceInput) GetRepo() string { return v.Repo }
+func (v *ServiceSourceInput) GetRepo() *string { return v.Repo }
 
 type ServiceUpdateInput struct {
 	Icon string `json:"icon"`
@@ -498,6 +573,18 @@ type __getServiceInput struct {
 // GetId returns __getServiceInput.Id, and is useful for accessing the field via an interface.
 func (v *__getServiceInput) GetId() string { return v.Id }
 
+// __getServiceInstanceInput is used internally by genqlient
+type __getServiceInstanceInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetEnvironmentId returns __getServiceInstanceInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getServiceInstanceInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __getServiceInstanceInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__getServiceInstanceInput) GetServiceId() string { return v.ServiceId }
+
 // __getSharedVariablesInput is used internally by genqlient
 type __getSharedVariablesInput struct {
 	ProjectId     string `json:"projectId"`
@@ -561,6 +648,18 @@ func (v *__updateServiceInput) GetId() string { return v.Id }
 
 // GetInput returns __updateServiceInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateServiceInput) GetInput() ServiceUpdateInput { return v.Input }
+
+// __updateServiceInstanceInput is used internally by genqlient
+type __updateServiceInstanceInput struct {
+	ServiceId string                     `json:"serviceId"`
+	Input     ServiceInstanceUpdateInput `json:"input"`
+}
+
+// GetServiceId returns __updateServiceInstanceInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__updateServiceInstanceInput) GetServiceId() string { return v.ServiceId }
+
+// GetInput returns __updateServiceInstanceInput.Input, and is useful for accessing the field via an interface.
+func (v *__updateServiceInstanceInput) GetInput() ServiceInstanceUpdateInput { return v.Input }
 
 // __upsertVariableInput is used internally by genqlient
 type __upsertVariableInput struct {
@@ -1310,6 +1409,53 @@ type getProjectResponse struct {
 // GetProject returns getProjectResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectResponse) GetProject() getProjectProject { return v.Project }
 
+// getServiceInstanceResponse is returned by getServiceInstance on success.
+type getServiceInstanceResponse struct {
+	// Get a service instance belonging to a service and environment
+	ServiceInstance getServiceInstanceServiceInstance `json:"serviceInstance"`
+}
+
+// GetServiceInstance returns getServiceInstanceResponse.ServiceInstance, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceResponse) GetServiceInstance() getServiceInstanceServiceInstance {
+	return v.ServiceInstance
+}
+
+// getServiceInstanceServiceInstance includes the requested fields of the GraphQL type ServiceInstance.
+type getServiceInstanceServiceInstance struct {
+	Source            *getServiceInstanceServiceInstanceSourceServiceSource `json:"source"`
+	RootDirectory     *string                                               `json:"rootDirectory"`
+	RailwayConfigFile *string                                               `json:"railwayConfigFile"`
+	CronSchedule      *string                                               `json:"cronSchedule"`
+}
+
+// GetSource returns getServiceInstanceServiceInstance.Source, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetSource() *getServiceInstanceServiceInstanceSourceServiceSource {
+	return v.Source
+}
+
+// GetRootDirectory returns getServiceInstanceServiceInstance.RootDirectory, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetRootDirectory() *string { return v.RootDirectory }
+
+// GetRailwayConfigFile returns getServiceInstanceServiceInstance.RailwayConfigFile, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetRailwayConfigFile() *string {
+	return v.RailwayConfigFile
+}
+
+// GetCronSchedule returns getServiceInstanceServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetCronSchedule() *string { return v.CronSchedule }
+
+// getServiceInstanceServiceInstanceSourceServiceSource includes the requested fields of the GraphQL type ServiceSource.
+type getServiceInstanceServiceInstanceSourceServiceSource struct {
+	Image *string `json:"image"`
+	Repo  *string `json:"repo"`
+}
+
+// GetImage returns getServiceInstanceServiceInstanceSourceServiceSource.Image, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstanceSourceServiceSource) GetImage() *string { return v.Image }
+
+// GetRepo returns getServiceInstanceServiceInstanceSourceServiceSource.Repo, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstanceSourceServiceSource) GetRepo() *string { return v.Repo }
+
 // getServiceResponse is returned by getService on success.
 type getServiceResponse struct {
 	// Get a service by ID
@@ -1581,6 +1727,17 @@ type updateProjectResponse struct {
 // GetProjectUpdate returns updateProjectResponse.ProjectUpdate, and is useful for accessing the field via an interface.
 func (v *updateProjectResponse) GetProjectUpdate() updateProjectProjectUpdateProject {
 	return v.ProjectUpdate
+}
+
+// updateServiceInstanceResponse is returned by updateServiceInstance on success.
+type updateServiceInstanceResponse struct {
+	// Update a service instance
+	ServiceInstanceUpdate bool `json:"serviceInstanceUpdate"`
+}
+
+// GetServiceInstanceUpdate returns updateServiceInstanceResponse.ServiceInstanceUpdate, and is useful for accessing the field via an interface.
+func (v *updateServiceInstanceResponse) GetServiceInstanceUpdate() bool {
+	return v.ServiceInstanceUpdate
 }
 
 // updateServiceResponse is returned by updateService on success.
@@ -2222,6 +2379,46 @@ fragment Service on Service {
 	return &data, err
 }
 
+func getServiceInstance(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	serviceId string,
+) (*getServiceInstanceResponse, error) {
+	req := &graphql.Request{
+		OpName: "getServiceInstance",
+		Query: `
+query getServiceInstance ($environmentId: String!, $serviceId: String!) {
+	serviceInstance(environmentId: $environmentId, serviceId: $serviceId) {
+		source {
+			image
+			repo
+		}
+		rootDirectory
+		railwayConfigFile
+		cronSchedule
+	}
+}
+`,
+		Variables: &__getServiceInstanceInput{
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+		},
+	}
+	var err error
+
+	var data getServiceInstanceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func getSharedVariables(
 	ctx context.Context,
 	client graphql.Client,
@@ -2411,6 +2608,38 @@ fragment Service on Service {
 	var err error
 
 	var data updateServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func updateServiceInstance(
+	ctx context.Context,
+	client graphql.Client,
+	serviceId string,
+	input ServiceInstanceUpdateInput,
+) (*updateServiceInstanceResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateServiceInstance",
+		Query: `
+mutation updateServiceInstance ($serviceId: String!, $input: ServiceInstanceUpdateInput!) {
+	serviceInstanceUpdate(environmentId: null, input: $input, serviceId: $serviceId)
+}
+`,
+		Variables: &__updateServiceInstanceInput{
+			ServiceId: serviceId,
+			Input:     input,
+		},
+	}
+	var err error
+
+	var data updateServiceInstanceResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

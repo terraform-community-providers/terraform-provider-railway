@@ -10,6 +10,9 @@ query getService($id: String!) {
   }
 }
 
+# @genqlient(for: "ServiceCreateInput.source", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceSourceInput.image", pointer: true)
+# @genqlient(for: "ServiceSourceInput.repo", pointer: true)
 mutation createService(
   $input: ServiceCreateInput!
 ) {
@@ -25,6 +28,48 @@ mutation updateService(
   serviceUpdate(id: $id, input: $input) {
     ...Service
   }
+}
+
+# @genqlient(for: "ServiceInstance.cronSchedule", pointer: true)
+# @genqlient(for: "ServiceInstance.source", pointer: true)
+# @genqlient(for: "ServiceSource.image", pointer: true)
+# @genqlient(for: "ServiceSource.repo", pointer: true)
+# @genqlient(for: "ServiceInstance.rootDirectory", pointer: true)
+# @genqlient(for: "ServiceInstance.railwayConfigFile", pointer: true)
+query getServiceInstance(
+  $environmentId: String!
+  $serviceId: String!
+) {
+  serviceInstance(environmentId: $environmentId, serviceId: $serviceId) {
+    source {
+      image
+      repo
+    }
+    rootDirectory
+    railwayConfigFile
+    cronSchedule
+  }
+}
+
+# @genqlient(for: "ServiceInstanceUpdateInput.cronSchedule", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.source", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.builder", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.startCommand", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.healthcheckPath", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.healthcheckTimeout", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.restartPolicyType", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.restartPolicyMaxRetries", omitempty: true, pointer: true)
+mutation updateServiceInstance(
+  $serviceId: String!
+  $input: ServiceInstanceUpdateInput!
+) {
+  serviceInstanceUpdate(
+    environmentId: null
+    input: $input
+    serviceId: $serviceId
+  )
 }
 
 mutation deleteService($id: String!) {

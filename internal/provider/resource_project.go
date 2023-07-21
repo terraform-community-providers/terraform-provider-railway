@@ -236,14 +236,12 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	response, err := getProject(ctx, *r.client, data.Id.ValueString())
+	project, enviroment, err := defaultEnvironmentForProject(ctx, *r.client, data.Id.ValueString())
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read project, got error: %s", err))
 		return
 	}
-
-	project := response.Project.Project
 
 	data.Id = types.StringValue(project.Id)
 	data.Name = types.StringValue(project.Name)
@@ -255,23 +253,11 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		data.TeamId = types.StringValue(project.Team.Id)
 	}
 
-	noOfEnvironments := len(project.Environments.Edges)
-
-	if noOfEnvironments < 1 {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Expected at least one environment, got %d", noOfEnvironments))
-		return
-	}
-
-	// Mark the oldest environment as the default
-	sort.SliceStable(project.Environments.Edges, func(i, j int) bool {
-		return project.Environments.Edges[i].Node.CreatedAt.Before(project.Environments.Edges[j].Node.CreatedAt)
-	})
-
 	data.DefaultEnvironment = types.ObjectValueMust(
 		defaultEnvironmentAttrTypes,
 		map[string]attr.Value{
-			"id":   types.StringValue(project.Environments.Edges[0].Node.Id),
-			"name": types.StringValue(project.Environments.Edges[0].Node.Name),
+			"id":   types.StringValue(enviroment.Id),
+			"name": types.StringValue(enviroment.Name),
 		},
 	)
 
@@ -337,6 +323,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		},
 	)
 
+	// Renaming of environments is not allowed
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -361,4 +349,26 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 func (r *ProjectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func defaultEnvironmentForProject(ctx context.Context, client graphql.Client, projectId string) (*Project, *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment, error) {
+	response, err := getProject(ctx, client, projectId)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	project := response.Project.Project
+	noOfEnvironments := len(project.Environments.Edges)
+
+	if noOfEnvironments < 1 {
+		return nil, nil, fmt.Errorf("expected at least one environment, got %d", noOfEnvironments)
+	}
+
+	// Mark the oldest environment as the default
+	sort.SliceStable(project.Environments.Edges, func(i, j int) bool {
+		return project.Environments.Edges[i].Node.CreatedAt.Before(project.Environments.Edges[j].Node.CreatedAt)
+	})
+
+	return &project, &project.Environments.Edges[0].Node, nil
 }
