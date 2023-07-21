@@ -236,7 +236,7 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	project, enviroment, err := defaultEnvironmentForProject(ctx, r.client, data.Id.ValueString())
+	project, enviroment, err := defaultEnvironmentForProject(ctx, *r.client, data.Id.ValueString())
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read project, got error: %s", err))
@@ -351,8 +351,8 @@ func (r *ProjectResource) ImportState(ctx context.Context, req resource.ImportSt
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func defaultEnvironmentForProject(ctx context.Context, client *graphql.Client, projectId string) (*Project, *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment, error) {
-	response, err := getProject(ctx, *client, projectId)
+func defaultEnvironmentForProject(ctx context.Context, client graphql.Client, projectId string) (*Project, *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment, error) {
+	response, err := getProject(ctx, client, projectId)
 
 	if err != nil {
 		return nil, nil, err

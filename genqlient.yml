@@ -9,3 +9,5 @@ bindings:
     type: string
   DateTime:
     type: time.Time
+  JSON:
+    type: map[string]interface{}
