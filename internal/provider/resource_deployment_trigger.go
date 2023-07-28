@@ -276,7 +276,7 @@ func (r *DeploymentTriggerResource) ImportState(ctx context.Context, req resourc
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: service_id:environment_id. Got: %q", req.ID),
+			fmt.Sprintf("Expected import identifier with format: service_id:environment_name. Got: %q", req.ID),
 		)
 
 		return

@@ -227,7 +227,7 @@ func (r *SharedVariableResource) ImportState(ctx context.Context, req resource.I
 	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: project_id:environment_id:name. Got: %q", req.ID),
+			fmt.Sprintf("Expected import identifier with format: project_id:environment_name:name. Got: %q", req.ID),
 		)
 
 		return

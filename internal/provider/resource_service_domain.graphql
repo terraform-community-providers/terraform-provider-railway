@@ -1,0 +1,41 @@
+fragment ServiceDomain on ServiceDomain {
+  id
+  domain
+  suffix
+  environmentId
+  serviceId
+}
+
+query listServiceDomains(
+  $environmentId: String!
+  $serviceId: String!
+  $projectId: String!
+) {
+  domains(
+    environmentId: $environmentId
+    serviceId: $serviceId
+    projectId: $projectId
+  ) {
+    serviceDomains {
+      ...ServiceDomain
+    }
+  }
+}
+
+mutation createServiceDomain(
+  $input: ServiceDomainCreateInput!
+) {
+  serviceDomainCreate(input: $input) {
+    ...ServiceDomain
+  }
+}
+
+mutation updateServiceDomain(
+  $input: ServiceDomainUpdateInput!
+) {
+  serviceDomainUpdate(input: $input)
+}
+
+mutation deleteServiceDomain($id: String!) {
+  serviceDomainDelete(id: $id)
+}
