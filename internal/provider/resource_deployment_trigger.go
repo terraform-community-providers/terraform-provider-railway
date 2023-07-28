@@ -93,13 +93,7 @@ func (r *DeploymentTriggerResource) Schema(ctx context.Context, req resource.Sch
 			},
 			"project_id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the project for the trigger.",
-				Required:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
-				},
+				Computed:            true,
 			},
 		},
 	}
@@ -134,6 +128,13 @@ func (r *DeploymentTriggerResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
+	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
 	input := DeploymentTriggerCreateInput{
 		Provider:      "github",
 		Repository:    data.Repository.ValueString(),
@@ -141,7 +142,7 @@ func (r *DeploymentTriggerResource) Create(ctx context.Context, req resource.Cre
 		CheckSuites:   data.CheckSuites.ValueBool(),
 		EnvironmentId: data.EnvironmentId.ValueString(),
 		ServiceId:     data.ServiceId.ValueString(),
-		ProjectId:     data.ProjectId.ValueString(),
+		ProjectId:     service.Service.ProjectId,
 	}
 
 	response, err := createDeploymentTrigger(ctx, *r.client, input)
@@ -208,6 +209,7 @@ func (r *DeploymentTriggerResource) Read(ctx context.Context, req resource.ReadR
 	data.CheckSuites = types.BoolValue(trigger.CheckSuites)
 	data.EnvironmentId = types.StringValue(trigger.EnvironmentId)
 	data.ServiceId = types.StringValue(trigger.ServiceId)
+	data.ProjectId = types.StringValue(trigger.ProjectId)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -244,6 +246,7 @@ func (r *DeploymentTriggerResource) Update(ctx context.Context, req resource.Upd
 	data.CheckSuites = types.BoolValue(trigger.CheckSuites)
 	data.EnvironmentId = types.StringValue(trigger.EnvironmentId)
 	data.ServiceId = types.StringValue(trigger.ServiceId)
+	data.ProjectId = types.StringValue(trigger.ProjectId)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

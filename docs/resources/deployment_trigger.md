@@ -17,7 +17,6 @@ resource "railway_deployment_trigger" "example" {
   repository     = "railwayapp/railway-example-nodejs"
   branch         = "main"
   check_suites   = true
-  project_id     = railway_project.example.id
   environment_id = railway_project.example.default_environment.id
   service_id     = railway_service.example.id
 }
@@ -30,7 +29,6 @@ resource "railway_deployment_trigger" "example" {
 
 - `branch` (String) Branch for the trigger.
 - `environment_id` (String) Identifier of the environment for the trigger.
-- `project_id` (String) Identifier of the project for the trigger.
 - `repository` (String) Repository for the trigger.
 - `service_id` (String) Identifier of the service for the trigger.
 
@@ -41,6 +39,7 @@ resource "railway_deployment_trigger" "example" {
 ### Read-Only
 
 - `id` (String) Identifier of the trigger.
+- `project_id` (String) Identifier of the project for the trigger.
 
 ## Import
 

@@ -14,10 +14,10 @@ func TestAccDeploymentTriggerResourceDefault(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccDeploymentTriggerResourceConfigDefault("nodejs/express"),
+				Config: testAccDeploymentTriggerResourceConfigDefault("fastify/fastify-example-todo"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("railway_deployment_trigger.test", "id"),
-					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "nodejs/express"),
+					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "fastify/fastify-example-todo"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "main"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "false"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
@@ -34,10 +34,10 @@ func TestAccDeploymentTriggerResourceDefault(t *testing.T) {
 			},
 			// Update with default values
 			{
-				Config: testAccDeploymentTriggerResourceConfigDefault("nodejs/express"),
+				Config: testAccDeploymentTriggerResourceConfigDefault("fastify/fastify-example-todo"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("railway_deployment_trigger.test", "id"),
-					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "nodejs/express"),
+					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "fastify/fastify-example-todo"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "main"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "false"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
@@ -47,10 +47,10 @@ func TestAccDeploymentTriggerResourceDefault(t *testing.T) {
 			},
 			// Update and Read testing
 			// {
-			// 	Config: testAccDeploymentTriggerResourceConfigNonDefault("nodejs/fastify"),
+			// 	Config: testAccDeploymentTriggerResourceConfigNonDefault("fastify/fastify-example-twitter"),
 			// 	Check: resource.ComposeAggregateTestCheckFunc(
 			// 		resource.TestCheckResourceAttrSet("railway_deployment_trigger.test", "id"),
-			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "nodejs/fastify"),
+			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "fastify/fastify-example-twitter"),
 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "master"),
 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "true"),
 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
@@ -77,10 +77,10 @@ func TestAccDeploymentTriggerResourceNonDefault(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccDeploymentTriggerResourceConfigNonDefault("nodejs/express"),
+				Config: testAccDeploymentTriggerResourceConfigNonDefault("fastify/fastify-example-todo"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("railway_deployment_trigger.test", "id"),
-					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "nodejs/express"),
+					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "fastify/fastify-example-todo"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "master"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "true"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
@@ -97,10 +97,10 @@ func TestAccDeploymentTriggerResourceNonDefault(t *testing.T) {
 			},
 			// Update with same values
 			{
-				Config: testAccDeploymentTriggerResourceConfigNonDefault("nodejs/express"),
+				Config: testAccDeploymentTriggerResourceConfigNonDefault("fastify/fastify-example-todo"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("railway_deployment_trigger.test", "id"),
-					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "nodejs/express"),
+					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "fastify/fastify-example-todo"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "master"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "true"),
 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
@@ -110,10 +110,10 @@ func TestAccDeploymentTriggerResourceNonDefault(t *testing.T) {
 			},
 			// Update with null values
 			// {
-			// 	Config: testAccDeploymentTriggerResourceConfigDefault("nodejs/fastify"),
+			// 	Config: testAccDeploymentTriggerResourceConfigDefault("fastify/fastify-example-twitter"),
 			// 	Check: resource.ComposeAggregateTestCheckFunc(
 			// 		resource.TestCheckResourceAttrSet("railway_deployment_trigger.test", "id"),
-			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "nodejs/fastify"),
+			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "repository", "fastify/fastify-example-twitter"),
 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "main"),
 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "false"),
 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
@@ -140,7 +140,6 @@ resource "railway_deployment_trigger" "test" {
   branch = "main"
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
   service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
-  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
 }
 `, value)
 }
@@ -153,7 +152,6 @@ resource "railway_deployment_trigger" "test" {
   check_suites = true
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
   service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
-  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
 }
 `, value)
 }
