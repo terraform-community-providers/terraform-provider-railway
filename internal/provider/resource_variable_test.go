@@ -74,7 +74,6 @@ resource "railway_variable" "test" {
   value = "%s"
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
   service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
-  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
 }
 `, value)
 }

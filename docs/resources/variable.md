@@ -16,7 +16,6 @@ Railway variable.
 resource "railway_variable" "example" {
   name           = "SENTRY_KEY"
   value          = "1234567890"
-  project_id     = railway_project.example.id
   environment_id = railway_project.example.default_environment.id
   service_id     = railway_service.example.id
 }
@@ -29,13 +28,13 @@ resource "railway_variable" "example" {
 
 - `environment_id` (String) Identifier of the environment the variable belongs to.
 - `name` (String) Name of the variable.
-- `project_id` (String) Identifier of the project the variable belongs to.
 - `service_id` (String) Identifier of the service the variable belongs to.
 - `value` (String, Sensitive) Value of the variable.
 
 ### Read-Only
 
 - `id` (String) Identifier of the variable.
+- `project_id` (String) Identifier of the project the variable belongs to.
 
 ## Import
 
