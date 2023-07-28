@@ -1,0 +1,37 @@
+fragment CustomDomain on CustomDomain {
+  id
+  domain
+  status {
+    dnsRecords {
+      hostlabel
+      requiredValue
+      zone
+    }
+  }
+  environmentId
+  serviceId
+}
+
+query getCustomDomain(
+  $id: String!
+  $projectId: String!
+) {
+  customDomain(
+    id: $id
+    projectId: $projectId
+  ) {
+    ...CustomDomain
+  }
+}
+
+mutation createCustomDomain(
+  $input: CustomDomainCreateInput!
+) {
+  customDomainCreate(input: $input) {
+    ...CustomDomain
+  }
+}
+
+mutation deleteCustomDomain($id: String!) {
+  customDomainDelete(id: $id)
+}
