@@ -150,13 +150,14 @@ enum CreditType {
 }
 
 type CustomDomain implements Domain {
-  cnameCheck: CnameCheck!
+  cnameCheck: CnameCheck! @deprecated(reason: "Use the `status` field instead.")
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
   environmentId: String!
   id: ID!
   serviceId: String!
+  status: CustomDomainStatus!
   updatedAt: DateTime
 }
 
@@ -164,6 +165,13 @@ input CustomDomainCreateInput {
   domain: String!
   environmentId: String!
   serviceId: String!
+}
+
+type CustomDomainStatus {
+  cdnProvider: CDNProvider
+  certificateStatus: CertificateStatus!
+  certificates: [CertificatePublicData!]
+  dnsRecords: [DNSRecords!]!
 }
 
 type Customer implements Node {
@@ -1530,6 +1538,9 @@ type Query {
   """Gets the history of changesets for an environment."""
   changesets(after: String, before: String, environmentId: String!, first: Int, last: Int, projectId: String!): QueryChangesetsConnection!
 
+  """Fetch details for a custom domain"""
+  customDomain(id: String!, projectId: String!): CustomDomain!
+
   """Checks if a custom domain is available."""
   customDomainAvailable(domain: String!): DomainAvailable!
 
@@ -1556,7 +1567,7 @@ type Query {
   deployments(after: String, before: String, first: Int, input: DeploymentListInput!, last: Int): QueryDeploymentsConnection!
 
   """Domain with status"""
-  domainStatus(id: String!, projectId: String!): DomainWithStatus!
+  domainStatus(id: String!, projectId: String!): DomainWithStatus! @deprecated(reason: "Use the `status` field within the `domain` query instead")
 
   """All domains"""
   domains(environmentId: String!, projectId: String!, serviceId: String!): AllDomains!
@@ -2368,6 +2379,7 @@ input TelemetrySendInput {
 }
 
 type Template implements Node {
+  activeProjects: Int!
   code: String!
   config: TemplateConfig!
   createdAt: DateTime!

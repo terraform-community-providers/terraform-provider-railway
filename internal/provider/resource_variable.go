@@ -86,13 +86,7 @@ func (r *VariableResource) Schema(ctx context.Context, req resource.SchemaReques
 			},
 			"project_id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the project the variable belongs to.",
-				Required:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
-				},
+				Computed:            true,
 			},
 		},
 	}
@@ -127,15 +121,22 @@ func (r *VariableResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
 	input := VariableUpsertInput{
 		Name:          data.Name.ValueString(),
 		Value:         data.Value.ValueString(),
 		ServiceId:     data.ServiceId.ValueStringPointer(),
 		EnvironmentId: data.EnvironmentId.ValueString(),
-		ProjectId:     data.ProjectId.ValueString(),
+		ProjectId:     service.Service.ProjectId,
 	}
 
-	_, err := upsertVariable(ctx, *r.client, input)
+	_, err = upsertVariable(ctx, *r.client, input)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create variable, got error: %s", err))
@@ -144,7 +145,7 @@ func (r *VariableResource) Create(ctx context.Context, req resource.CreateReques
 
 	tflog.Trace(ctx, "created a variable")
 
-	err = getVariable(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Name.ValueString(), data)
+	err = getVariable(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Name.ValueString(), data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variable after creating it, got error: %s", err))
@@ -182,15 +183,22 @@ func (r *VariableResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
+	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
 	input := VariableUpsertInput{
 		Name:          data.Name.ValueString(),
 		Value:         data.Value.ValueString(),
 		ServiceId:     data.ServiceId.ValueStringPointer(),
 		EnvironmentId: data.EnvironmentId.ValueString(),
-		ProjectId:     data.ProjectId.ValueString(),
+		ProjectId:     service.Service.ProjectId,
 	}
 
-	_, err := upsertVariable(ctx, *r.client, input)
+	_, err = upsertVariable(ctx, *r.client, input)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update variable, got error: %s", err))
@@ -199,7 +207,7 @@ func (r *VariableResource) Update(ctx context.Context, req resource.UpdateReques
 
 	tflog.Trace(ctx, "updated a variable")
 
-	err = getVariable(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Name.ValueString(), data)
+	err = getVariable(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Name.ValueString(), data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variable after updating it, got error: %s", err))
@@ -241,7 +249,7 @@ func (r *VariableResource) ImportState(ctx context.Context, req resource.ImportS
 	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: service_id:environment_id:name. Got: %q", req.ID),
+			fmt.Sprintf("Expected import identifier with format: service_id:environment_name:name. Got: %q", req.ID),
 		)
 
 		return

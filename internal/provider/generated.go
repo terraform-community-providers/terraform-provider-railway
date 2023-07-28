@@ -18,6 +18,71 @@ const (
 	BuilderPaketo   Builder = "PAKETO"
 )
 
+// CustomDomain includes the GraphQL fields of CustomDomain requested by the fragment CustomDomain.
+type CustomDomain struct {
+	Id            string             `json:"id"`
+	Domain        string             `json:"domain"`
+	Status        CustomDomainStatus `json:"status"`
+	EnvironmentId string             `json:"environmentId"`
+	ServiceId     string             `json:"serviceId"`
+}
+
+// GetId returns CustomDomain.Id, and is useful for accessing the field via an interface.
+func (v *CustomDomain) GetId() string { return v.Id }
+
+// GetDomain returns CustomDomain.Domain, and is useful for accessing the field via an interface.
+func (v *CustomDomain) GetDomain() string { return v.Domain }
+
+// GetStatus returns CustomDomain.Status, and is useful for accessing the field via an interface.
+func (v *CustomDomain) GetStatus() CustomDomainStatus { return v.Status }
+
+// GetEnvironmentId returns CustomDomain.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *CustomDomain) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns CustomDomain.ServiceId, and is useful for accessing the field via an interface.
+func (v *CustomDomain) GetServiceId() string { return v.ServiceId }
+
+type CustomDomainCreateInput struct {
+	Domain        string `json:"domain"`
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetDomain returns CustomDomainCreateInput.Domain, and is useful for accessing the field via an interface.
+func (v *CustomDomainCreateInput) GetDomain() string { return v.Domain }
+
+// GetEnvironmentId returns CustomDomainCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *CustomDomainCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns CustomDomainCreateInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *CustomDomainCreateInput) GetServiceId() string { return v.ServiceId }
+
+// CustomDomainStatus includes the requested fields of the GraphQL type CustomDomainStatus.
+type CustomDomainStatus struct {
+	DnsRecords []CustomDomainStatusDnsRecordsDNSRecords `json:"dnsRecords"`
+}
+
+// GetDnsRecords returns CustomDomainStatus.DnsRecords, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatus) GetDnsRecords() []CustomDomainStatusDnsRecordsDNSRecords {
+	return v.DnsRecords
+}
+
+// CustomDomainStatusDnsRecordsDNSRecords includes the requested fields of the GraphQL type DNSRecords.
+type CustomDomainStatusDnsRecordsDNSRecords struct {
+	Hostlabel     string `json:"hostlabel"`
+	RequiredValue string `json:"requiredValue"`
+	Zone          string `json:"zone"`
+}
+
+// GetHostlabel returns CustomDomainStatusDnsRecordsDNSRecords.Hostlabel, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatusDnsRecordsDNSRecords) GetHostlabel() string { return v.Hostlabel }
+
+// GetRequiredValue returns CustomDomainStatusDnsRecordsDNSRecords.RequiredValue, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatusDnsRecordsDNSRecords) GetRequiredValue() string { return v.RequiredValue }
+
+// GetZone returns CustomDomainStatusDnsRecordsDNSRecords.Zone, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatusDnsRecordsDNSRecords) GetZone() string { return v.Zone }
+
 // DeploymentTrigger includes the GraphQL fields of DeploymentTrigger requested by the fragment DeploymentTrigger.
 type DeploymentTrigger struct {
 	Id            string `json:"id"`
@@ -412,6 +477,56 @@ func (v *ServiceCreateInput) GetSource() *ServiceSourceInput { return v.Source }
 // GetVariables returns ServiceCreateInput.Variables, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetVariables() map[string]interface{} { return v.Variables }
 
+// ServiceDomain includes the GraphQL fields of ServiceDomain requested by the fragment ServiceDomain.
+type ServiceDomain struct {
+	Id            string `json:"id"`
+	Domain        string `json:"domain"`
+	Suffix        string `json:"suffix"`
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetId returns ServiceDomain.Id, and is useful for accessing the field via an interface.
+func (v *ServiceDomain) GetId() string { return v.Id }
+
+// GetDomain returns ServiceDomain.Domain, and is useful for accessing the field via an interface.
+func (v *ServiceDomain) GetDomain() string { return v.Domain }
+
+// GetSuffix returns ServiceDomain.Suffix, and is useful for accessing the field via an interface.
+func (v *ServiceDomain) GetSuffix() string { return v.Suffix }
+
+// GetEnvironmentId returns ServiceDomain.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *ServiceDomain) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns ServiceDomain.ServiceId, and is useful for accessing the field via an interface.
+func (v *ServiceDomain) GetServiceId() string { return v.ServiceId }
+
+type ServiceDomainCreateInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetEnvironmentId returns ServiceDomainCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *ServiceDomainCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns ServiceDomainCreateInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *ServiceDomainCreateInput) GetServiceId() string { return v.ServiceId }
+
+type ServiceDomainUpdateInput struct {
+	Domain        string `json:"domain"`
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetDomain returns ServiceDomainUpdateInput.Domain, and is useful for accessing the field via an interface.
+func (v *ServiceDomainUpdateInput) GetDomain() string { return v.Domain }
+
+// GetEnvironmentId returns ServiceDomainUpdateInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *ServiceDomainUpdateInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns ServiceDomainUpdateInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
+
 type ServiceInstanceUpdateInput struct {
 	BuildCommand            *string                 `json:"buildCommand,omitempty"`
 	Builder                 *Builder                `json:"builder,omitempty"`
@@ -535,6 +650,14 @@ func (v *VariableUpsertInput) GetServiceId() *string { return v.ServiceId }
 // GetValue returns VariableUpsertInput.Value, and is useful for accessing the field via an interface.
 func (v *VariableUpsertInput) GetValue() string { return v.Value }
 
+// __createCustomDomainInput is used internally by genqlient
+type __createCustomDomainInput struct {
+	Input CustomDomainCreateInput `json:"input"`
+}
+
+// GetInput returns __createCustomDomainInput.Input, and is useful for accessing the field via an interface.
+func (v *__createCustomDomainInput) GetInput() CustomDomainCreateInput { return v.Input }
+
 // __createDeploymentTriggerInput is used internally by genqlient
 type __createDeploymentTriggerInput struct {
 	Input DeploymentTriggerCreateInput `json:"input"`
@@ -567,6 +690,14 @@ type __createProjectInput struct {
 // GetInput returns __createProjectInput.Input, and is useful for accessing the field via an interface.
 func (v *__createProjectInput) GetInput() ProjectCreateInput { return v.Input }
 
+// __createServiceDomainInput is used internally by genqlient
+type __createServiceDomainInput struct {
+	Input ServiceDomainCreateInput `json:"input"`
+}
+
+// GetInput returns __createServiceDomainInput.Input, and is useful for accessing the field via an interface.
+func (v *__createServiceDomainInput) GetInput() ServiceDomainCreateInput { return v.Input }
+
 // __createServiceInput is used internally by genqlient
 type __createServiceInput struct {
 	Input ServiceCreateInput `json:"input"`
@@ -574,6 +705,14 @@ type __createServiceInput struct {
 
 // GetInput returns __createServiceInput.Input, and is useful for accessing the field via an interface.
 func (v *__createServiceInput) GetInput() ServiceCreateInput { return v.Input }
+
+// __deleteCustomDomainInput is used internally by genqlient
+type __deleteCustomDomainInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deleteCustomDomainInput.Id, and is useful for accessing the field via an interface.
+func (v *__deleteCustomDomainInput) GetId() string { return v.Id }
 
 // __deleteDeploymentTriggerInput is used internally by genqlient
 type __deleteDeploymentTriggerInput struct {
@@ -607,6 +746,14 @@ type __deleteProjectInput struct {
 // GetId returns __deleteProjectInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteProjectInput) GetId() string { return v.Id }
 
+// __deleteServiceDomainInput is used internally by genqlient
+type __deleteServiceDomainInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deleteServiceDomainInput.Id, and is useful for accessing the field via an interface.
+func (v *__deleteServiceDomainInput) GetId() string { return v.Id }
+
 // __deleteServiceInput is used internally by genqlient
 type __deleteServiceInput struct {
 	Id string `json:"id"`
@@ -622,6 +769,18 @@ type __deleteVariableInput struct {
 
 // GetInput returns __deleteVariableInput.Input, and is useful for accessing the field via an interface.
 func (v *__deleteVariableInput) GetInput() VariableDeleteInput { return v.Input }
+
+// __getCustomDomainInput is used internally by genqlient
+type __getCustomDomainInput struct {
+	Id        string `json:"id"`
+	ProjectId string `json:"projectId"`
+}
+
+// GetId returns __getCustomDomainInput.Id, and is useful for accessing the field via an interface.
+func (v *__getCustomDomainInput) GetId() string { return v.Id }
+
+// GetProjectId returns __getCustomDomainInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__getCustomDomainInput) GetProjectId() string { return v.ProjectId }
 
 // __getEnvironmentInput is used internally by genqlient
 type __getEnvironmentInput struct {
@@ -735,6 +894,22 @@ func (v *__listDeploymentTriggersInput) GetEnvironmentId() string { return v.Env
 // GetServiceId returns __listDeploymentTriggersInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *__listDeploymentTriggersInput) GetServiceId() string { return v.ServiceId }
 
+// __listServiceDomainsInput is used internally by genqlient
+type __listServiceDomainsInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+	ProjectId     string `json:"projectId"`
+}
+
+// GetEnvironmentId returns __listServiceDomainsInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__listServiceDomainsInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __listServiceDomainsInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__listServiceDomainsInput) GetServiceId() string { return v.ServiceId }
+
+// GetProjectId returns __listServiceDomainsInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__listServiceDomainsInput) GetProjectId() string { return v.ProjectId }
+
 // __updateDeploymentTriggerInput is used internally by genqlient
 type __updateDeploymentTriggerInput struct {
 	Id    string                       `json:"id"`
@@ -771,6 +946,14 @@ func (v *__updateProjectInput) GetId() string { return v.Id }
 // GetInput returns __updateProjectInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateProjectInput) GetInput() ProjectUpdateInput { return v.Input }
 
+// __updateServiceDomainInput is used internally by genqlient
+type __updateServiceDomainInput struct {
+	Input ServiceDomainUpdateInput `json:"input"`
+}
+
+// GetInput returns __updateServiceDomainInput.Input, and is useful for accessing the field via an interface.
+func (v *__updateServiceDomainInput) GetInput() ServiceDomainUpdateInput { return v.Input }
+
 // __updateServiceInput is used internally by genqlient
 type __updateServiceInput struct {
 	Id    string             `json:"id"`
@@ -802,6 +985,101 @@ type __upsertVariableInput struct {
 
 // GetInput returns __upsertVariableInput.Input, and is useful for accessing the field via an interface.
 func (v *__upsertVariableInput) GetInput() VariableUpsertInput { return v.Input }
+
+// createCustomDomainCustomDomainCreateCustomDomain includes the requested fields of the GraphQL type CustomDomain.
+type createCustomDomainCustomDomainCreateCustomDomain struct {
+	CustomDomain `json:"-"`
+}
+
+// GetId returns createCustomDomainCustomDomainCreateCustomDomain.Id, and is useful for accessing the field via an interface.
+func (v *createCustomDomainCustomDomainCreateCustomDomain) GetId() string { return v.CustomDomain.Id }
+
+// GetDomain returns createCustomDomainCustomDomainCreateCustomDomain.Domain, and is useful for accessing the field via an interface.
+func (v *createCustomDomainCustomDomainCreateCustomDomain) GetDomain() string {
+	return v.CustomDomain.Domain
+}
+
+// GetStatus returns createCustomDomainCustomDomainCreateCustomDomain.Status, and is useful for accessing the field via an interface.
+func (v *createCustomDomainCustomDomainCreateCustomDomain) GetStatus() CustomDomainStatus {
+	return v.CustomDomain.Status
+}
+
+// GetEnvironmentId returns createCustomDomainCustomDomainCreateCustomDomain.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *createCustomDomainCustomDomainCreateCustomDomain) GetEnvironmentId() string {
+	return v.CustomDomain.EnvironmentId
+}
+
+// GetServiceId returns createCustomDomainCustomDomainCreateCustomDomain.ServiceId, and is useful for accessing the field via an interface.
+func (v *createCustomDomainCustomDomainCreateCustomDomain) GetServiceId() string {
+	return v.CustomDomain.ServiceId
+}
+
+func (v *createCustomDomainCustomDomainCreateCustomDomain) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createCustomDomainCustomDomainCreateCustomDomain
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createCustomDomainCustomDomainCreateCustomDomain = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.CustomDomain)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreateCustomDomainCustomDomainCreateCustomDomain struct {
+	Id string `json:"id"`
+
+	Domain string `json:"domain"`
+
+	Status CustomDomainStatus `json:"status"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+}
+
+func (v *createCustomDomainCustomDomainCreateCustomDomain) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createCustomDomainCustomDomainCreateCustomDomain) __premarshalJSON() (*__premarshalcreateCustomDomainCustomDomainCreateCustomDomain, error) {
+	var retval __premarshalcreateCustomDomainCustomDomainCreateCustomDomain
+
+	retval.Id = v.CustomDomain.Id
+	retval.Domain = v.CustomDomain.Domain
+	retval.Status = v.CustomDomain.Status
+	retval.EnvironmentId = v.CustomDomain.EnvironmentId
+	retval.ServiceId = v.CustomDomain.ServiceId
+	return &retval, nil
+}
+
+// createCustomDomainResponse is returned by createCustomDomain on success.
+type createCustomDomainResponse struct {
+	// Creates a new custom domain.
+	CustomDomainCreate createCustomDomainCustomDomainCreateCustomDomain `json:"customDomainCreate"`
+}
+
+// GetCustomDomainCreate returns createCustomDomainResponse.CustomDomainCreate, and is useful for accessing the field via an interface.
+func (v *createCustomDomainResponse) GetCustomDomainCreate() createCustomDomainCustomDomainCreateCustomDomain {
+	return v.CustomDomainCreate
+}
 
 // createDeploymentTriggerDeploymentTriggerCreateDeploymentTrigger includes the requested fields of the GraphQL type DeploymentTrigger.
 type createDeploymentTriggerDeploymentTriggerCreateDeploymentTrigger struct {
@@ -1183,6 +1461,103 @@ func (v *createProjectResponse) GetProjectCreate() createProjectProjectCreatePro
 	return v.ProjectCreate
 }
 
+// createServiceDomainResponse is returned by createServiceDomain on success.
+type createServiceDomainResponse struct {
+	// Creates a new service domain.
+	ServiceDomainCreate createServiceDomainServiceDomainCreateServiceDomain `json:"serviceDomainCreate"`
+}
+
+// GetServiceDomainCreate returns createServiceDomainResponse.ServiceDomainCreate, and is useful for accessing the field via an interface.
+func (v *createServiceDomainResponse) GetServiceDomainCreate() createServiceDomainServiceDomainCreateServiceDomain {
+	return v.ServiceDomainCreate
+}
+
+// createServiceDomainServiceDomainCreateServiceDomain includes the requested fields of the GraphQL type ServiceDomain.
+type createServiceDomainServiceDomainCreateServiceDomain struct {
+	ServiceDomain `json:"-"`
+}
+
+// GetId returns createServiceDomainServiceDomainCreateServiceDomain.Id, and is useful for accessing the field via an interface.
+func (v *createServiceDomainServiceDomainCreateServiceDomain) GetId() string {
+	return v.ServiceDomain.Id
+}
+
+// GetDomain returns createServiceDomainServiceDomainCreateServiceDomain.Domain, and is useful for accessing the field via an interface.
+func (v *createServiceDomainServiceDomainCreateServiceDomain) GetDomain() string {
+	return v.ServiceDomain.Domain
+}
+
+// GetSuffix returns createServiceDomainServiceDomainCreateServiceDomain.Suffix, and is useful for accessing the field via an interface.
+func (v *createServiceDomainServiceDomainCreateServiceDomain) GetSuffix() string {
+	return v.ServiceDomain.Suffix
+}
+
+// GetEnvironmentId returns createServiceDomainServiceDomainCreateServiceDomain.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *createServiceDomainServiceDomainCreateServiceDomain) GetEnvironmentId() string {
+	return v.ServiceDomain.EnvironmentId
+}
+
+// GetServiceId returns createServiceDomainServiceDomainCreateServiceDomain.ServiceId, and is useful for accessing the field via an interface.
+func (v *createServiceDomainServiceDomainCreateServiceDomain) GetServiceId() string {
+	return v.ServiceDomain.ServiceId
+}
+
+func (v *createServiceDomainServiceDomainCreateServiceDomain) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createServiceDomainServiceDomainCreateServiceDomain
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createServiceDomainServiceDomainCreateServiceDomain = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ServiceDomain)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreateServiceDomainServiceDomainCreateServiceDomain struct {
+	Id string `json:"id"`
+
+	Domain string `json:"domain"`
+
+	Suffix string `json:"suffix"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+}
+
+func (v *createServiceDomainServiceDomainCreateServiceDomain) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createServiceDomainServiceDomainCreateServiceDomain) __premarshalJSON() (*__premarshalcreateServiceDomainServiceDomainCreateServiceDomain, error) {
+	var retval __premarshalcreateServiceDomainServiceDomainCreateServiceDomain
+
+	retval.Id = v.ServiceDomain.Id
+	retval.Domain = v.ServiceDomain.Domain
+	retval.Suffix = v.ServiceDomain.Suffix
+	retval.EnvironmentId = v.ServiceDomain.EnvironmentId
+	retval.ServiceId = v.ServiceDomain.ServiceId
+	return &retval, nil
+}
+
 // createServiceResponse is returned by createService on success.
 type createServiceResponse struct {
 	// Creates a new service.
@@ -1258,6 +1633,15 @@ func (v *createServiceServiceCreateService) __premarshalJSON() (*__premarshalcre
 	return &retval, nil
 }
 
+// deleteCustomDomainResponse is returned by deleteCustomDomain on success.
+type deleteCustomDomainResponse struct {
+	// Deletes a custom domain.
+	CustomDomainDelete bool `json:"customDomainDelete"`
+}
+
+// GetCustomDomainDelete returns deleteCustomDomainResponse.CustomDomainDelete, and is useful for accessing the field via an interface.
+func (v *deleteCustomDomainResponse) GetCustomDomainDelete() bool { return v.CustomDomainDelete }
+
 // deleteDeploymentTriggerResponse is returned by deleteDeploymentTrigger on success.
 type deleteDeploymentTriggerResponse struct {
 	// Deletes a deployment trigger.
@@ -1296,6 +1680,15 @@ type deleteProjectResponse struct {
 // GetProjectDelete returns deleteProjectResponse.ProjectDelete, and is useful for accessing the field via an interface.
 func (v *deleteProjectResponse) GetProjectDelete() bool { return v.ProjectDelete }
 
+// deleteServiceDomainResponse is returned by deleteServiceDomain on success.
+type deleteServiceDomainResponse struct {
+	// Deletes a service domain.
+	ServiceDomainDelete bool `json:"serviceDomainDelete"`
+}
+
+// GetServiceDomainDelete returns deleteServiceDomainResponse.ServiceDomainDelete, and is useful for accessing the field via an interface.
+func (v *deleteServiceDomainResponse) GetServiceDomainDelete() bool { return v.ServiceDomainDelete }
+
 // deleteServiceResponse is returned by deleteService on success.
 type deleteServiceResponse struct {
 	// Deletes a service.
@@ -1313,6 +1706,93 @@ type deleteVariableResponse struct {
 
 // GetVariableDelete returns deleteVariableResponse.VariableDelete, and is useful for accessing the field via an interface.
 func (v *deleteVariableResponse) GetVariableDelete() bool { return v.VariableDelete }
+
+// getCustomDomainCustomDomain includes the requested fields of the GraphQL type CustomDomain.
+type getCustomDomainCustomDomain struct {
+	CustomDomain `json:"-"`
+}
+
+// GetId returns getCustomDomainCustomDomain.Id, and is useful for accessing the field via an interface.
+func (v *getCustomDomainCustomDomain) GetId() string { return v.CustomDomain.Id }
+
+// GetDomain returns getCustomDomainCustomDomain.Domain, and is useful for accessing the field via an interface.
+func (v *getCustomDomainCustomDomain) GetDomain() string { return v.CustomDomain.Domain }
+
+// GetStatus returns getCustomDomainCustomDomain.Status, and is useful for accessing the field via an interface.
+func (v *getCustomDomainCustomDomain) GetStatus() CustomDomainStatus { return v.CustomDomain.Status }
+
+// GetEnvironmentId returns getCustomDomainCustomDomain.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *getCustomDomainCustomDomain) GetEnvironmentId() string { return v.CustomDomain.EnvironmentId }
+
+// GetServiceId returns getCustomDomainCustomDomain.ServiceId, and is useful for accessing the field via an interface.
+func (v *getCustomDomainCustomDomain) GetServiceId() string { return v.CustomDomain.ServiceId }
+
+func (v *getCustomDomainCustomDomain) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getCustomDomainCustomDomain
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getCustomDomainCustomDomain = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.CustomDomain)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetCustomDomainCustomDomain struct {
+	Id string `json:"id"`
+
+	Domain string `json:"domain"`
+
+	Status CustomDomainStatus `json:"status"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+}
+
+func (v *getCustomDomainCustomDomain) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getCustomDomainCustomDomain) __premarshalJSON() (*__premarshalgetCustomDomainCustomDomain, error) {
+	var retval __premarshalgetCustomDomainCustomDomain
+
+	retval.Id = v.CustomDomain.Id
+	retval.Domain = v.CustomDomain.Domain
+	retval.Status = v.CustomDomain.Status
+	retval.EnvironmentId = v.CustomDomain.EnvironmentId
+	retval.ServiceId = v.CustomDomain.ServiceId
+	return &retval, nil
+}
+
+// getCustomDomainResponse is returned by getCustomDomain on success.
+type getCustomDomainResponse struct {
+	// Fetch details for a custom domain
+	CustomDomain getCustomDomainCustomDomain `json:"customDomain"`
+}
+
+// GetCustomDomain returns getCustomDomainResponse.CustomDomain, and is useful for accessing the field via an interface.
+func (v *getCustomDomainResponse) GetCustomDomain() getCustomDomainCustomDomain {
+	return v.CustomDomain
+}
 
 // getEnvironmentEnvironment includes the requested fields of the GraphQL type Environment.
 type getEnvironmentEnvironment struct {
@@ -1954,6 +2434,113 @@ func (v *listDeploymentTriggersResponse) GetDeploymentTriggers() listDeploymentT
 	return v.DeploymentTriggers
 }
 
+// listServiceDomainsDomainsAllDomains includes the requested fields of the GraphQL type AllDomains.
+type listServiceDomainsDomainsAllDomains struct {
+	ServiceDomains []listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain `json:"serviceDomains"`
+}
+
+// GetServiceDomains returns listServiceDomainsDomainsAllDomains.ServiceDomains, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomains) GetServiceDomains() []listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain {
+	return v.ServiceDomains
+}
+
+// listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain includes the requested fields of the GraphQL type ServiceDomain.
+type listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain struct {
+	ServiceDomain `json:"-"`
+}
+
+// GetId returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.Id, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetId() string {
+	return v.ServiceDomain.Id
+}
+
+// GetDomain returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.Domain, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetDomain() string {
+	return v.ServiceDomain.Domain
+}
+
+// GetSuffix returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.Suffix, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetSuffix() string {
+	return v.ServiceDomain.Suffix
+}
+
+// GetEnvironmentId returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetEnvironmentId() string {
+	return v.ServiceDomain.EnvironmentId
+}
+
+// GetServiceId returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.ServiceId, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetServiceId() string {
+	return v.ServiceDomain.ServiceId
+}
+
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ServiceDomain)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshallistServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain struct {
+	Id string `json:"id"`
+
+	Domain string `json:"domain"`
+
+	Suffix string `json:"suffix"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+}
+
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) __premarshalJSON() (*__premarshallistServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain, error) {
+	var retval __premarshallistServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain
+
+	retval.Id = v.ServiceDomain.Id
+	retval.Domain = v.ServiceDomain.Domain
+	retval.Suffix = v.ServiceDomain.Suffix
+	retval.EnvironmentId = v.ServiceDomain.EnvironmentId
+	retval.ServiceId = v.ServiceDomain.ServiceId
+	return &retval, nil
+}
+
+// listServiceDomainsResponse is returned by listServiceDomains on success.
+type listServiceDomainsResponse struct {
+	// All domains
+	Domains listServiceDomainsDomainsAllDomains `json:"domains"`
+}
+
+// GetDomains returns listServiceDomainsResponse.Domains, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsResponse) GetDomains() listServiceDomainsDomainsAllDomains {
+	return v.Domains
+}
+
 // updateDeploymentTriggerDeploymentTriggerUpdateDeploymentTrigger includes the requested fields of the GraphQL type DeploymentTrigger.
 type updateDeploymentTriggerDeploymentTriggerUpdateDeploymentTrigger struct {
 	DeploymentTrigger `json:"-"`
@@ -2257,6 +2844,15 @@ func (v *updateProjectResponse) GetProjectUpdate() updateProjectProjectUpdatePro
 	return v.ProjectUpdate
 }
 
+// updateServiceDomainResponse is returned by updateServiceDomain on success.
+type updateServiceDomainResponse struct {
+	// Updates a service domain.
+	ServiceDomainUpdate bool `json:"serviceDomainUpdate"`
+}
+
+// GetServiceDomainUpdate returns updateServiceDomainResponse.ServiceDomainUpdate, and is useful for accessing the field via an interface.
+func (v *updateServiceDomainResponse) GetServiceDomainUpdate() bool { return v.ServiceDomainUpdate }
+
 // updateServiceInstanceResponse is returned by updateServiceInstance on success.
 type updateServiceInstanceResponse struct {
 	// Update a service instance
@@ -2351,6 +2947,51 @@ type upsertVariableResponse struct {
 
 // GetVariableUpsert returns upsertVariableResponse.VariableUpsert, and is useful for accessing the field via an interface.
 func (v *upsertVariableResponse) GetVariableUpsert() bool { return v.VariableUpsert }
+
+func createCustomDomain(
+	ctx context.Context,
+	client graphql.Client,
+	input CustomDomainCreateInput,
+) (*createCustomDomainResponse, error) {
+	req := &graphql.Request{
+		OpName: "createCustomDomain",
+		Query: `
+mutation createCustomDomain ($input: CustomDomainCreateInput!) {
+	customDomainCreate(input: $input) {
+		... CustomDomain
+	}
+}
+fragment CustomDomain on CustomDomain {
+	id
+	domain
+	status {
+		dnsRecords {
+			hostlabel
+			requiredValue
+			zone
+		}
+	}
+	environmentId
+	serviceId
+}
+`,
+		Variables: &__createCustomDomainInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createCustomDomainResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
 
 func createDeploymentTrigger(
 	ctx context.Context,
@@ -2559,6 +3200,75 @@ fragment Service on Service {
 	return &data, err
 }
 
+func createServiceDomain(
+	ctx context.Context,
+	client graphql.Client,
+	input ServiceDomainCreateInput,
+) (*createServiceDomainResponse, error) {
+	req := &graphql.Request{
+		OpName: "createServiceDomain",
+		Query: `
+mutation createServiceDomain ($input: ServiceDomainCreateInput!) {
+	serviceDomainCreate(input: $input) {
+		... ServiceDomain
+	}
+}
+fragment ServiceDomain on ServiceDomain {
+	id
+	domain
+	suffix
+	environmentId
+	serviceId
+}
+`,
+		Variables: &__createServiceDomainInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createServiceDomainResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func deleteCustomDomain(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deleteCustomDomainResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteCustomDomain",
+		Query: `
+mutation deleteCustomDomain ($id: String!) {
+	customDomainDelete(id: $id)
+}
+`,
+		Variables: &__deleteCustomDomainInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deleteCustomDomainResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deleteDeploymentTrigger(
 	ctx context.Context,
 	client graphql.Client,
@@ -2709,6 +3419,36 @@ mutation deleteService ($id: String!) {
 	return &data, err
 }
 
+func deleteServiceDomain(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deleteServiceDomainResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteServiceDomain",
+		Query: `
+mutation deleteServiceDomain ($id: String!) {
+	serviceDomainDelete(id: $id)
+}
+`,
+		Variables: &__deleteServiceDomainInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deleteServiceDomainResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deleteVariable(
 	ctx context.Context,
 	client graphql.Client,
@@ -2728,6 +3468,53 @@ mutation deleteVariable ($input: VariableDeleteInput!) {
 	var err error
 
 	var data deleteVariableResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getCustomDomain(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+	projectId string,
+) (*getCustomDomainResponse, error) {
+	req := &graphql.Request{
+		OpName: "getCustomDomain",
+		Query: `
+query getCustomDomain ($id: String!, $projectId: String!) {
+	customDomain(id: $id, projectId: $projectId) {
+		... CustomDomain
+	}
+}
+fragment CustomDomain on CustomDomain {
+	id
+	domain
+	status {
+		dnsRecords {
+			hostlabel
+			requiredValue
+			zone
+		}
+	}
+	environmentId
+	serviceId
+}
+`,
+		Variables: &__getCustomDomainInput{
+			Id:        id,
+			ProjectId: projectId,
+		},
+	}
+	var err error
+
+	var data getCustomDomainResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
@@ -3135,6 +3922,51 @@ fragment DeploymentTrigger on DeploymentTrigger {
 	return &data, err
 }
 
+func listServiceDomains(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	serviceId string,
+	projectId string,
+) (*listServiceDomainsResponse, error) {
+	req := &graphql.Request{
+		OpName: "listServiceDomains",
+		Query: `
+query listServiceDomains ($environmentId: String!, $serviceId: String!, $projectId: String!) {
+	domains(environmentId: $environmentId, serviceId: $serviceId, projectId: $projectId) {
+		serviceDomains {
+			... ServiceDomain
+		}
+	}
+}
+fragment ServiceDomain on ServiceDomain {
+	id
+	domain
+	suffix
+	environmentId
+	serviceId
+}
+`,
+		Variables: &__listServiceDomainsInput{
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+			ProjectId:     projectId,
+		},
+	}
+	var err error
+
+	var data listServiceDomainsResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func updateDeploymentTrigger(
 	ctx context.Context,
 	client graphql.Client,
@@ -3302,6 +4134,36 @@ fragment Service on Service {
 	var err error
 
 	var data updateServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func updateServiceDomain(
+	ctx context.Context,
+	client graphql.Client,
+	input ServiceDomainUpdateInput,
+) (*updateServiceDomainResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateServiceDomain",
+		Query: `
+mutation updateServiceDomain ($input: ServiceDomainUpdateInput!) {
+	serviceDomainUpdate(input: $input)
+}
+`,
+		Variables: &__updateServiceDomainInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data updateServiceDomainResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

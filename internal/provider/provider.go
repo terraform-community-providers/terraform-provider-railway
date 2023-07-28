@@ -102,6 +102,8 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 		NewVariableResource,
 		NewSharedVariableResource,
 		NewDeploymentTriggerResource,
+		NewCustomDomainResource,
+		NewServiceDomainResource,
 	}
 }
 
