@@ -36,6 +36,7 @@ mutation updateService(
 # @genqlient(for: "ServiceSource.repo", pointer: true)
 # @genqlient(for: "ServiceInstance.rootDirectory", pointer: true)
 # @genqlient(for: "ServiceInstance.railwayConfigFile", pointer: true)
+# @genqlient(for: "ServiceInstance.startCommand", pointer: true)
 query getServiceInstance(
   $environmentId: String!
   $serviceId: String!
@@ -48,6 +49,7 @@ query getServiceInstance(
     rootDirectory
     railwayConfigFile
     cronSchedule
+    startCommand
   }
 }
 
