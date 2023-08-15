@@ -37,6 +37,7 @@ type ServiceResourceModel struct {
 	SourceRepo    types.String `tfsdk:"source_repo"`
 	RootDirectory types.String `tfsdk:"root_directory"`
 	ConfigPath    types.String `tfsdk:"config_path"`
+	StartCommand  types.String `tfsdk:"start_command"`
 }
 
 func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -93,7 +94,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"root_directory": schema.StringAttribute{
-				MarkdownDescription: "Directory to user for the service.",
+				MarkdownDescription: "Directory to use for the service.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -101,6 +102,13 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"config_path": schema.StringAttribute{
 				MarkdownDescription: "Path to the Railway config file.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+				},
+			},
+			"start_command": schema.StringAttribute{
+				MarkdownDescription: "Command to start the service.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -321,6 +329,10 @@ func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdate
 		instanceInput.RailwayConfigFile = data.ConfigPath.ValueString()
 	}
 
+	if !data.StartCommand.IsNull() {
+		instanceInput.StartCommand = data.StartCommand.ValueStringPointer()
+	}
+
 	return instanceInput
 }
 
@@ -358,6 +370,10 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		if response.ServiceInstance.Source.Repo != nil {
 			data.SourceRepo = types.StringValue(*response.ServiceInstance.Source.Repo)
 		}
+	}
+
+	if response.ServiceInstance.StartCommand != nil && len(*response.ServiceInstance.StartCommand) != 0 {
+		data.StartCommand = types.StringValue(*response.ServiceInstance.StartCommand)
 	}
 
 	return nil
