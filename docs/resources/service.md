@@ -32,10 +32,10 @@ resource "railway_service" "example" {
 
 ### Optional
 
-- `config_path` (String) Path to the Railway config file.
+- `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
 - `cron_schedule` (String) Cron schedule of the service.
-- `root_directory` (String) Directory to user for the service.
-- `source_image` (String) Source image of the service. Conflicts with `source_repo`.
+- `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
+- `source_image` (String) Source image of the service. Conflicts with `source_repo`, `root_directory` and `config_path`.
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
 
 ### Read-Only

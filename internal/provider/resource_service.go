@@ -79,7 +79,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"source_image": schema.StringAttribute{
-				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`.",
+				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `root_directory` and `config_path`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -93,14 +93,14 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"root_directory": schema.StringAttribute{
-				MarkdownDescription: "Directory to user for the service.",
+				MarkdownDescription: "Directory to user for the service. Conflicts with `source_image`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
 				},
 			},
 			"config_path": schema.StringAttribute{
-				MarkdownDescription: "Path to the Railway config file.",
+				MarkdownDescription: "Path to the Railway config file. Conflicts with `source_image`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
