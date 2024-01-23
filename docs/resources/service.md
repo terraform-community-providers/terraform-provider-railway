@@ -37,10 +37,24 @@ resource "railway_service" "example" {
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `root_directory` and `config_path`.
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
+- `volume` (Attributes) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
 
 ### Read-Only
 
 - `id` (String) Identifier of the service.
+
+<a id="nestedatt--volume"></a>
+### Nested Schema for `volume`
+
+Required:
+
+- `mount_path` (String) Mount path of the volume.
+- `name` (String) Name of the volume.
+
+Read-Only:
+
+- `id` (String) Identifier of the volume.
+- `size` (Number) Size of the volume in MB.
 
 ## Import
 

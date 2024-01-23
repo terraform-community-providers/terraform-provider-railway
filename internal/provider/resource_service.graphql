@@ -75,3 +75,62 @@ mutation updateServiceInstance(
 mutation deleteService($id: String!) {
   serviceDelete(id: $id)
 }
+
+fragment Volume on Volume {
+  id
+  name
+  volumeInstances {
+    edges {
+      node {
+        id
+        environmentId
+        serviceId
+        mountPath
+        sizeMB
+      }
+    }
+  }
+}
+
+query getVolumeInstances($id: String!) {
+  project(id: $id) {
+    volumes {
+      edges {
+        node {
+          ...Volume
+        }
+      }
+    }
+  }
+}
+
+# @genqlient(for: "VolumeCreateInput.serviceId", pointer: true)
+# @genqlient(for: "VolumeCreateInput.environmentId", omitempty: true, pointer: true)
+mutation createVolume(
+  $input: VolumeCreateInput!
+) {
+  volumeCreate(input: $input) {
+    ...Volume
+  }
+}
+
+mutation updateVolume(
+  $id: String!
+  $input: VolumeUpdateInput!
+) {
+  volumeUpdate(volumeId: $id, input: $input) {
+    ...Volume
+  }
+}
+
+# @genqlient(for: "VolumeInstanceUpdateInput.state", omitempty: true, pointer: true)
+mutation updateVolumeInstance(
+  $id: String!
+  $input: VolumeInstanceUpdateInput!
+) {
+  volumeInstanceUpdate(volumeId: $id, environmentId: null, input: $input)
+}
+
+mutation deleteVolume($id: String!) {
+  volumeDelete(volumeId: $id)
+}

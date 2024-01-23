@@ -98,7 +98,6 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 		NewProjectResource,
 		NewEnvironmentResource,
 		NewServiceResource,
-		NewPluginResource,
 		NewVariableResource,
 		NewSharedVariableResource,
 		NewDeploymentTriggerResource,
@@ -108,9 +107,7 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 }
 
 func (p *RailwayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		NewPluginVariableDataSource,
-	}
+	return []func() datasource.DataSource{}
 }
 
 func New(version string) func() provider.Provider {

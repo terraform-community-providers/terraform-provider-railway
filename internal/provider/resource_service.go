@@ -7,13 +7,16 @@ import (
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,6 +31,20 @@ type ServiceResource struct {
 	client *graphql.Client
 }
 
+type ServiceResourceVolumeModel struct {
+	Id        types.String  `tfsdk:"id"`
+	Name      types.String  `tfsdk:"name"`
+	MountPath types.String  `tfsdk:"mount_path"`
+	Size      types.Float64 `tfsdk:"size"`
+}
+
+var volumeAttrTypes = map[string]attr.Type{
+	"id":         types.StringType,
+	"name":       types.StringType,
+	"mount_path": types.StringType,
+	"size":       types.Float64Type,
+}
+
 type ServiceResourceModel struct {
 	Id            types.String `tfsdk:"id"`
 	Name          types.String `tfsdk:"name"`
@@ -37,6 +54,7 @@ type ServiceResourceModel struct {
 	SourceRepo    types.String `tfsdk:"source_repo"`
 	RootDirectory types.String `tfsdk:"root_directory"`
 	ConfigPath    types.String `tfsdk:"config_path"`
+	Volume        types.Object `tfsdk:"volume"`
 }
 
 func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -106,6 +124,40 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringvalidator.UTF8LengthAtLeast(1),
 				},
 			},
+			"volume": schema.SingleNestedAttribute{
+				MarkdownDescription: "Volume connected to the service.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						MarkdownDescription: "Identifier of the volume.",
+						Computed:            true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						MarkdownDescription: "Name of the volume.",
+						Required:            true,
+						Validators: []validator.String{
+							stringvalidator.UTF8LengthAtLeast(1),
+						},
+					},
+					"mount_path": schema.StringAttribute{
+						MarkdownDescription: "Mount path of the volume.",
+						Required:            true,
+						Validators: []validator.String{
+							stringvalidator.UTF8LengthAtLeast(1),
+						},
+					},
+					"size": schema.Float64Attribute{
+						MarkdownDescription: "Size of the volume in MB.",
+						Computed:            true,
+						PlanModifiers: []planmodifier.Float64{
+							float64planmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -141,6 +193,7 @@ func (r *ServiceResource) Configure(ctx context.Context, req resource.ConfigureR
 
 func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data *ServiceResourceModel
+	var volumeData *ServiceResourceVolumeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -168,6 +221,38 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	data.Name = types.StringValue(service.Name)
 	data.ProjectId = types.StringValue(service.ProjectId)
 
+	if !data.Volume.IsNull() {
+		resp.Diagnostics.Append(data.Volume.As(ctx, &volumeData, basetypes.ObjectAsOptions{})...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		volumeResponse, err := createVolume(ctx, *r.client, VolumeCreateInput{
+			MountPath: volumeData.MountPath.ValueString(),
+			ProjectId: data.ProjectId.ValueString(),
+			ServiceId: data.Id.ValueStringPointer(),
+		})
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create volume, got error: %s", err))
+			return
+		}
+
+		tflog.Trace(ctx, "created a volume")
+
+		_, err = updateVolume(ctx, *r.client, volumeResponse.VolumeCreate.Volume.Id, VolumeUpdateInput{
+			Name: volumeData.Name.ValueString(),
+		})
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update volume, got error: %s", err))
+			return
+		}
+
+		tflog.Trace(ctx, "updated a volume")
+	}
+
 	instanceInput := buildServiceInstanceInput(data)
 
 	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
@@ -183,6 +268,13 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service settings, got error: %s", err))
+		return
+	}
+
+	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
 		return
 	}
 
@@ -218,13 +310,30 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
+	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data *ServiceResourceModel
+	var volumeData *ServiceResourceVolumeModel
+
+	var state *ServiceResourceModel
+	var volumeState *ServiceResourceVolumeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -260,10 +369,110 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	tflog.Trace(ctx, "updated service settings")
 
+	// Delete volume if it was removed
+	if data.Volume.IsNull() && !state.Volume.IsNull() {
+		resp.Diagnostics.Append(state.Volume.As(ctx, &volumeState, basetypes.ObjectAsOptions{})...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		_, err := deleteVolume(ctx, *r.client, volumeState.Id.ValueString())
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete volume, got error: %s", err))
+			return
+		}
+
+		tflog.Trace(ctx, "deleted a volume")
+	}
+
+	// Create volume if it was added
+	if !data.Volume.IsNull() && state.Volume.IsNull() {
+		resp.Diagnostics.Append(data.Volume.As(ctx, &volumeData, basetypes.ObjectAsOptions{})...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		volumeResponse, err := createVolume(ctx, *r.client, VolumeCreateInput{
+			MountPath: volumeData.MountPath.ValueString(),
+			ProjectId: data.ProjectId.ValueString(),
+			ServiceId: data.Id.ValueStringPointer(),
+		})
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create volume, got error: %s", err))
+			return
+		}
+
+		tflog.Trace(ctx, "created a volume")
+
+		_, err = updateVolume(ctx, *r.client, volumeResponse.VolumeCreate.Volume.Id, VolumeUpdateInput{
+			Name: volumeData.Name.ValueString(),
+		})
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update volume, got error: %s", err))
+			return
+		}
+
+		tflog.Trace(ctx, "updated a volume")
+	}
+
+	// Update volume if it was changed
+	if !data.Volume.IsNull() && !state.Volume.IsNull() {
+		resp.Diagnostics.Append(state.Volume.As(ctx, &volumeState, basetypes.ObjectAsOptions{})...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		resp.Diagnostics.Append(data.Volume.As(ctx, &volumeData, basetypes.ObjectAsOptions{})...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if volumeState.Name != volumeData.Name {
+			_, err := updateVolume(ctx, *r.client, volumeState.Id.ValueString(), VolumeUpdateInput{
+				Name: volumeData.Name.ValueString(),
+			})
+
+			if err != nil {
+				resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update volume, got error: %s", err))
+				return
+			}
+
+			tflog.Trace(ctx, "updated a volume")
+		}
+
+		if volumeState.MountPath != volumeData.MountPath {
+			_, err := updateVolumeInstance(ctx, *r.client, volumeState.Id.ValueString(), VolumeInstanceUpdateInput{
+				MountPath: volumeData.MountPath.ValueString(),
+				ServiceId: data.Id.ValueString(),
+			})
+
+			if err != nil {
+				resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update volume instance, got error: %s", err))
+				return
+			}
+
+			tflog.Trace(ctx, "updated a volume instance")
+		}
+	}
+
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service settings, got error: %s", err))
+		return
+	}
+
+	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
 		return
 	}
 
@@ -272,6 +481,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 
 func (r *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data *ServiceResourceModel
+	var volumeData *ServiceResourceVolumeModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -287,6 +497,23 @@ func (r *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	tflog.Trace(ctx, "deleted a service")
+
+	if !data.Volume.IsNull() {
+		resp.Diagnostics.Append(data.Volume.As(ctx, &volumeData, basetypes.ObjectAsOptions{})...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		_, err := deleteVolume(ctx, *r.client, volumeData.Id.ValueString())
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete volume, got error: %s", err))
+			return
+		}
+
+		tflog.Trace(ctx, "deleted a volume")
+	}
 }
 
 func (r *ServiceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -357,6 +584,41 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 
 		if response.ServiceInstance.Source.Repo != nil {
 			data.SourceRepo = types.StringValue(*response.ServiceInstance.Source.Repo)
+		}
+	}
+
+	return nil
+}
+
+func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
+	data.Volume = types.ObjectNull(volumeAttrTypes)
+
+	// Read the service again to get the updated source attributes
+	_, environment, err := defaultEnvironmentForProject(ctx, client, projectId)
+
+	if err != nil {
+		return err
+	}
+
+	response, err := getVolumeInstances(ctx, client, projectId)
+
+	if err != nil {
+		return err
+	}
+
+	for _, volume := range response.Project.Volumes.Edges {
+		for _, volumeInstance := range volume.Node.VolumeInstances.Edges {
+			if volumeInstance.Node.ServiceId == serviceId && volumeInstance.Node.EnvironmentId == environment.Id {
+				data.Volume = types.ObjectValueMust(
+					volumeAttrTypes,
+					map[string]attr.Value{
+						"id":         types.StringValue(volume.Node.Id),
+						"name":       types.StringValue(volume.Node.Name),
+						"mount_path": types.StringValue(volumeInstance.Node.MountPath),
+						"size":       types.Float64Value(float64(volumeInstance.Node.SizeMB)),
+					},
+				)
+			}
 		}
 	}
 
