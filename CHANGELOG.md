@@ -1,3 +1,8 @@
+## 0.3.1
+
+### Bug fixes
+* Fix issue with replicas of a service being set to `0`.
+
 ## 0.3.0
 
 ### BREAKING

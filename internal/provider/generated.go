@@ -480,9 +480,9 @@ type ServiceInstanceUpdateInput struct {
 	HealthcheckPath         *string                 `json:"healthcheckPath,omitempty"`
 	HealthcheckTimeout      *int                    `json:"healthcheckTimeout,omitempty"`
 	NixpacksPlan            *map[string]interface{} `json:"nixpacksPlan,omitempty"`
-	NumReplicas             int                     `json:"numReplicas"`
+	NumReplicas             *int                    `json:"numReplicas,omitempty"`
 	RailwayConfigFile       string                  `json:"railwayConfigFile"`
-	Region                  string                  `json:"region"`
+	Region                  *string                 `json:"region,omitempty"`
 	RestartPolicyMaxRetries *int                    `json:"restartPolicyMaxRetries,omitempty"`
 	RestartPolicyType       *RestartPolicyType      `json:"restartPolicyType,omitempty"`
 	RootDirectory           string                  `json:"rootDirectory"`
@@ -510,13 +510,13 @@ func (v *ServiceInstanceUpdateInput) GetHealthcheckTimeout() *int { return v.Hea
 func (v *ServiceInstanceUpdateInput) GetNixpacksPlan() *map[string]interface{} { return v.NixpacksPlan }
 
 // GetNumReplicas returns ServiceInstanceUpdateInput.NumReplicas, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetNumReplicas() int { return v.NumReplicas }
+func (v *ServiceInstanceUpdateInput) GetNumReplicas() *int { return v.NumReplicas }
 
 // GetRailwayConfigFile returns ServiceInstanceUpdateInput.RailwayConfigFile, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() string { return v.RailwayConfigFile }
 
 // GetRegion returns ServiceInstanceUpdateInput.Region, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRegion() string { return v.Region }
+func (v *ServiceInstanceUpdateInput) GetRegion() *string { return v.Region }
 
 // GetRestartPolicyMaxRetries returns ServiceInstanceUpdateInput.RestartPolicyMaxRetries, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRestartPolicyMaxRetries() *int {

@@ -54,6 +54,8 @@ query getServiceInstance(
 # @genqlient(for: "ServiceInstanceUpdateInput.cronSchedule", pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.source", pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.numReplicas", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.region", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.builder", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.startCommand", omitempty: true, pointer: true)
