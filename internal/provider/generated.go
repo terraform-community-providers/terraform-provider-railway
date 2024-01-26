@@ -562,6 +562,49 @@ func (v *ServiceUpdateInput) GetIcon() string { return v.Icon }
 // GetName returns ServiceUpdateInput.Name, and is useful for accessing the field via an interface.
 func (v *ServiceUpdateInput) GetName() string { return v.Name }
 
+// TCPProxy includes the GraphQL fields of TCPProxy requested by the fragment TCPProxy.
+type TCPProxy struct {
+	Id              string `json:"id"`
+	ApplicationPort int    `json:"applicationPort"`
+	ProxyPort       int    `json:"proxyPort"`
+	Domain          string `json:"domain"`
+	EnvironmentId   string `json:"environmentId"`
+	ServiceId       string `json:"serviceId"`
+}
+
+// GetId returns TCPProxy.Id, and is useful for accessing the field via an interface.
+func (v *TCPProxy) GetId() string { return v.Id }
+
+// GetApplicationPort returns TCPProxy.ApplicationPort, and is useful for accessing the field via an interface.
+func (v *TCPProxy) GetApplicationPort() int { return v.ApplicationPort }
+
+// GetProxyPort returns TCPProxy.ProxyPort, and is useful for accessing the field via an interface.
+func (v *TCPProxy) GetProxyPort() int { return v.ProxyPort }
+
+// GetDomain returns TCPProxy.Domain, and is useful for accessing the field via an interface.
+func (v *TCPProxy) GetDomain() string { return v.Domain }
+
+// GetEnvironmentId returns TCPProxy.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *TCPProxy) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns TCPProxy.ServiceId, and is useful for accessing the field via an interface.
+func (v *TCPProxy) GetServiceId() string { return v.ServiceId }
+
+type TCPProxyCreateInput struct {
+	ApplicationPort int    `json:"applicationPort"`
+	EnvironmentId   string `json:"environmentId"`
+	ServiceId       string `json:"serviceId"`
+}
+
+// GetApplicationPort returns TCPProxyCreateInput.ApplicationPort, and is useful for accessing the field via an interface.
+func (v *TCPProxyCreateInput) GetApplicationPort() int { return v.ApplicationPort }
+
+// GetEnvironmentId returns TCPProxyCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *TCPProxyCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns TCPProxyCreateInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *TCPProxyCreateInput) GetServiceId() string { return v.ServiceId }
+
 type VariableDeleteInput struct {
 	EnvironmentId string  `json:"environmentId"`
 	Name          string  `json:"name"`
@@ -786,6 +829,14 @@ type __createServiceInput struct {
 // GetInput returns __createServiceInput.Input, and is useful for accessing the field via an interface.
 func (v *__createServiceInput) GetInput() ServiceCreateInput { return v.Input }
 
+// __createTcpProxyInput is used internally by genqlient
+type __createTcpProxyInput struct {
+	Input TCPProxyCreateInput `json:"input"`
+}
+
+// GetInput returns __createTcpProxyInput.Input, and is useful for accessing the field via an interface.
+func (v *__createTcpProxyInput) GetInput() TCPProxyCreateInput { return v.Input }
+
 // __createVolumeInput is used internally by genqlient
 type __createVolumeInput struct {
 	Input VolumeCreateInput `json:"input"`
@@ -841,6 +892,14 @@ type __deleteServiceInput struct {
 
 // GetId returns __deleteServiceInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteServiceInput) GetId() string { return v.Id }
+
+// __deleteTcpProxyInput is used internally by genqlient
+type __deleteTcpProxyInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deleteTcpProxyInput.Id, and is useful for accessing the field via an interface.
+func (v *__deleteTcpProxyInput) GetId() string { return v.Id }
 
 // __deleteVariableInput is used internally by genqlient
 type __deleteVariableInput struct {
@@ -925,6 +984,18 @@ func (v *__getSharedVariablesInput) GetProjectId() string { return v.ProjectId }
 
 // GetEnvironmentId returns __getSharedVariablesInput.EnvironmentId, and is useful for accessing the field via an interface.
 func (v *__getSharedVariablesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// __getTcpProxyInput is used internally by genqlient
+type __getTcpProxyInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetEnvironmentId returns __getTcpProxyInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getTcpProxyInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __getTcpProxyInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__getTcpProxyInput) GetServiceId() string { return v.ServiceId }
 
 // __getVariablesInput is used internally by genqlient
 type __getVariablesInput struct {
@@ -1636,6 +1707,103 @@ func (v *createServiceServiceCreateService) __premarshalJSON() (*__premarshalcre
 	return &retval, nil
 }
 
+// createTcpProxyResponse is returned by createTcpProxy on success.
+type createTcpProxyResponse struct {
+	// Creates a new TCP proxy for a service instance.
+	TcpProxyCreate createTcpProxyTcpProxyCreateTCPProxy `json:"tcpProxyCreate"`
+}
+
+// GetTcpProxyCreate returns createTcpProxyResponse.TcpProxyCreate, and is useful for accessing the field via an interface.
+func (v *createTcpProxyResponse) GetTcpProxyCreate() createTcpProxyTcpProxyCreateTCPProxy {
+	return v.TcpProxyCreate
+}
+
+// createTcpProxyTcpProxyCreateTCPProxy includes the requested fields of the GraphQL type TCPProxy.
+type createTcpProxyTcpProxyCreateTCPProxy struct {
+	TCPProxy `json:"-"`
+}
+
+// GetId returns createTcpProxyTcpProxyCreateTCPProxy.Id, and is useful for accessing the field via an interface.
+func (v *createTcpProxyTcpProxyCreateTCPProxy) GetId() string { return v.TCPProxy.Id }
+
+// GetApplicationPort returns createTcpProxyTcpProxyCreateTCPProxy.ApplicationPort, and is useful for accessing the field via an interface.
+func (v *createTcpProxyTcpProxyCreateTCPProxy) GetApplicationPort() int {
+	return v.TCPProxy.ApplicationPort
+}
+
+// GetProxyPort returns createTcpProxyTcpProxyCreateTCPProxy.ProxyPort, and is useful for accessing the field via an interface.
+func (v *createTcpProxyTcpProxyCreateTCPProxy) GetProxyPort() int { return v.TCPProxy.ProxyPort }
+
+// GetDomain returns createTcpProxyTcpProxyCreateTCPProxy.Domain, and is useful for accessing the field via an interface.
+func (v *createTcpProxyTcpProxyCreateTCPProxy) GetDomain() string { return v.TCPProxy.Domain }
+
+// GetEnvironmentId returns createTcpProxyTcpProxyCreateTCPProxy.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *createTcpProxyTcpProxyCreateTCPProxy) GetEnvironmentId() string {
+	return v.TCPProxy.EnvironmentId
+}
+
+// GetServiceId returns createTcpProxyTcpProxyCreateTCPProxy.ServiceId, and is useful for accessing the field via an interface.
+func (v *createTcpProxyTcpProxyCreateTCPProxy) GetServiceId() string { return v.TCPProxy.ServiceId }
+
+func (v *createTcpProxyTcpProxyCreateTCPProxy) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createTcpProxyTcpProxyCreateTCPProxy
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createTcpProxyTcpProxyCreateTCPProxy = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.TCPProxy)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreateTcpProxyTcpProxyCreateTCPProxy struct {
+	Id string `json:"id"`
+
+	ApplicationPort int `json:"applicationPort"`
+
+	ProxyPort int `json:"proxyPort"`
+
+	Domain string `json:"domain"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+}
+
+func (v *createTcpProxyTcpProxyCreateTCPProxy) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createTcpProxyTcpProxyCreateTCPProxy) __premarshalJSON() (*__premarshalcreateTcpProxyTcpProxyCreateTCPProxy, error) {
+	var retval __premarshalcreateTcpProxyTcpProxyCreateTCPProxy
+
+	retval.Id = v.TCPProxy.Id
+	retval.ApplicationPort = v.TCPProxy.ApplicationPort
+	retval.ProxyPort = v.TCPProxy.ProxyPort
+	retval.Domain = v.TCPProxy.Domain
+	retval.EnvironmentId = v.TCPProxy.EnvironmentId
+	retval.ServiceId = v.TCPProxy.ServiceId
+	return &retval, nil
+}
+
 // createVolumeResponse is returned by createVolume on success.
 type createVolumeResponse struct {
 	// Create a persistent volume in a project
@@ -1768,6 +1936,15 @@ type deleteServiceResponse struct {
 
 // GetServiceDelete returns deleteServiceResponse.ServiceDelete, and is useful for accessing the field via an interface.
 func (v *deleteServiceResponse) GetServiceDelete() bool { return v.ServiceDelete }
+
+// deleteTcpProxyResponse is returned by deleteTcpProxy on success.
+type deleteTcpProxyResponse struct {
+	// Deletes a TCP proxy by id
+	TcpProxyDelete bool `json:"tcpProxyDelete"`
+}
+
+// GetTcpProxyDelete returns deleteTcpProxyResponse.TcpProxyDelete, and is useful for accessing the field via an interface.
+func (v *deleteTcpProxyResponse) GetTcpProxyDelete() bool { return v.TcpProxyDelete }
 
 // deleteVariableResponse is returned by deleteVariable on success.
 type deleteVariableResponse struct {
@@ -2275,6 +2452,97 @@ type getSharedVariablesResponse struct {
 
 // GetVariables returns getSharedVariablesResponse.Variables, and is useful for accessing the field via an interface.
 func (v *getSharedVariablesResponse) GetVariables() map[string]interface{} { return v.Variables }
+
+// getTcpProxyResponse is returned by getTcpProxy on success.
+type getTcpProxyResponse struct {
+	// All TCP proxies for a service instance
+	TcpProxies []getTcpProxyTcpProxiesTCPProxy `json:"tcpProxies"`
+}
+
+// GetTcpProxies returns getTcpProxyResponse.TcpProxies, and is useful for accessing the field via an interface.
+func (v *getTcpProxyResponse) GetTcpProxies() []getTcpProxyTcpProxiesTCPProxy { return v.TcpProxies }
+
+// getTcpProxyTcpProxiesTCPProxy includes the requested fields of the GraphQL type TCPProxy.
+type getTcpProxyTcpProxiesTCPProxy struct {
+	TCPProxy `json:"-"`
+}
+
+// GetId returns getTcpProxyTcpProxiesTCPProxy.Id, and is useful for accessing the field via an interface.
+func (v *getTcpProxyTcpProxiesTCPProxy) GetId() string { return v.TCPProxy.Id }
+
+// GetApplicationPort returns getTcpProxyTcpProxiesTCPProxy.ApplicationPort, and is useful for accessing the field via an interface.
+func (v *getTcpProxyTcpProxiesTCPProxy) GetApplicationPort() int { return v.TCPProxy.ApplicationPort }
+
+// GetProxyPort returns getTcpProxyTcpProxiesTCPProxy.ProxyPort, and is useful for accessing the field via an interface.
+func (v *getTcpProxyTcpProxiesTCPProxy) GetProxyPort() int { return v.TCPProxy.ProxyPort }
+
+// GetDomain returns getTcpProxyTcpProxiesTCPProxy.Domain, and is useful for accessing the field via an interface.
+func (v *getTcpProxyTcpProxiesTCPProxy) GetDomain() string { return v.TCPProxy.Domain }
+
+// GetEnvironmentId returns getTcpProxyTcpProxiesTCPProxy.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *getTcpProxyTcpProxiesTCPProxy) GetEnvironmentId() string { return v.TCPProxy.EnvironmentId }
+
+// GetServiceId returns getTcpProxyTcpProxiesTCPProxy.ServiceId, and is useful for accessing the field via an interface.
+func (v *getTcpProxyTcpProxiesTCPProxy) GetServiceId() string { return v.TCPProxy.ServiceId }
+
+func (v *getTcpProxyTcpProxiesTCPProxy) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getTcpProxyTcpProxiesTCPProxy
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getTcpProxyTcpProxiesTCPProxy = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.TCPProxy)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetTcpProxyTcpProxiesTCPProxy struct {
+	Id string `json:"id"`
+
+	ApplicationPort int `json:"applicationPort"`
+
+	ProxyPort int `json:"proxyPort"`
+
+	Domain string `json:"domain"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+}
+
+func (v *getTcpProxyTcpProxiesTCPProxy) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getTcpProxyTcpProxiesTCPProxy) __premarshalJSON() (*__premarshalgetTcpProxyTcpProxiesTCPProxy, error) {
+	var retval __premarshalgetTcpProxyTcpProxiesTCPProxy
+
+	retval.Id = v.TCPProxy.Id
+	retval.ApplicationPort = v.TCPProxy.ApplicationPort
+	retval.ProxyPort = v.TCPProxy.ProxyPort
+	retval.Domain = v.TCPProxy.Domain
+	retval.EnvironmentId = v.TCPProxy.EnvironmentId
+	retval.ServiceId = v.TCPProxy.ServiceId
+	return &retval, nil
+}
 
 // getVariablesResponse is returned by getVariables on success.
 type getVariablesResponse struct {
@@ -3305,6 +3573,46 @@ fragment ServiceDomain on ServiceDomain {
 	return &data, err
 }
 
+func createTcpProxy(
+	ctx context.Context,
+	client graphql.Client,
+	input TCPProxyCreateInput,
+) (*createTcpProxyResponse, error) {
+	req := &graphql.Request{
+		OpName: "createTcpProxy",
+		Query: `
+mutation createTcpProxy ($input: TCPProxyCreateInput!) {
+	tcpProxyCreate(input: $input) {
+		... TCPProxy
+	}
+}
+fragment TCPProxy on TCPProxy {
+	id
+	applicationPort
+	proxyPort
+	domain
+	environmentId
+	serviceId
+}
+`,
+		Variables: &__createTcpProxyInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createTcpProxyResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func createVolume(
 	ctx context.Context,
 	client graphql.Client,
@@ -3521,6 +3829,36 @@ mutation deleteServiceDomain ($id: String!) {
 	var err error
 
 	var data deleteServiceDomainResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func deleteTcpProxy(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deleteTcpProxyResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteTcpProxy",
+		Query: `
+mutation deleteTcpProxy ($id: String!) {
+	tcpProxyDelete(id: $id)
+}
+`,
+		Variables: &__deleteTcpProxyInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deleteTcpProxyResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
@@ -3866,6 +4204,48 @@ query getSharedVariables ($projectId: String!, $environmentId: String!) {
 	var err error
 
 	var data getSharedVariablesResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getTcpProxy(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	serviceId string,
+) (*getTcpProxyResponse, error) {
+	req := &graphql.Request{
+		OpName: "getTcpProxy",
+		Query: `
+query getTcpProxy ($environmentId: String!, $serviceId: String!) {
+	tcpProxies(environmentId: $environmentId, serviceId: $serviceId) {
+		... TCPProxy
+	}
+}
+fragment TCPProxy on TCPProxy {
+	id
+	applicationPort
+	proxyPort
+	domain
+	environmentId
+	serviceId
+}
+`,
+		Variables: &__getTcpProxyInput{
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+		},
+	}
+	var err error
+
+	var data getTcpProxyResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

@@ -1,0 +1,29 @@
+fragment TCPProxy on TCPProxy {
+  id
+  applicationPort
+  proxyPort
+  domain
+  environmentId
+  serviceId
+}
+
+query getTcpProxy(
+  $environmentId: String!
+  $serviceId: String!
+) {
+  tcpProxies(environmentId: $environmentId, serviceId: $serviceId) {
+    ...TCPProxy
+  }
+}
+
+mutation createTcpProxy(
+  $input: TCPProxyCreateInput!
+) {
+  tcpProxyCreate(input: $input) {
+    ...TCPProxy
+  }
+}
+
+mutation deleteTcpProxy($id: String!) {
+  tcpProxyDelete(id: $id)
+}

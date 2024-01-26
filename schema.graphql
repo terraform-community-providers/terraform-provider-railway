@@ -1046,6 +1046,9 @@ type Mutation {
   """Configure a shared variable."""
   sharedVariableConfigure(input: SharedVariableConfigureInput!): Variable!
 
+  """Creates a new TCP proxy for a service instance."""
+  tcpProxyCreate(input: TCPProxyCreateInput!): TCPProxy!
+
   """Deletes a TCP proxy by id"""
   tcpProxyDelete(id: String!): Boolean!
 
@@ -1822,6 +1825,9 @@ type Query {
   """Gets all sessions for authenticated user."""
   sessions(after: String, before: String, first: Int, last: Int): QuerySessionsConnection!
 
+  """All TCP proxies for a service instance"""
+  tcpProxies(environmentId: String!, serviceId: String!): [TCPProxy!]!
+
   """Find a team by ID"""
   team(id: String!): Team!
 
@@ -2168,6 +2174,7 @@ type Service implements Node {
   projectId: String!
   repoTriggers(after: String, before: String, first: Int, last: Int): ServiceRepoTriggersConnection!
   serviceInstances(after: String, before: String, first: Int, last: Int): ServiceServiceInstancesConnection!
+  templateThreadSlug: String
   updatedAt: DateTime!
 }
 
@@ -2418,7 +2425,26 @@ enum SubscriptionState {
   UNPAID
 }
 
+type TCPProxy {
+  applicationPort: Int!
+  createdAt: DateTime
+  deletedAt: DateTime
+  domain: String!
+  environmentId: String!
+  id: ID!
+  proxyPort: Int!
+  serviceId: String!
+  updatedAt: DateTime
+}
+
+input TCPProxyCreateInput {
+  applicationPort: Int!
+  environmentId: String!
+  serviceId: String!
+}
+
 type Team implements Node {
+  adoptionLevel: Float!
   avatar: String
   banReason: String
   createdAt: DateTime!
