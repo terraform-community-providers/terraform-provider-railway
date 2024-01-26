@@ -1,3 +1,13 @@
+## 0.3.0
+
+### BREAKING
+* Remove `railway_plugin` resource
+* Remove `railway_plugin_variable` data source
+
+### Enhancements
+* Add `railway_tcp_proxy` resource
+* Support `volume` in `railway_service` resource
+
 ## 0.2.0
 
 ### Enhancements
