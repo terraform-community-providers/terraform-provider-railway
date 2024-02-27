@@ -37,6 +37,7 @@ resource "railway_service" "example" {
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `root_directory` and `config_path`.
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
+- `source_repo_branch` (String) Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.
 - `volume` (Attributes) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
 
 ### Read-Only
