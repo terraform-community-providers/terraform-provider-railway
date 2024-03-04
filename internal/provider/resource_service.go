@@ -560,11 +560,11 @@ func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdate
 	}
 
 	if !data.RootDirectory.IsNull() {
-		instanceInput.RootDirectory = data.RootDirectory.ValueStringPointer()
+		instanceInput.RootDirectory = data.RootDirectory.ValueString()
 	}
 
 	if !data.ConfigPath.IsNull() {
-		instanceInput.RailwayConfigFile = data.ConfigPath.ValueStringPointer()
+		instanceInput.RailwayConfigFile = data.ConfigPath.ValueString()
 	}
 
 	return instanceInput

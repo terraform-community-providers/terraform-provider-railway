@@ -502,19 +502,19 @@ func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
 type ServiceInstanceUpdateInput struct {
 	BuildCommand            *string                 `json:"buildCommand,omitempty"`
 	Builder                 *Builder                `json:"builder,omitempty"`
-	CronSchedule            *string                 `json:"cronSchedule,omitempty"`
+	CronSchedule            *string                 `json:"cronSchedule"`
 	HealthcheckPath         *string                 `json:"healthcheckPath,omitempty"`
 	HealthcheckTimeout      *int                    `json:"healthcheckTimeout,omitempty"`
 	NixpacksPlan            *map[string]interface{} `json:"nixpacksPlan,omitempty"`
 	NumReplicas             *int                    `json:"numReplicas,omitempty"`
-	RailwayConfigFile       *string                 `json:"railwayConfigFile,omitempty"`
+	RailwayConfigFile       string                  `json:"railwayConfigFile"`
 	Region                  *string                 `json:"region,omitempty"`
 	RestartPolicyMaxRetries *int                    `json:"restartPolicyMaxRetries,omitempty"`
 	RestartPolicyType       *RestartPolicyType      `json:"restartPolicyType,omitempty"`
-	RootDirectory           *string                 `json:"rootDirectory,omitempty"`
+	RootDirectory           string                  `json:"rootDirectory"`
 	Source                  *ServiceSourceInput     `json:"source,omitempty"`
 	StartCommand            *string                 `json:"startCommand,omitempty"`
-	WatchPatterns           []*string               `json:"watchPatterns,omitempty"`
+	WatchPatterns           []*string               `json:"watchPatterns"`
 }
 
 // GetBuildCommand returns ServiceInstanceUpdateInput.BuildCommand, and is useful for accessing the field via an interface.
@@ -539,7 +539,7 @@ func (v *ServiceInstanceUpdateInput) GetNixpacksPlan() *map[string]interface{} {
 func (v *ServiceInstanceUpdateInput) GetNumReplicas() *int { return v.NumReplicas }
 
 // GetRailwayConfigFile returns ServiceInstanceUpdateInput.RailwayConfigFile, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() *string { return v.RailwayConfigFile }
+func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() string { return v.RailwayConfigFile }
 
 // GetRegion returns ServiceInstanceUpdateInput.Region, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRegion() *string { return v.Region }
@@ -555,7 +555,7 @@ func (v *ServiceInstanceUpdateInput) GetRestartPolicyType() *RestartPolicyType {
 }
 
 // GetRootDirectory returns ServiceInstanceUpdateInput.RootDirectory, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRootDirectory() *string { return v.RootDirectory }
+func (v *ServiceInstanceUpdateInput) GetRootDirectory() string { return v.RootDirectory }
 
 // GetSource returns ServiceInstanceUpdateInput.Source, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.Source }

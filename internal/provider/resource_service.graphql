@@ -53,10 +53,8 @@ query getServiceInstance(
   }
 }
 
-# @genqlient(for: "ServiceInstanceUpdateInput.cronSchedule", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.railwayConfigFile", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.rootDirectory", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.watchPatterns", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.cronSchedule", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.watchPatterns", pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.numReplicas", omitempty: true, pointer: true)
