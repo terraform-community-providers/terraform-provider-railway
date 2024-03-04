@@ -1,3 +1,8 @@
+## 0.4.0
+
+### BREAKING
+* Add required `source_repo_branch` to `railway_service` when `source_repo` is present
+
 ## 0.3.1
 
 ### Bug fixes
