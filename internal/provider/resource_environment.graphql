@@ -20,6 +20,7 @@ query getEnvironments($projectId: String!) {
   }
 }
 
+# @genqlient(for: "EnvironmentCreateInput.sourceEnvironmentId", omitempty: true, pointer: true)
 mutation createEnvironment(
   $input: EnvironmentCreateInput!
 ) {

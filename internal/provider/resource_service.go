@@ -46,15 +46,16 @@ var volumeAttrTypes = map[string]attr.Type{
 }
 
 type ServiceResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	Name          types.String `tfsdk:"name"`
-	ProjectId     types.String `tfsdk:"project_id"`
-	CronSchedule  types.String `tfsdk:"cron_schedule"`
-	SourceImage   types.String `tfsdk:"source_image"`
-	SourceRepo    types.String `tfsdk:"source_repo"`
-	RootDirectory types.String `tfsdk:"root_directory"`
-	ConfigPath    types.String `tfsdk:"config_path"`
-	Volume        types.Object `tfsdk:"volume"`
+	Id               types.String `tfsdk:"id"`
+	Name             types.String `tfsdk:"name"`
+	ProjectId        types.String `tfsdk:"project_id"`
+	CronSchedule     types.String `tfsdk:"cron_schedule"`
+	SourceImage      types.String `tfsdk:"source_image"`
+	SourceRepo       types.String `tfsdk:"source_repo"`
+	SourceRepoBranch types.String `tfsdk:"source_repo_branch"`
+	RootDirectory    types.String `tfsdk:"root_directory"`
+	ConfigPath       types.String `tfsdk:"config_path"`
+	Volume           types.Object `tfsdk:"volume"`
 }
 
 func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -97,10 +98,14 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"source_image": schema.StringAttribute{
-				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `root_directory` and `config_path`.",
+				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_repo")),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_repo_branch")),
+					stringvalidator.ConflictsWith(path.MatchRoot("root_directory")),
+					stringvalidator.ConflictsWith(path.MatchRoot("config_path")),
 				},
 			},
 			"source_repo": schema.StringAttribute{
@@ -108,6 +113,15 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(3),
+					stringvalidator.AlsoRequires(path.MatchRoot("source_repo_branch")),
+				},
+			},
+			"source_repo_branch": schema.StringAttribute{
+				MarkdownDescription: "Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+					stringvalidator.AlsoRequires(path.MatchRoot("source_repo")),
 				},
 			},
 			"root_directory": schema.StringAttribute{
@@ -263,6 +277,17 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	tflog.Trace(ctx, "created service settings")
+
+	if !data.SourceRepo.IsNull() || !data.SourceImage.IsNull() {
+		connectInput := buildServiceConnectInput(data)
+
+		_, err := connectService(ctx, *r.client, data.Id.ValueString(), connectInput)
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to connect repo or image to service, got error: %s", err))
+			return
+		}
+	}
 
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
@@ -462,6 +487,13 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 
+	// Handling service connection with source repo or docker image
+	err = updateServiceConnection(ctx, *r.client, data.Id.ValueString(), data, state)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service repo or image connection, got error: %s", err))
+	}
+
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
@@ -523,19 +555,6 @@ func (r *ServiceResource) ImportState(ctx context.Context, req resource.ImportSt
 func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdateInput {
 	var instanceInput ServiceInstanceUpdateInput
 
-	// Update the source attributes
-	if !data.SourceImage.IsNull() {
-		instanceInput.Source = &ServiceSourceInput{
-			Image: data.SourceImage.ValueStringPointer(),
-		}
-	} else if !data.SourceRepo.IsNull() {
-		instanceInput.Source = &ServiceSourceInput{
-			Repo: data.SourceRepo.ValueStringPointer(),
-		}
-	} else {
-		instanceInput.Source = &ServiceSourceInput{}
-	}
-
 	if !data.CronSchedule.IsNull() {
 		instanceInput.CronSchedule = data.CronSchedule.ValueStringPointer()
 	}
@@ -584,6 +603,19 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 
 		if response.ServiceInstance.Source.Repo != nil {
 			data.SourceRepo = types.StringValue(*response.ServiceInstance.Source.Repo)
+
+			triggersResponse, err := listDeploymentTriggers(ctx, client, projectId, environment.Id, serviceId)
+
+			if err != nil {
+				return err
+			}
+
+			// up to 1 deployment trigger is allowed for one (service, environment) pair. So, dealing with [0] only
+			if edges := triggersResponse.DeploymentTriggers.Edges; len(edges) > 0 {
+				data.SourceRepoBranch = types.StringValue(edges[0].Node.Branch)
+			} else {
+				data.SourceRepoBranch = types.StringNull()
+			}
 		}
 	}
 
@@ -623,4 +655,42 @@ func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, proje
 	}
 
 	return nil
+}
+
+func updateServiceConnection(ctx context.Context, client graphql.Client, serviceId string, data *ServiceResourceModel, state *ServiceResourceModel) error {
+
+	isSourceChanged := !state.SourceRepo.Equal(data.SourceRepo) || !state.SourceRepoBranch.Equal(data.SourceRepoBranch) || !state.SourceImage.Equal(data.SourceImage)
+	isSourcesChangedToNull := isSourceChanged && data.SourceRepo.IsNull() && data.SourceRepoBranch.IsNull() && data.SourceImage.IsNull()
+
+	// if all sources are eventually nulls, then just disconnecting all the sources
+	if isSourcesChangedToNull {
+		_, err := disconnectService(ctx, client, serviceId)
+		return err
+	}
+
+	// if some sources are really changed we just propagating these values to Railway. Data is pre-validated and Railway knows what to do.
+	if isSourceChanged {
+		connectInput := buildServiceConnectInput(data)
+		_, err := connectService(ctx, client, serviceId, connectInput)
+		return err
+	}
+
+	return nil
+}
+
+// buildServiceConnectInput build proper input which populates only required fields for each case: either Repo + Branch, or SourceImage
+func buildServiceConnectInput(data *ServiceResourceModel) ServiceConnectInput {
+	if !data.SourceRepo.IsNull() {
+		// it is guaranteed by schema that both of them are specified or both empty
+		return ServiceConnectInput{
+			Repo:   data.SourceRepo.ValueStringPointer(),
+			Branch: data.SourceRepoBranch.ValueStringPointer(),
+		}
+	} else if !data.SourceImage.IsNull() {
+		return ServiceConnectInput{
+			Image: data.SourceImage.ValueStringPointer(),
+		}
+	}
+
+	return ServiceConnectInput{}
 }

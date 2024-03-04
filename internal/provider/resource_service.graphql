@@ -10,9 +10,11 @@ query getService($id: String!) {
   }
 }
 
+# @genqlient(for: "ServiceCreateInput.environmentId", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceCreateInput.branch", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceCreateInput.source", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceSourceInput.image", pointer: true)
-# @genqlient(for: "ServiceSourceInput.repo", pointer: true)
+# @genqlient(for: "ServiceSourceInput.image", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceSourceInput.repo", omitempty: true, pointer: true)
 mutation createService(
   $input: ServiceCreateInput!
 ) {
@@ -52,7 +54,8 @@ query getServiceInstance(
 }
 
 # @genqlient(for: "ServiceInstanceUpdateInput.cronSchedule", pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.source", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.watchPatterns", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.numReplicas", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.region", omitempty: true, pointer: true)
@@ -135,4 +138,24 @@ mutation updateVolumeInstance(
 
 mutation deleteVolume($id: String!) {
   volumeDelete(volumeId: $id)
+}
+
+# @genqlient(for: "ServiceConnectInput.branch", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceConnectInput.image", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceConnectInput.repo", omitempty: true, pointer: true)
+mutation connectService(
+  $id: String!
+  $input: ServiceConnectInput!
+) {
+  serviceConnect(id: $id, input: $input) {
+     ...Service
+  }
+}
+
+mutation disconnectService(
+  $id: String!
+) {
+  serviceDisconnect(id: $id) {
+    id
+  }
 }

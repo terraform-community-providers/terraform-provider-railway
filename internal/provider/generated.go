@@ -193,10 +193,12 @@ type EnvironmentCreateInput struct {
 	Ephemeral bool   `json:"ephemeral"`
 	Name      string `json:"name"`
 	ProjectId string `json:"projectId"`
-	// [Experimental] Specifying this field will create a new environment that is a
-	// fork of the specified environment. Changes made to forked environments will
-	// not affect other environments, and vice versa.
-	SourceEnvironmentId string `json:"sourceEnvironmentId"`
+	// When committing the changes immediately, skip any initial deployments.
+	SkipInitialDeploys bool `json:"skipInitialDeploys"`
+	// Create the environment with all of the services, volumes, configuration, and variables from this source environment.
+	SourceEnvironmentId *string `json:"sourceEnvironmentId,omitempty"`
+	// Stage the initial changes for the environment. If false (default), the changes will be committed immediately.
+	StageInitialChanges bool `json:"stageInitialChanges"`
 }
 
 // GetEphemeral returns EnvironmentCreateInput.Ephemeral, and is useful for accessing the field via an interface.
@@ -208,8 +210,14 @@ func (v *EnvironmentCreateInput) GetName() string { return v.Name }
 // GetProjectId returns EnvironmentCreateInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *EnvironmentCreateInput) GetProjectId() string { return v.ProjectId }
 
+// GetSkipInitialDeploys returns EnvironmentCreateInput.SkipInitialDeploys, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetSkipInitialDeploys() bool { return v.SkipInitialDeploys }
+
 // GetSourceEnvironmentId returns EnvironmentCreateInput.SourceEnvironmentId, and is useful for accessing the field via an interface.
-func (v *EnvironmentCreateInput) GetSourceEnvironmentId() string { return v.SourceEnvironmentId }
+func (v *EnvironmentCreateInput) GetSourceEnvironmentId() *string { return v.SourceEnvironmentId }
+
+// GetStageInitialChanges returns EnvironmentCreateInput.StageInitialChanges, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetStageInitialChanges() bool { return v.StageInitialChanges }
 
 // Project includes the GraphQL fields of Project requested by the fragment Project.
 type Project struct {
@@ -393,12 +401,30 @@ func (v *Service) GetName() string { return v.Name }
 // GetProjectId returns Service.ProjectId, and is useful for accessing the field via an interface.
 func (v *Service) GetProjectId() string { return v.ProjectId }
 
+type ServiceConnectInput struct {
+	// The branch to connect to. e.g. 'main'
+	Branch *string `json:"branch,omitempty"`
+	// Name of the Dockerhub or GHCR image to connect this service to.
+	Image *string `json:"image,omitempty"`
+	// The full name of the repo to connect to. e.g. 'railwayapp/starters'
+	Repo *string `json:"repo,omitempty"`
+}
+
+// GetBranch returns ServiceConnectInput.Branch, and is useful for accessing the field via an interface.
+func (v *ServiceConnectInput) GetBranch() *string { return v.Branch }
+
+// GetImage returns ServiceConnectInput.Image, and is useful for accessing the field via an interface.
+func (v *ServiceConnectInput) GetImage() *string { return v.Image }
+
+// GetRepo returns ServiceConnectInput.Repo, and is useful for accessing the field via an interface.
+func (v *ServiceConnectInput) GetRepo() *string { return v.Repo }
+
 type ServiceCreateInput struct {
-	Branch string `json:"branch"`
+	Branch *string `json:"branch,omitempty"`
 	// Environment ID. If the specified environment is a fork, the service will only
 	// be created in it. Otherwise it will created in all environments that are not
 	// forks of other environments
-	EnvironmentId string                 `json:"environmentId"`
+	EnvironmentId *string                `json:"environmentId,omitempty"`
 	Name          string                 `json:"name"`
 	ProjectId     string                 `json:"projectId"`
 	Source        *ServiceSourceInput    `json:"source,omitempty"`
@@ -406,10 +432,10 @@ type ServiceCreateInput struct {
 }
 
 // GetBranch returns ServiceCreateInput.Branch, and is useful for accessing the field via an interface.
-func (v *ServiceCreateInput) GetBranch() string { return v.Branch }
+func (v *ServiceCreateInput) GetBranch() *string { return v.Branch }
 
 // GetEnvironmentId returns ServiceCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
-func (v *ServiceCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
+func (v *ServiceCreateInput) GetEnvironmentId() *string { return v.EnvironmentId }
 
 // GetName returns ServiceCreateInput.Name, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetName() string { return v.Name }
@@ -486,9 +512,9 @@ type ServiceInstanceUpdateInput struct {
 	RestartPolicyMaxRetries *int                    `json:"restartPolicyMaxRetries,omitempty"`
 	RestartPolicyType       *RestartPolicyType      `json:"restartPolicyType,omitempty"`
 	RootDirectory           string                  `json:"rootDirectory"`
-	Source                  *ServiceSourceInput     `json:"source"`
+	Source                  *ServiceSourceInput     `json:"source,omitempty"`
 	StartCommand            *string                 `json:"startCommand,omitempty"`
-	WatchPatterns           []string                `json:"watchPatterns"`
+	WatchPatterns           []*string               `json:"watchPatterns"`
 }
 
 // GetBuildCommand returns ServiceInstanceUpdateInput.BuildCommand, and is useful for accessing the field via an interface.
@@ -538,11 +564,11 @@ func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.
 func (v *ServiceInstanceUpdateInput) GetStartCommand() *string { return v.StartCommand }
 
 // GetWatchPatterns returns ServiceInstanceUpdateInput.WatchPatterns, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetWatchPatterns() []string { return v.WatchPatterns }
+func (v *ServiceInstanceUpdateInput) GetWatchPatterns() []*string { return v.WatchPatterns }
 
 type ServiceSourceInput struct {
-	Image *string `json:"image"`
-	Repo  *string `json:"repo"`
+	Image *string `json:"image,omitempty"`
+	Repo  *string `json:"repo,omitempty"`
 }
 
 // GetImage returns ServiceSourceInput.Image, and is useful for accessing the field via an interface.
@@ -781,6 +807,18 @@ func (v *VolumeVolumeInstancesVolumeVolumeInstancesConnectionEdgesVolumeVolumeIn
 	return v.SizeMB
 }
 
+// __connectServiceInput is used internally by genqlient
+type __connectServiceInput struct {
+	Id    string              `json:"id"`
+	Input ServiceConnectInput `json:"input"`
+}
+
+// GetId returns __connectServiceInput.Id, and is useful for accessing the field via an interface.
+func (v *__connectServiceInput) GetId() string { return v.Id }
+
+// GetInput returns __connectServiceInput.Input, and is useful for accessing the field via an interface.
+func (v *__connectServiceInput) GetInput() ServiceConnectInput { return v.Input }
+
 // __createCustomDomainInput is used internally by genqlient
 type __createCustomDomainInput struct {
 	Input CustomDomainCreateInput `json:"input"`
@@ -916,6 +954,14 @@ type __deleteVolumeInput struct {
 
 // GetId returns __deleteVolumeInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteVolumeInput) GetId() string { return v.Id }
+
+// __disconnectServiceInput is used internally by genqlient
+type __disconnectServiceInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __disconnectServiceInput.Id, and is useful for accessing the field via an interface.
+func (v *__disconnectServiceInput) GetId() string { return v.Id }
 
 // __getCustomDomainInput is used internally by genqlient
 type __getCustomDomainInput struct {
@@ -1140,6 +1186,81 @@ type __upsertVariableInput struct {
 
 // GetInput returns __upsertVariableInput.Input, and is useful for accessing the field via an interface.
 func (v *__upsertVariableInput) GetInput() VariableUpsertInput { return v.Input }
+
+// connectServiceResponse is returned by connectService on success.
+type connectServiceResponse struct {
+	// Connect a service to a source
+	ServiceConnect connectServiceServiceConnectService `json:"serviceConnect"`
+}
+
+// GetServiceConnect returns connectServiceResponse.ServiceConnect, and is useful for accessing the field via an interface.
+func (v *connectServiceResponse) GetServiceConnect() connectServiceServiceConnectService {
+	return v.ServiceConnect
+}
+
+// connectServiceServiceConnectService includes the requested fields of the GraphQL type Service.
+type connectServiceServiceConnectService struct {
+	Service `json:"-"`
+}
+
+// GetId returns connectServiceServiceConnectService.Id, and is useful for accessing the field via an interface.
+func (v *connectServiceServiceConnectService) GetId() string { return v.Service.Id }
+
+// GetName returns connectServiceServiceConnectService.Name, and is useful for accessing the field via an interface.
+func (v *connectServiceServiceConnectService) GetName() string { return v.Service.Name }
+
+// GetProjectId returns connectServiceServiceConnectService.ProjectId, and is useful for accessing the field via an interface.
+func (v *connectServiceServiceConnectService) GetProjectId() string { return v.Service.ProjectId }
+
+func (v *connectServiceServiceConnectService) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*connectServiceServiceConnectService
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.connectServiceServiceConnectService = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Service)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalconnectServiceServiceConnectService struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *connectServiceServiceConnectService) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *connectServiceServiceConnectService) __premarshalJSON() (*__premarshalconnectServiceServiceConnectService, error) {
+	var retval __premarshalconnectServiceServiceConnectService
+
+	retval.Id = v.Service.Id
+	retval.Name = v.Service.Name
+	retval.ProjectId = v.Service.ProjectId
+	return &retval, nil
+}
 
 // createCustomDomainCustomDomainCreateCustomDomain includes the requested fields of the GraphQL type CustomDomain.
 type createCustomDomainCustomDomainCreateCustomDomain struct {
@@ -1963,6 +2084,25 @@ type deleteVolumeResponse struct {
 
 // GetVolumeDelete returns deleteVolumeResponse.VolumeDelete, and is useful for accessing the field via an interface.
 func (v *deleteVolumeResponse) GetVolumeDelete() bool { return v.VolumeDelete }
+
+// disconnectServiceResponse is returned by disconnectService on success.
+type disconnectServiceResponse struct {
+	// Disconnect a service from a repo
+	ServiceDisconnect disconnectServiceServiceDisconnectService `json:"serviceDisconnect"`
+}
+
+// GetServiceDisconnect returns disconnectServiceResponse.ServiceDisconnect, and is useful for accessing the field via an interface.
+func (v *disconnectServiceResponse) GetServiceDisconnect() disconnectServiceServiceDisconnectService {
+	return v.ServiceDisconnect
+}
+
+// disconnectServiceServiceDisconnectService includes the requested fields of the GraphQL type Service.
+type disconnectServiceServiceDisconnectService struct {
+	Id string `json:"id"`
+}
+
+// GetId returns disconnectServiceServiceDisconnectService.Id, and is useful for accessing the field via an interface.
+func (v *disconnectServiceServiceDisconnectService) GetId() string { return v.Id }
 
 // getCustomDomainCustomDomain includes the requested fields of the GraphQL type CustomDomain.
 type getCustomDomainCustomDomain struct {
@@ -3322,6 +3462,45 @@ type upsertVariableResponse struct {
 // GetVariableUpsert returns upsertVariableResponse.VariableUpsert, and is useful for accessing the field via an interface.
 func (v *upsertVariableResponse) GetVariableUpsert() bool { return v.VariableUpsert }
 
+func connectService(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+	input ServiceConnectInput,
+) (*connectServiceResponse, error) {
+	req := &graphql.Request{
+		OpName: "connectService",
+		Query: `
+mutation connectService ($id: String!, $input: ServiceConnectInput!) {
+	serviceConnect(id: $id, input: $input) {
+		... Service
+	}
+}
+fragment Service on Service {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__connectServiceInput{
+			Id:    id,
+			Input: input,
+		},
+	}
+	var err error
+
+	var data connectServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func createCustomDomain(
 	ctx context.Context,
 	client graphql.Client,
@@ -3919,6 +4098,38 @@ mutation deleteVolume ($id: String!) {
 	var err error
 
 	var data deleteVolumeResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func disconnectService(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*disconnectServiceResponse, error) {
+	req := &graphql.Request{
+		OpName: "disconnectService",
+		Query: `
+mutation disconnectService ($id: String!) {
+	serviceDisconnect(id: $id) {
+		id
+	}
+}
+`,
+		Variables: &__disconnectServiceInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data disconnectServiceResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
