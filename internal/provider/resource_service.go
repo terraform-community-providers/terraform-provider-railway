@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -97,7 +98,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"source_image": schema.StringAttribute{
-				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `root_directory` and `config_path`.",
+				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -277,9 +278,6 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 
 	tflog.Trace(ctx, "created service settings")
 
-	// updateServiceInstance not allows to specify source repo branch, which leads to Railway ignoring attached
-	// source repo since beginning of 2024.
-	// Hence, attaching repo explicitly using connectService call, which allows to specify all required params
 	if !data.SourceRepo.IsNull() || !data.SourceImage.IsNull() {
 		connectInput := buildServiceConnectInput(data)
 
@@ -490,7 +488,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Handling service connection with source repo or docker image
-	err = updateServiceConnection(ctx, *r.client, service.Id, data, state)
+	err = updateServiceConnection(ctx, *r.client, data.Id.ValueString(), data, state)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service repo or image connection, got error: %s", err))

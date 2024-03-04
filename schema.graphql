@@ -10,7 +10,9 @@ type AccessRule {
 
 enum ActiveFeatureFlag {
   SERVICE_GROUPS
-  STAGED_CHANGES
+  STACKER_WORKFLOWS
+  TEMPLATE_COMPOSER
+  TEMPLATE_DEPLOY_V2
 }
 
 """The aggregated usage of a single measurement."""
@@ -133,9 +135,11 @@ enum CnameCheckStatus {
 type Container implements Node {
   createdAt: DateTime!
   deletedAt: DateTime
+  environment: Environment!
   environmentId: String!
   id: ID!
   migratedAt: DateTime
+  plugin: Plugin!
   pluginId: String!
 }
 
@@ -266,6 +270,7 @@ type Deployment implements Node {
   staticUrl: String
   status: DeploymentStatus!
   suggestAddServiceDomain: Boolean!
+  updatedAt: DateTime!
   url: String
 }
 
@@ -295,6 +300,7 @@ enum DeploymentStatus {
   REMOVED
   REMOVING
   SKIPPED
+  SLEEPING
   SUCCESS
   WAITING
 }
@@ -417,12 +423,18 @@ input EnvironmentCreateInput {
   name: String!
   projectId: String!
 
+  """When committing the changes immediately, skip any initial deployments."""
+  skipInitialDeploys: Boolean
+
   """
-  [Experimental] Specifying this field will create a new environment that is a
-  fork of the specified environment. Changes made to forked environments will
-  not affect other environments, and vice versa.
+  Create the environment with all of the services, volumes, configuration, and variables from this source environment.
   """
   sourceEnvironmentId: String
+
+  """
+  Stage the initial changes for the environment. If false (default), the changes will be committed immediately.
+  """
+  stageInitialChanges: Boolean
 }
 
 type EnvironmentDeploymentsConnection {
@@ -539,6 +551,7 @@ type GitHubRepo {
 }
 
 input GitHubRepoDeployInput {
+  branch: String
   projectId: String!
   repo: String!
 }
@@ -792,7 +805,7 @@ type Mutation {
   deploymentCancel(id: String!): Boolean!
 
   """Redeploys a deployment."""
-  deploymentRedeploy(id: String!): Deployment!
+  deploymentRedeploy(id: String!, usePreviousImageTag: Boolean): Deployment!
 
   """Removes a deployment."""
   deploymentRemove(id: String!): Boolean!
@@ -901,7 +914,7 @@ type Mutation {
   pluginDelete(environmentId: String, id: String!): Boolean!
 
   """Migrates a plugin to a V2 database"""
-  pluginMigrate(id: String!): String!
+  pluginMigrate(id: String!, resetMigration: Boolean): String!
 
   """Reset envs and container for a plugin in an environment"""
   pluginReset(id: String!, input: ResetPluginInput!): Boolean!
@@ -911,6 +924,9 @@ type Mutation {
 
   """Restarts a plugin."""
   pluginRestart(id: String!, input: PluginRestartInput!): Plugin!
+
+  """Force start a plugin"""
+  pluginStart(id: String!, input: PluginRestartInput!): Boolean!
 
   """Updates an existing plugin."""
   pluginUpdate(id: String!, input: PluginUpdateInput!): Plugin!
@@ -941,6 +957,18 @@ type Mutation {
 
   """Deletes a project."""
   projectDelete(id: String!): Boolean!
+
+  """Accept a project invitation using the invite code"""
+  projectInvitationAccept(code: String!): ProjectPermission!
+
+  """Create an invitation for a project"""
+  projectInvitationCreate(id: String!, input: ProjectInvitee!): ProjectInvitation!
+
+  """Delete an invitation for a project"""
+  projectInvitationDelete(id: String!): Boolean!
+
+  """Resend an invitation for a project"""
+  projectInvitationResend(id: String!): ProjectInvitation!
 
   """Invite a user by email to a project"""
   projectInviteUser(id: String!, input: ProjectInviteUserInput!): Boolean!
@@ -1095,7 +1123,7 @@ type Mutation {
   templateCreate(input: TemplateCreateInput!): Template!
 
   """Deletes a template."""
-  templateDelete(id: String!): Boolean!
+  templateDelete(id: String!, input: TemplateDeleteInput!): Boolean!
 
   """Deploys a template."""
   templateDeploy(input: TemplateDeployInput!): TemplateDeployPayload!
@@ -1123,6 +1151,9 @@ type Mutation {
 
   """Validates the token for a 2FA action or for a login request."""
   twoFactorInfoValidate(input: TwoFactorInfoValidateInput!): Boolean!
+
+  """Generate a Slack channel for a team"""
+  upsertSlackChannelForTeam(teamId: String!): Boolean!
 
   """Remove the usage limit for a customer"""
   usageLimitRemove(input: UsageLimitRemoveInput!): Boolean!
@@ -1233,6 +1264,7 @@ type Plugin implements Node {
   containers(after: String, before: String, first: Int, last: Int): PluginContainersConnection!
   createdAt: DateTime!
   deletedAt: DateTime
+  deprecatedAt: DateTime
   friendlyName: String!
   id: ID!
   logsEnabled: Boolean!
@@ -1261,10 +1293,11 @@ input PluginCreateInput {
 }
 
 input PluginRestartInput {
-  environmentId: String!
+  environmentId: String
 }
 
 enum PluginStatus {
+  DEPRECATED
   LOCKED
   REMOVED
   RUNNING
@@ -1358,10 +1391,10 @@ type Project implements Node {
   description: String
   environments(after: String, before: String, first: Int, last: Int): ProjectEnvironmentsConnection!
   expiredAt: DateTime
+  groups(after: String, before: String, first: Int, last: Int): ProjectGroupsConnection!
   id: ID!
   isPublic: Boolean!
   isTempProject: Boolean!
-  isUpdatable: Boolean!
   members: [ProjectMember!]!
   name: String!
   plugins(after: String, before: String, first: Int, last: Int): ProjectPluginsConnection!
@@ -1374,7 +1407,6 @@ type Project implements Node {
   team: Team
   teamId: String
   updatedAt: DateTime!
-  upstreamUrl: String
   volumes(after: String, before: String, first: Int, last: Int): ProjectVolumesConnection!
   webhooks(after: String, before: String, first: Int, last: Int): ProjectWebhooksConnection!
 }
@@ -1423,6 +1455,34 @@ type ProjectEnvironmentsConnection {
 type ProjectEnvironmentsConnectionEdge {
   cursor: String!
   node: Environment!
+}
+
+type ProjectGroupsConnection {
+  edges: [ProjectGroupsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectGroupsConnectionEdge {
+  cursor: String!
+}
+
+type ProjectInvitation {
+  email: String!
+  expiresAt: DateTime!
+  id: ID!
+  inviter: ProjectInvitationInviter
+  isExpired: Boolean!
+  project: PublicProjectInformation!
+}
+
+type ProjectInvitationInviter {
+  email: String!
+  name: String
+}
+
+input ProjectInvitee {
+  email: String!
+  role: ProjectRole!
 }
 
 input ProjectInviteUserInput {
@@ -1576,6 +1636,13 @@ type ProviderAuth implements Node {
   provider: String!
   userId: String!
 }
+
+type PublicProjectInformation {
+  id: ID!
+  name: String!
+}
+
+union PublicProjectInvitation = InviteCode | ProjectInvitation
 
 type PublicStats {
   totalDeployments: Int!
@@ -1779,6 +1846,12 @@ type Query {
 
   """Get a project by ID"""
   project(id: String!): Project!
+
+  """Get a project invitation by code"""
+  projectInvitation(code: String!): PublicProjectInvitation!
+
+  """Get invitations for a project"""
+  projectInvitations(id: String!): [ProjectInvitation!]!
 
   """Get an invite code for a project for a specifc role"""
   projectInviteCode(projectId: String!, role: ProjectRole!): InviteCode!
@@ -2163,6 +2236,8 @@ input SendCommunityThreadNotificationEmailInput {
   userIds: [String!]!
 }
 
+scalar SerializedTemplateConfig
+
 type Service implements Node {
   createdAt: DateTime!
   deletedAt: DateTime
@@ -2306,7 +2381,6 @@ type ServiceServiceInstancesConnectionEdge {
 type ServiceSource {
   image: String
   repo: String
-  template: TemplateServiceSource
 }
 
 input ServiceSourceInput {
@@ -2455,6 +2529,7 @@ type Team implements Node {
   members: [TeamMember!]!
   name: String!
   projects(after: String, before: String, first: Int, last: Int): TeamProjectsConnection!
+  slackChannelId: String
   teamPermissions: [TeamPermission!]!
   updatedAt: DateTime!
 }
@@ -2565,6 +2640,7 @@ type Template implements Node {
   isApproved: Boolean!
   metadata: TemplateMetadata!
   projects: Int!
+  serializedConfig: SerializedTemplateConfig
   services(after: String, before: String, first: Int, last: Int): TemplateServicesConnection!
   similarTemplates: [SimilarTemplate!]!
   status: TemplateStatus!
@@ -2593,6 +2669,10 @@ type TemplateCreator {
   hasPublicProfile: Boolean!
   name: String
   username: String
+}
+
+input TemplateDeleteInput {
+  teamId: String
 }
 
 input TemplateDeployInput {
@@ -2662,11 +2742,6 @@ type TemplateServicesConnection {
 type TemplateServicesConnectionEdge {
   cursor: String!
   node: TemplateService!
-}
-
-type TemplateServiceSource {
-  serviceName: String!
-  serviceSource: String!
 }
 
 input TemplateServiceUpdateInput {

@@ -10,6 +10,7 @@ query getService($id: String!) {
   }
 }
 
+# @genqlient(for: "ServiceCreateInput.environmentId", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceCreateInput.branch", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceCreateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceSourceInput.image", omitempty: true, pointer: true)
@@ -56,7 +57,7 @@ query getServiceInstance(
 # @genqlient(for: "ServiceInstanceUpdateInput.railwayConfigFile", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.rootDirectory", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.watchPatterns", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.source", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.numReplicas", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.region", omitempty: true, pointer: true)

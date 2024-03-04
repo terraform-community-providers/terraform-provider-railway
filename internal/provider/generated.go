@@ -193,10 +193,12 @@ type EnvironmentCreateInput struct {
 	Ephemeral bool   `json:"ephemeral"`
 	Name      string `json:"name"`
 	ProjectId string `json:"projectId"`
-	// [Experimental] Specifying this field will create a new environment that is a
-	// fork of the specified environment. Changes made to forked environments will
-	// not affect other environments, and vice versa.
-	SourceEnvironmentId string `json:"sourceEnvironmentId"`
+	// When committing the changes immediately, skip any initial deployments.
+	SkipInitialDeploys bool `json:"skipInitialDeploys"`
+	// Create the environment with all of the services, volumes, configuration, and variables from this source environment.
+	SourceEnvironmentId *string `json:"sourceEnvironmentId,omitempty"`
+	// Stage the initial changes for the environment. If false (default), the changes will be committed immediately.
+	StageInitialChanges bool `json:"stageInitialChanges"`
 }
 
 // GetEphemeral returns EnvironmentCreateInput.Ephemeral, and is useful for accessing the field via an interface.
@@ -208,8 +210,14 @@ func (v *EnvironmentCreateInput) GetName() string { return v.Name }
 // GetProjectId returns EnvironmentCreateInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *EnvironmentCreateInput) GetProjectId() string { return v.ProjectId }
 
+// GetSkipInitialDeploys returns EnvironmentCreateInput.SkipInitialDeploys, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetSkipInitialDeploys() bool { return v.SkipInitialDeploys }
+
 // GetSourceEnvironmentId returns EnvironmentCreateInput.SourceEnvironmentId, and is useful for accessing the field via an interface.
-func (v *EnvironmentCreateInput) GetSourceEnvironmentId() string { return v.SourceEnvironmentId }
+func (v *EnvironmentCreateInput) GetSourceEnvironmentId() *string { return v.SourceEnvironmentId }
+
+// GetStageInitialChanges returns EnvironmentCreateInput.StageInitialChanges, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetStageInitialChanges() bool { return v.StageInitialChanges }
 
 // Project includes the GraphQL fields of Project requested by the fragment Project.
 type Project struct {
@@ -416,7 +424,7 @@ type ServiceCreateInput struct {
 	// Environment ID. If the specified environment is a fork, the service will only
 	// be created in it. Otherwise it will created in all environments that are not
 	// forks of other environments
-	EnvironmentId string                 `json:"environmentId"`
+	EnvironmentId *string                `json:"environmentId,omitempty"`
 	Name          string                 `json:"name"`
 	ProjectId     string                 `json:"projectId"`
 	Source        *ServiceSourceInput    `json:"source,omitempty"`
@@ -427,7 +435,7 @@ type ServiceCreateInput struct {
 func (v *ServiceCreateInput) GetBranch() *string { return v.Branch }
 
 // GetEnvironmentId returns ServiceCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
-func (v *ServiceCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
+func (v *ServiceCreateInput) GetEnvironmentId() *string { return v.EnvironmentId }
 
 // GetName returns ServiceCreateInput.Name, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetName() string { return v.Name }
@@ -504,7 +512,7 @@ type ServiceInstanceUpdateInput struct {
 	RestartPolicyMaxRetries *int                    `json:"restartPolicyMaxRetries,omitempty"`
 	RestartPolicyType       *RestartPolicyType      `json:"restartPolicyType,omitempty"`
 	RootDirectory           *string                 `json:"rootDirectory,omitempty"`
-	Source                  *ServiceSourceInput     `json:"source"`
+	Source                  *ServiceSourceInput     `json:"source,omitempty"`
 	StartCommand            *string                 `json:"startCommand,omitempty"`
 	WatchPatterns           []*string               `json:"watchPatterns,omitempty"`
 }
