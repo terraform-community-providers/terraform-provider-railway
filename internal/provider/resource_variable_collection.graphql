@@ -1,0 +1,6 @@
+# @genqlient(for: "VariableCollectionUpsertInput.serviceId", pointer: true)
+mutation upsertVariableCollection(
+    $input: VariableCollectionUpsertInput!
+) {
+    variableCollectionUpsert(input: $input)
+}
