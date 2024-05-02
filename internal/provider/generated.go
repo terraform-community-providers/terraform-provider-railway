@@ -696,6 +696,30 @@ func (v *TCPProxyCreateInput) GetEnvironmentId() string { return v.EnvironmentId
 // GetServiceId returns TCPProxyCreateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *TCPProxyCreateInput) GetServiceId() string { return v.ServiceId }
 
+type VariableCollectionUpsertInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ProjectId     string `json:"projectId"`
+	// When set to true, removes all existing variables before upserting the new collection.
+	Replace   bool                   `json:"replace"`
+	ServiceId *string                `json:"serviceId"`
+	Variables map[string]interface{} `json:"variables"`
+}
+
+// GetEnvironmentId returns VariableCollectionUpsertInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *VariableCollectionUpsertInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetProjectId returns VariableCollectionUpsertInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *VariableCollectionUpsertInput) GetProjectId() string { return v.ProjectId }
+
+// GetReplace returns VariableCollectionUpsertInput.Replace, and is useful for accessing the field via an interface.
+func (v *VariableCollectionUpsertInput) GetReplace() bool { return v.Replace }
+
+// GetServiceId returns VariableCollectionUpsertInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *VariableCollectionUpsertInput) GetServiceId() *string { return v.ServiceId }
+
+// GetVariables returns VariableCollectionUpsertInput.Variables, and is useful for accessing the field via an interface.
+func (v *VariableCollectionUpsertInput) GetVariables() map[string]interface{} { return v.Variables }
+
 type VariableDeleteInput struct {
 	EnvironmentId string  `json:"environmentId"`
 	Name          string  `json:"name"`
@@ -1164,6 +1188,18 @@ func (v *__listServiceDomainsInput) GetServiceId() string { return v.ServiceId }
 // GetProjectId returns __listServiceDomainsInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *__listServiceDomainsInput) GetProjectId() string { return v.ProjectId }
 
+// __redeployServiceInstanceInput is used internally by genqlient
+type __redeployServiceInstanceInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetEnvironmentId returns __redeployServiceInstanceInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__redeployServiceInstanceInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __redeployServiceInstanceInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__redeployServiceInstanceInput) GetServiceId() string { return v.ServiceId }
+
 // __updateDeploymentTriggerInput is used internally by genqlient
 type __updateDeploymentTriggerInput struct {
 	Id    string                       `json:"id"`
@@ -1243,6 +1279,14 @@ func (v *__updateVolumeInstanceInput) GetId() string { return v.Id }
 
 // GetInput returns __updateVolumeInstanceInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateVolumeInstanceInput) GetInput() VolumeInstanceUpdateInput { return v.Input }
+
+// __upsertVariableCollectionInput is used internally by genqlient
+type __upsertVariableCollectionInput struct {
+	Input VariableCollectionUpsertInput `json:"input"`
+}
+
+// GetInput returns __upsertVariableCollectionInput.Input, and is useful for accessing the field via an interface.
+func (v *__upsertVariableCollectionInput) GetInput() VariableCollectionUpsertInput { return v.Input }
 
 // __upsertVariableInput is used internally by genqlient
 type __upsertVariableInput struct {
@@ -3123,6 +3167,17 @@ func (v *listServiceDomainsResponse) GetDomains() listServiceDomainsDomainsAllDo
 	return v.Domains
 }
 
+// redeployServiceInstanceResponse is returned by redeployServiceInstance on success.
+type redeployServiceInstanceResponse struct {
+	// Redeploy a service instance
+	ServiceInstanceRedeploy bool `json:"serviceInstanceRedeploy"`
+}
+
+// GetServiceInstanceRedeploy returns redeployServiceInstanceResponse.ServiceInstanceRedeploy, and is useful for accessing the field via an interface.
+func (v *redeployServiceInstanceResponse) GetServiceInstanceRedeploy() bool {
+	return v.ServiceInstanceRedeploy
+}
+
 // updateDeploymentTriggerDeploymentTriggerUpdateDeploymentTrigger includes the requested fields of the GraphQL type DeploymentTrigger.
 type updateDeploymentTriggerDeploymentTriggerUpdateDeploymentTrigger struct {
 	DeploymentTrigger `json:"-"`
@@ -3524,6 +3579,17 @@ func (v *updateVolumeVolumeUpdateVolume) __premarshalJSON() (*__premarshalupdate
 	retval.Name = v.Volume.Name
 	retval.VolumeInstances = v.Volume.VolumeInstances
 	return &retval, nil
+}
+
+// upsertVariableCollectionResponse is returned by upsertVariableCollection on success.
+type upsertVariableCollectionResponse struct {
+	// Upserts a collection of variables.
+	VariableCollectionUpsert bool `json:"variableCollectionUpsert"`
+}
+
+// GetVariableCollectionUpsert returns upsertVariableCollectionResponse.VariableCollectionUpsert, and is useful for accessing the field via an interface.
+func (v *upsertVariableCollectionResponse) GetVariableCollectionUpsert() bool {
+	return v.VariableCollectionUpsert
 }
 
 // upsertVariableResponse is returned by upsertVariable on success.
@@ -4725,6 +4791,38 @@ fragment ServiceDomain on ServiceDomain {
 	return &data, err
 }
 
+func redeployServiceInstance(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	serviceId string,
+) (*redeployServiceInstanceResponse, error) {
+	req := &graphql.Request{
+		OpName: "redeployServiceInstance",
+		Query: `
+mutation redeployServiceInstance ($environmentId: String!, $serviceId: String!) {
+	serviceInstanceRedeploy(environmentId: $environmentId, serviceId: $serviceId)
+}
+`,
+		Variables: &__redeployServiceInstanceInput{
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+		},
+	}
+	var err error
+
+	var data redeployServiceInstanceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func updateDeploymentTrigger(
 	ctx context.Context,
 	client graphql.Client,
@@ -5023,6 +5121,36 @@ mutation upsertVariable ($input: VariableUpsertInput!) {
 	var err error
 
 	var data upsertVariableResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func upsertVariableCollection(
+	ctx context.Context,
+	client graphql.Client,
+	input VariableCollectionUpsertInput,
+) (*upsertVariableCollectionResponse, error) {
+	req := &graphql.Request{
+		OpName: "upsertVariableCollection",
+		Query: `
+mutation upsertVariableCollection ($input: VariableCollectionUpsertInput!) {
+	variableCollectionUpsert(input: $input)
+}
+`,
+		Variables: &__upsertVariableCollectionInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data upsertVariableCollectionResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
