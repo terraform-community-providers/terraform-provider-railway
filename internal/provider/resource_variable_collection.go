@@ -56,7 +56,7 @@ func (r *VariableCollectionResource) Schema(ctx context.Context, req resource.Sc
 				MarkdownDescription: "Collection of variables.",
 				ElementType:         types.StringType,
 				Required:            true,
-				Sensitive:           true,
+				//Sensitive:           true,
 				// @todo: probably need a validator to prevent empty map and the same keys
 			},
 			"environment_id": schema.StringAttribute{
@@ -187,11 +187,108 @@ func (r *VariableCollectionResource) Read(ctx context.Context, req resource.Read
 }
 
 func (r *VariableCollectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// TODO
+	var data *VariableCollectionResourceModel
+	var state *VariableCollectionResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
+	//tflog.Info(ctx, fmt.Sprintf("DATA"))
+	//tflog.Info(ctx, fmt.Sprintln(data))
+	//
+	//tflog.Info(ctx, fmt.Sprintf("STATE"))
+	//tflog.Info(ctx, fmt.Sprintln(state))
+
+	tfVariablesMapToUpsert := getVariablesToUpsert(data, state)
+	variablesMapToUpsert := make(map[string]interface{})
+	for k, v := range tfVariablesMapToUpsert {
+		variablesMapToUpsert[k] = v.(types.String).ValueString()
+	}
+
+	tflog.Info(ctx, "variablesMapToUpsert")
+	tflog.Info(ctx, fmt.Sprintln(variablesMapToUpsert))
+
+	input := VariableCollectionUpsertInput{
+		ServiceId:     data.ServiceId.ValueStringPointer(),
+		EnvironmentId: data.EnvironmentId.ValueString(),
+		ProjectId:     service.Service.ProjectId,
+		Variables:     variablesMapToUpsert,
+	}
+
+	_, err = upsertVariableCollection(ctx, *r.client, input)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to upsert variables of variable collection, got error: %s", err))
+		return
+	}
+
+	variableNamesToDelete := getVariableNamesToDelete(data, state)
+
+	tflog.Info(ctx, fmt.Sprintf("will delete variables: %v", variableNamesToDelete))
+
+	err = deleteManyVariables(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNamesToDelete)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete variables of variable collection, got error: %s", err))
+		return
+	}
+
+	tflog.Trace(ctx, "updated a variable collection")
+
+	allVariableNames := make([]string, 0)
+	for k := range data.Variables.Elements() {
+		allVariableNames = append(allVariableNames, k)
+	}
+
+	err = getVariableCollection(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), allVariableNames, data)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variable collection after updating it, got error: %s", err))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// TODO
+	tflog.Info(ctx, "DELETE")
+	var data *VariableCollectionResourceModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	variableNames := make([]string, 0)
+	for name := range data.Variables.Elements() {
+		variableNames = append(variableNames, name)
+	}
+
+	err := deleteManyVariables(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNames)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete variable collection, got error: %s", err))
+		return
+	}
+
+	tflog.Trace(ctx, "deleted a variable collection")
 }
 
 func (r *VariableCollectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -238,4 +335,62 @@ func getVariableCollectionId(serviceId, environmentId string, names []string) st
 	sort.Strings(namesSortedAsc)
 
 	return fmt.Sprintf("%s:%s:%s", serviceId, environmentId, strings.Join(namesSortedAsc, ":"))
+}
+
+// TODO: genqlient do not supports query batching, but probably it could make sense to
+//
+//	hardcode couple options: 10, 5, 1 variables in one call and handle that here
+func deleteManyVariables(ctx context.Context, client graphql.Client, projectId, environmentId, serviceId string, names []string) error {
+	for _, name := range names {
+		tflog.Info(ctx, fmt.Sprintf("destroying: %s", name))
+		input := VariableDeleteInput{
+			Name:          name,
+			ServiceId:     &serviceId,
+			EnvironmentId: environmentId,
+			ProjectId:     projectId,
+		}
+
+		_, err := deleteVariable(ctx, client, input)
+
+		if err != nil {
+			return nil
+		}
+	}
+
+	return nil
+}
+
+// getVariablesToUpsert returns a map where entries have to be upserted. The criteria is the following:
+// if entry is in the data, but not in the state, then it has to be created
+// if entry is in the data and is in the state, and values are different, then it has to be updated
+func getVariablesToUpsert(data, state *VariableCollectionResourceModel) map[string]attr.Value {
+	dataVariablesMap := data.Variables.Elements()
+	stateVariablesMap := state.Variables.Elements()
+
+	variablesToUpsert := make(map[string]attr.Value)
+
+	for dataName, dataValue := range dataVariablesMap {
+		if stateValue, ok := stateVariablesMap[dataName]; !ok || (ok && !dataValue.Equal(stateValue)) {
+			variablesToUpsert[dataName] = dataValue
+		}
+	}
+
+	return variablesToUpsert
+}
+
+// getVariableNamesToDelete returns an array where entries are names of variables to delete. The criteria is the following:
+// if variables is in the state, but not in the data, then it has to be deleted
+func getVariableNamesToDelete(data, state *VariableCollectionResourceModel) []string {
+	dataVariablesMap := data.Variables.Elements()
+	stateVariablesMap := state.Variables.Elements()
+
+	variableNamesToDelete := make([]string, 0)
+
+	for stateName := range stateVariablesMap {
+		if _, ok := dataVariablesMap[stateName]; !ok {
+			variableNamesToDelete = append(variableNamesToDelete, stateName)
+		}
+	}
+
+	return variableNamesToDelete
 }
