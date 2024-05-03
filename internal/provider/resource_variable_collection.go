@@ -35,7 +35,6 @@ type VariableCollectionResourceModel struct {
 	Variables     types.Map    `tfsdk:"variables"`
 	EnvironmentId types.String `tfsdk:"environment_id"`
 	ServiceId     types.String `tfsdk:"service_id"`
-	ProjectId     types.String `tfsdk:"project_id"`
 }
 
 func (r *VariableCollectionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -79,10 +78,6 @@ func (r *VariableCollectionResource) Schema(ctx context.Context, req resource.Sc
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
 				},
 			},
-			"project_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the project the variable belongs to.",
-				Computed:            true,
-			},
 		},
 	}
 }
@@ -108,7 +103,7 @@ func (r *VariableCollectionResource) Configure(ctx context.Context, req resource
 }
 
 func (r *VariableCollectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	tflog.Info(ctx, "DOING CREATE")
+	tflog.Info(ctx, "__CREATE")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -162,7 +157,7 @@ func (r *VariableCollectionResource) Create(ctx context.Context, req resource.Cr
 }
 
 func (r *VariableCollectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tflog.Info(ctx, "READ")
+	tflog.Info(ctx, "__READ")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -171,12 +166,19 @@ func (r *VariableCollectionResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
+	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
 	variableNames := make([]string, 0)
 	for name := range data.Variables.Elements() {
 		variableNames = append(variableNames, name)
 	}
 
-	err := getVariableCollection(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNames, data)
+	err = getVariableCollection(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNames, data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variable collection, got error: %s", err))
@@ -187,6 +189,7 @@ func (r *VariableCollectionResource) Read(ctx context.Context, req resource.Read
 }
 
 func (r *VariableCollectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	tflog.Info(ctx, "__UPDATE")
 	var data *VariableCollectionResourceModel
 	var state *VariableCollectionResourceModel
 
@@ -209,44 +212,42 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	//tflog.Info(ctx, fmt.Sprintf("DATA"))
-	//tflog.Info(ctx, fmt.Sprintln(data))
-	//
-	//tflog.Info(ctx, fmt.Sprintf("STATE"))
-	//tflog.Info(ctx, fmt.Sprintln(state))
-
 	tfVariablesMapToUpsert := getVariablesToUpsert(data, state)
 	variablesMapToUpsert := make(map[string]interface{})
 	for k, v := range tfVariablesMapToUpsert {
 		variablesMapToUpsert[k] = v.(types.String).ValueString()
 	}
 
-	tflog.Info(ctx, "variablesMapToUpsert")
-	tflog.Info(ctx, fmt.Sprintln(variablesMapToUpsert))
+	if len(variablesMapToUpsert) > 0 {
+		tflog.Info(ctx, "variablesMapToUpsert")
+		tflog.Info(ctx, fmt.Sprintln(variablesMapToUpsert))
 
-	input := VariableCollectionUpsertInput{
-		ServiceId:     data.ServiceId.ValueStringPointer(),
-		EnvironmentId: data.EnvironmentId.ValueString(),
-		ProjectId:     service.Service.ProjectId,
-		Variables:     variablesMapToUpsert,
-	}
+		input := VariableCollectionUpsertInput{
+			ServiceId:     data.ServiceId.ValueStringPointer(),
+			EnvironmentId: data.EnvironmentId.ValueString(),
+			ProjectId:     service.Service.ProjectId,
+			Variables:     variablesMapToUpsert,
+		}
 
-	_, err = upsertVariableCollection(ctx, *r.client, input)
+		_, err = upsertVariableCollection(ctx, *r.client, input)
 
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to upsert variables of variable collection, got error: %s", err))
-		return
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to upsert variables of variable collection, got error: %s", err))
+			return
+		}
 	}
 
 	variableNamesToDelete := getVariableNamesToDelete(data, state)
 
-	tflog.Info(ctx, fmt.Sprintf("will delete variables: %v", variableNamesToDelete))
+	if len(variableNamesToDelete) > 0 {
+		tflog.Info(ctx, fmt.Sprintf("will delete variables: %v", variableNamesToDelete))
 
-	err = deleteManyVariables(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNamesToDelete)
+		err = deleteManyVariables(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNamesToDelete)
 
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete variables of variable collection, got error: %s", err))
-		return
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete variables of variable collection, got error: %s", err))
+			return
+		}
 	}
 
 	tflog.Trace(ctx, "updated a variable collection")
@@ -267,7 +268,7 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 }
 
 func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tflog.Info(ctx, "DELETE")
+	tflog.Info(ctx, "__DELETE")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -276,12 +277,19 @@ func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.De
 		return
 	}
 
+	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
 	variableNames := make([]string, 0)
 	for name := range data.Variables.Elements() {
 		variableNames = append(variableNames, name)
 	}
 
-	err := deleteManyVariables(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNames)
+	err = deleteManyVariables(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNames)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete variable collection, got error: %s", err))
@@ -318,8 +326,7 @@ func getVariableCollection(ctx context.Context, client graphql.Client, projectId
 		}
 	}
 
-	data.Id = types.StringValue(getVariableCollectionId(serviceId, environmentId, names))
-	data.ProjectId = types.StringValue(projectId)
+	data.Id = types.StringValue(getVariableCollectionId(ctx, serviceId, environmentId, names))
 	data.EnvironmentId = types.StringValue(environmentId)
 	data.ServiceId = types.StringValue(serviceId)
 	data.Variables, _ = types.MapValue(types.StringType, variablesMap)
@@ -327,14 +334,16 @@ func getVariableCollection(ctx context.Context, client graphql.Client, projectId
 	return nil
 }
 
-func getVariableCollectionId(serviceId, environmentId string, names []string) string {
+func getVariableCollectionId(ctx context.Context, serviceId, environmentId string, names []string) string {
 
 	// we need stable identifiers for this synthetic resource. Since order of `names` is not really defined
 	// (since they are keys of a map), I'm going to sort them first and then concat to one long id string
 	namesSortedAsc := append([]string(nil), names...)
 	sort.Strings(namesSortedAsc)
 
-	return fmt.Sprintf("%s:%s:%s", serviceId, environmentId, strings.Join(namesSortedAsc, ":"))
+	id := fmt.Sprintf("%s:%s:%s", serviceId, environmentId, strings.Join(namesSortedAsc, ":"))
+	tflog.Info(ctx, fmt.Sprintf("__ID: %s", id))
+	return id
 }
 
 // TODO: genqlient do not supports query batching, but probably it could make sense to
@@ -343,6 +352,7 @@ func getVariableCollectionId(serviceId, environmentId string, names []string) st
 func deleteManyVariables(ctx context.Context, client graphql.Client, projectId, environmentId, serviceId string, names []string) error {
 	for _, name := range names {
 		tflog.Info(ctx, fmt.Sprintf("destroying: %s", name))
+		tflog.Info(ctx, fmt.Sprintf("projectId: %s", projectId))
 		input := VariableDeleteInput{
 			Name:          name,
 			ServiceId:     &serviceId,
@@ -353,7 +363,7 @@ func deleteManyVariables(ctx context.Context, client graphql.Client, projectId, 
 		_, err := deleteVariable(ctx, client, input)
 
 		if err != nil {
-			return nil
+			return err
 		}
 	}
 
