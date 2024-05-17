@@ -39,12 +39,10 @@ type VariableCollectionResourceModel struct {
 }
 
 func (r *VariableCollectionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	tflog.Info(ctx, "METADATA")
 	resp.TypeName = req.ProviderTypeName + "_variable_collection"
 }
 
 func (r *VariableCollectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	tflog.Info(ctx, "SCHEMA")
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Railway variable collection. Group of variables managed as a whole",
 		Attributes: map[string]schema.Attribute{
@@ -104,7 +102,7 @@ func (r *VariableCollectionResource) Configure(ctx context.Context, req resource
 }
 
 func (r *VariableCollectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	tflog.Info(ctx, "__CREATE")
+	tflog.Info(ctx, "### CREATE")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -154,11 +152,18 @@ func (r *VariableCollectionResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after variable collection created, got error: %s", err))
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *VariableCollectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tflog.Info(ctx, "__READ")
+	tflog.Info(ctx, "### READ")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -190,7 +195,7 @@ func (r *VariableCollectionResource) Read(ctx context.Context, req resource.Read
 }
 
 func (r *VariableCollectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	tflog.Info(ctx, "__UPDATE")
+	tflog.Info(ctx, "### UPDATE")
 	var data *VariableCollectionResourceModel
 	var state *VariableCollectionResourceModel
 
@@ -267,11 +272,18 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after variable collection updated, got error: %s", err))
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tflog.Info(ctx, "__DELETE")
+	tflog.Info(ctx, "### DELETE")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -299,10 +311,18 @@ func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.De
 		return
 	}
 
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after variable collection updated, got error: %s", err))
+		return
+	}
+
 	tflog.Trace(ctx, "deleted a variable collection")
 }
 
 func (r *VariableCollectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Info(ctx, "### IMPORT")
 	// option1: terraform import railway_variable_collection.sentry 89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging:SENTRY_KEY:SENTRY_SECRET
 	parts := strings.Split(req.ID, ":")
 
@@ -394,7 +414,7 @@ func getVariableCollectionId(ctx context.Context, serviceId, environmentId strin
 	sort.Strings(namesSortedAsc)
 
 	id := fmt.Sprintf("%s:%s:%s", serviceId, environmentId, strings.Join(namesSortedAsc, ":"))
-	tflog.Info(ctx, fmt.Sprintf("__ID: %s", id))
+	//tflog.Info(ctx, fmt.Sprintf("__ID: %s", id))
 	return id
 }
 

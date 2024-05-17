@@ -1123,6 +1123,18 @@ func (v *__listServiceDomainsInput) GetServiceId() string { return v.ServiceId }
 // GetProjectId returns __listServiceDomainsInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *__listServiceDomainsInput) GetProjectId() string { return v.ProjectId }
 
+// __redeployServiceInstanceInput is used internally by genqlient
+type __redeployServiceInstanceInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetEnvironmentId returns __redeployServiceInstanceInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__redeployServiceInstanceInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __redeployServiceInstanceInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__redeployServiceInstanceInput) GetServiceId() string { return v.ServiceId }
+
 // __updateDeploymentTriggerInput is used internally by genqlient
 type __updateDeploymentTriggerInput struct {
 	Id    string                       `json:"id"`
@@ -3082,6 +3094,17 @@ func (v *listServiceDomainsResponse) GetDomains() listServiceDomainsDomainsAllDo
 	return v.Domains
 }
 
+// redeployServiceInstanceResponse is returned by redeployServiceInstance on success.
+type redeployServiceInstanceResponse struct {
+	// Redeploy a service instance
+	ServiceInstanceRedeploy bool `json:"serviceInstanceRedeploy"`
+}
+
+// GetServiceInstanceRedeploy returns redeployServiceInstanceResponse.ServiceInstanceRedeploy, and is useful for accessing the field via an interface.
+func (v *redeployServiceInstanceResponse) GetServiceInstanceRedeploy() bool {
+	return v.ServiceInstanceRedeploy
+}
+
 // updateDeploymentTriggerDeploymentTriggerUpdateDeploymentTrigger includes the requested fields of the GraphQL type DeploymentTrigger.
 type updateDeploymentTriggerDeploymentTriggerUpdateDeploymentTrigger struct {
 	DeploymentTrigger `json:"-"`
@@ -4682,6 +4705,38 @@ fragment ServiceDomain on ServiceDomain {
 	var err error
 
 	var data listServiceDomainsResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func redeployServiceInstance(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	serviceId string,
+) (*redeployServiceInstanceResponse, error) {
+	req := &graphql.Request{
+		OpName: "redeployServiceInstance",
+		Query: `
+mutation redeployServiceInstance ($environmentId: String!, $serviceId: String!) {
+	serviceInstanceRedeploy(environmentId: $environmentId, serviceId: $serviceId)
+}
+`,
+		Variables: &__redeployServiceInstanceInput{
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+		},
+	}
+	var err error
+
+	var data redeployServiceInstanceResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
