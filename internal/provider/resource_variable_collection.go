@@ -102,7 +102,6 @@ func (r *VariableCollectionResource) Configure(ctx context.Context, req resource
 }
 
 func (r *VariableCollectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	tflog.Info(ctx, "### CREATE")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -163,7 +162,6 @@ func (r *VariableCollectionResource) Create(ctx context.Context, req resource.Cr
 }
 
 func (r *VariableCollectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tflog.Info(ctx, "### READ")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -195,7 +193,6 @@ func (r *VariableCollectionResource) Read(ctx context.Context, req resource.Read
 }
 
 func (r *VariableCollectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	tflog.Info(ctx, "### UPDATE")
 	var data *VariableCollectionResourceModel
 	var state *VariableCollectionResourceModel
 
@@ -218,8 +215,6 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("state.variables: %v", state.Variables))
-
 	tfVariablesMapToUpsert := getVariablesToUpsert(data, state)
 	variablesMapToUpsert := make(map[string]interface{})
 	for k, v := range tfVariablesMapToUpsert {
@@ -227,8 +222,6 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 	}
 
 	if len(variablesMapToUpsert) > 0 {
-		tflog.Info(ctx, "variablesMapToUpsert")
-		tflog.Info(ctx, fmt.Sprintln(variablesMapToUpsert))
 
 		input := VariableCollectionUpsertInput{
 			ServiceId:     data.ServiceId.ValueStringPointer(),
@@ -248,7 +241,6 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 	variableNamesToDelete := getVariableNamesToDelete(data, state)
 
 	if len(variableNamesToDelete) > 0 {
-		tflog.Info(ctx, fmt.Sprintf("will delete variables: %v", variableNamesToDelete))
 
 		err = deleteManyVariables(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNamesToDelete)
 
@@ -283,7 +275,6 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 }
 
 func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tflog.Info(ctx, "### DELETE")
 	var data *VariableCollectionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -322,8 +313,7 @@ func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *VariableCollectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tflog.Info(ctx, "### IMPORT")
-	// option1: terraform import railway_variable_collection.sentry 89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging:SENTRY_KEY:SENTRY_SECRET
+	// terraform import railway_variable_collection.sentry 89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging:SENTRY_KEY:SENTRY_SECRET
 	parts := strings.Split(req.ID, ":")
 
 	if len(parts) < 3 {
@@ -413,9 +403,7 @@ func getVariableCollectionId(ctx context.Context, serviceId, environmentId strin
 	namesSortedAsc := append([]string(nil), names...)
 	sort.Strings(namesSortedAsc)
 
-	id := fmt.Sprintf("%s:%s:%s", serviceId, environmentId, strings.Join(namesSortedAsc, ":"))
-	//tflog.Info(ctx, fmt.Sprintf("__ID: %s", id))
-	return id
+	return fmt.Sprintf("%s:%s:%s", serviceId, environmentId, strings.Join(namesSortedAsc, ":"))
 }
 
 func deleteManyVariables(ctx context.Context, client graphql.Client, projectId, environmentId, serviceId string, names []string) error {
