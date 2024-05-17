@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -212,6 +213,8 @@ func (r *VariableCollectionResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
+	tflog.Info(ctx, fmt.Sprintf("state.variables: %v", state.Variables))
+
 	tfVariablesMapToUpsert := getVariablesToUpsert(data, state)
 	variablesMapToUpsert := make(map[string]interface{})
 	for k, v := range tfVariablesMapToUpsert {
@@ -300,7 +303,57 @@ func (r *VariableCollectionResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *VariableCollectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// TODO
+	// option1: terraform import railway_variable_collection.sentry 89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging:SENTRY_KEY:SENTRY_SECRET
+	parts := strings.Split(req.ID, ":")
+
+	if len(parts) < 3 {
+		resp.Diagnostics.AddError(
+			"Unexpected Import Identifier",
+			fmt.Sprintf("Expected import identifier with format: service_id:environment_name:name1:name2:name3:... Got: %q", req.ID),
+		)
+
+		return
+	}
+
+	for _, part := range parts {
+		if part == "" {
+			resp.Diagnostics.AddError(
+				"Unexpected Import Identifier",
+				fmt.Sprintf("Expected import identifier with format: service_id:environment_name:name1:name2:name3:... Got: %q", req.ID),
+			)
+
+			return
+		}
+	}
+
+	serviceId := parts[0]
+	environmentName := parts[1]
+	variableNames := parts[2:]
+
+	service, err := getService(ctx, *r.client, serviceId)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
+	projectId := service.Service.ProjectId
+	environmentId, err := findEnvironment(ctx, *r.client, projectId, environmentName)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read environment, got error: %s", err))
+		return
+	}
+
+	variablesMap := make(map[string]types.String)
+	for _, variableName := range variableNames {
+		variablesMap[variableName] = types.StringNull()
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("service_id"), serviceId)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("environment_id"), environmentId)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("variables"), variablesMap)...)
+
 }
 
 func getVariableCollection(ctx context.Context, client graphql.Client, projectId string, environmentId string, serviceId string, names []string, data *VariableCollectionResourceModel) error {
@@ -316,7 +369,6 @@ func getVariableCollection(ctx context.Context, client graphql.Client, projectId
 
 	variablesMap := make(map[string]attr.Value)
 	for _, name := range names {
-		// TODO: should `types.StringNull` be used when ok == false instead of omitting a value from map?
 		if value, ok := response.Variables[name]; ok {
 			if str, ok := value.(string); ok {
 				variablesMap[name] = types.StringValue(str)
@@ -346,13 +398,8 @@ func getVariableCollectionId(ctx context.Context, serviceId, environmentId strin
 	return id
 }
 
-// TODO: genqlient do not supports query batching, but probably it could make sense to
-//
-//	hardcode couple options: 10, 5, 1 variables in one call and handle that here
 func deleteManyVariables(ctx context.Context, client graphql.Client, projectId, environmentId, serviceId string, names []string) error {
 	for _, name := range names {
-		tflog.Info(ctx, fmt.Sprintf("destroying: %s", name))
-		tflog.Info(ctx, fmt.Sprintf("projectId: %s", projectId))
 		input := VariableDeleteInput{
 			Name:          name,
 			ServiceId:     &serviceId,
