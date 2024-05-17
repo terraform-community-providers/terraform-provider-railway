@@ -9,9 +9,9 @@ import (
 
 func TestAccVariableCollectionResourceDefault(t *testing.T) {
 
-	environmentName := "production"
-	environmentId := "3050e612-087b-40dd-bdf2-4b52a8290900"
-	serviceId := "8faa58d7-8a06-4b9a-8e9a-4257c91c8b15"
+	environmentName := "staging"
+	environmentId := "d0519b29-5d12-4857-a5dd-76fa7418336c"
+	serviceId := "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
