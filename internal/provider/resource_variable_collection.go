@@ -44,7 +44,7 @@ func (r *VariableCollectionResource) Metadata(ctx context.Context, req resource.
 
 func (r *VariableCollectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway variable collection. Group of variables managed as a whole",
+		MarkdownDescription: "Railway variable collection. Group of variables managed as a whole. Any changes in collection are triggering service redeployment",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the variable collection.",

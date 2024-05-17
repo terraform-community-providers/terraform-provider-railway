@@ -3,12 +3,12 @@
 page_title: "railway_variable_collection Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway variable collection. Group of variables managed as a whole
+  Railway variable collection. Group of variables managed as a whole. Any changes in collection are triggering service redeployment
 ---
 
 # railway_variable_collection (Resource)
 
-Railway variable collection. Group of variables managed as a whole
+Railway variable collection. Group of variables managed as a whole. Any changes in collection are triggering service redeployment
 
 ## Example Usage
 
