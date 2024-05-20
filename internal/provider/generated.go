@@ -269,7 +269,7 @@ type ProjectCreateInput struct {
 	Plugins                []string           `json:"plugins"`
 	PrDeploys              bool               `json:"prDeploys"`
 	Repo                   *ProjectCreateRepo `json:"repo"`
-	Runtime                PublicRuntime      `json:"runtime"`
+	Runtime                *PublicRuntime     `json:"runtime"`
 	TeamId                 *string            `json:"teamId"`
 }
 
@@ -295,7 +295,7 @@ func (v *ProjectCreateInput) GetPrDeploys() bool { return v.PrDeploys }
 func (v *ProjectCreateInput) GetRepo() *ProjectCreateRepo { return v.Repo }
 
 // GetRuntime returns ProjectCreateInput.Runtime, and is useful for accessing the field via an interface.
-func (v *ProjectCreateInput) GetRuntime() PublicRuntime { return v.Runtime }
+func (v *ProjectCreateInput) GetRuntime() *PublicRuntime { return v.Runtime }
 
 // GetTeamId returns ProjectCreateInput.TeamId, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetTeamId() *string { return v.TeamId }
