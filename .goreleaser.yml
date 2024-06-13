@@ -1,3 +1,4 @@
+version: 2
 builds:
   - env:
       # goreleaser does not work with CGO, it could also complicate
@@ -49,4 +50,4 @@ release:
     - glob: 'terraform-registry-manifest.json'
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 changelog:
-  skip: true
+  disable: true
