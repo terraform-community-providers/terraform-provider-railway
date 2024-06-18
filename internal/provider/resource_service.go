@@ -53,6 +53,8 @@ type ServiceResourceModel struct {
 	SourceImage      types.String `tfsdk:"source_image"`
 	SourceRepo       types.String `tfsdk:"source_repo"`
 	SourceRepoBranch types.String `tfsdk:"source_repo_branch"`
+	Region           types.String `tfsdk:"region"`
+	NumReplicas      types.Int64  `tfsdk:"num_replicas"`
 	RootDirectory    types.String `tfsdk:"root_directory"`
 	ConfigPath       types.String `tfsdk:"config_path"`
 	Volume           types.Object `tfsdk:"volume"`
@@ -123,6 +125,17 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringvalidator.UTF8LengthAtLeast(1),
 					stringvalidator.AlsoRequires(path.MatchRoot("source_repo")),
 				},
+			},
+			"region": schema.StringAttribute{
+				MarkdownDescription: "Region to deploy service in",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.OneOf("us-west1", "us-east4", "europe-west4", "asia-southeast1"),
+				},
+			},
+			"num_replicas": schema.Int64Attribute{
+				MarkdownDescription: "Number of replicas to deploy. Default is 1",
+				Optional:            true,
 			},
 			"root_directory": schema.StringAttribute{
 				MarkdownDescription: "Directory to user for the service. Conflicts with `source_image`.",
@@ -567,6 +580,15 @@ func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdate
 		instanceInput.RailwayConfigFile = data.ConfigPath.ValueString()
 	}
 
+	if !data.Region.IsNull() {
+		instanceInput.Region = data.Region.ValueStringPointer()
+	}
+
+	if !data.NumReplicas.IsNull() {
+		numReplicas := int(data.NumReplicas.ValueInt64())
+		instanceInput.NumReplicas = &numReplicas
+	}
+
 	return instanceInput
 }
 
@@ -594,6 +616,15 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 
 	if response.ServiceInstance.RailwayConfigFile != nil && len(*response.ServiceInstance.RailwayConfigFile) != 0 {
 		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
+	}
+
+	if response.ServiceInstance.Region != nil {
+		data.Region = types.StringValue(*response.ServiceInstance.Region)
+	}
+
+	if response.ServiceInstance.NumReplicas != nil {
+		numReplicas := int64(*response.ServiceInstance.NumReplicas)
+		data.NumReplicas = types.Int64Value(numReplicas)
 	}
 
 	if response.ServiceInstance.Source != nil {

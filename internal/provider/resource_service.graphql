@@ -32,6 +32,8 @@ mutation updateService(
   }
 }
 
+# @genqlient(for: "ServiceInstance.region", pointer: true)
+# @genqlient(for: "ServiceInstance.numReplicas", pointer: true)
 # @genqlient(for: "ServiceInstance.cronSchedule", pointer: true)
 # @genqlient(for: "ServiceInstance.source", pointer: true)
 # @genqlient(for: "ServiceSource.image", pointer: true)
@@ -50,6 +52,8 @@ query getServiceInstance(
     rootDirectory
     railwayConfigFile
     cronSchedule
+    numReplicas
+    region
   }
 }
 
