@@ -45,6 +45,7 @@ func (v *CustomDomain) GetServiceId() string { return v.ServiceId }
 type CustomDomainCreateInput struct {
 	Domain        string `json:"domain"`
 	EnvironmentId string `json:"environmentId"`
+	ProjectId     string `json:"projectId"`
 	ServiceId     string `json:"serviceId"`
 }
 
@@ -53,6 +54,9 @@ func (v *CustomDomainCreateInput) GetDomain() string { return v.Domain }
 
 // GetEnvironmentId returns CustomDomainCreateInput.EnvironmentId, and is useful for accessing the field via an interface.
 func (v *CustomDomainCreateInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetProjectId returns CustomDomainCreateInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *CustomDomainCreateInput) GetProjectId() string { return v.ProjectId }
 
 // GetServiceId returns CustomDomainCreateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *CustomDomainCreateInput) GetServiceId() string { return v.ServiceId }
@@ -377,6 +381,18 @@ func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
 // GetPrForks returns ProjectUpdateInput.PrForks, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrForks() bool { return v.PrForks }
 
+// Private Docker registry credentials. Only available for Pro plan deployments.
+type RegistryCredentialsInput struct {
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
+// GetPassword returns RegistryCredentialsInput.Password, and is useful for accessing the field via an interface.
+func (v *RegistryCredentialsInput) GetPassword() string { return v.Password }
+
+// GetUsername returns RegistryCredentialsInput.Username, and is useful for accessing the field via an interface.
+func (v *RegistryCredentialsInput) GetUsername() string { return v.Username }
+
 type RestartPolicyType string
 
 const (
@@ -500,21 +516,22 @@ func (v *ServiceDomainUpdateInput) GetEnvironmentId() string { return v.Environm
 func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
 
 type ServiceInstanceUpdateInput struct {
-	BuildCommand            *string                 `json:"buildCommand,omitempty"`
-	Builder                 *Builder                `json:"builder,omitempty"`
-	CronSchedule            *string                 `json:"cronSchedule"`
-	HealthcheckPath         *string                 `json:"healthcheckPath,omitempty"`
-	HealthcheckTimeout      *int                    `json:"healthcheckTimeout,omitempty"`
-	NixpacksPlan            *map[string]interface{} `json:"nixpacksPlan,omitempty"`
-	NumReplicas             *int                    `json:"numReplicas,omitempty"`
-	RailwayConfigFile       string                  `json:"railwayConfigFile"`
-	Region                  *string                 `json:"region,omitempty"`
-	RestartPolicyMaxRetries *int                    `json:"restartPolicyMaxRetries,omitempty"`
-	RestartPolicyType       *RestartPolicyType      `json:"restartPolicyType,omitempty"`
-	RootDirectory           string                  `json:"rootDirectory"`
-	Source                  *ServiceSourceInput     `json:"source,omitempty"`
-	StartCommand            *string                 `json:"startCommand,omitempty"`
-	WatchPatterns           []*string               `json:"watchPatterns"`
+	BuildCommand            *string                  `json:"buildCommand,omitempty"`
+	Builder                 *Builder                 `json:"builder,omitempty"`
+	CronSchedule            *string                  `json:"cronSchedule"`
+	HealthcheckPath         *string                  `json:"healthcheckPath,omitempty"`
+	HealthcheckTimeout      *int                     `json:"healthcheckTimeout,omitempty"`
+	NixpacksPlan            *map[string]interface{}  `json:"nixpacksPlan,omitempty"`
+	NumReplicas             *int                     `json:"numReplicas,omitempty"`
+	RailwayConfigFile       string                   `json:"railwayConfigFile"`
+	Region                  *string                  `json:"region,omitempty"`
+	RegistryCredentials     RegistryCredentialsInput `json:"registryCredentials"`
+	RestartPolicyMaxRetries *int                     `json:"restartPolicyMaxRetries,omitempty"`
+	RestartPolicyType       *RestartPolicyType       `json:"restartPolicyType,omitempty"`
+	RootDirectory           string                   `json:"rootDirectory"`
+	Source                  *ServiceSourceInput      `json:"source,omitempty"`
+	StartCommand            *string                  `json:"startCommand,omitempty"`
+	WatchPatterns           []*string                `json:"watchPatterns"`
 }
 
 // GetBuildCommand returns ServiceInstanceUpdateInput.BuildCommand, and is useful for accessing the field via an interface.
@@ -543,6 +560,11 @@ func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() string { return v.Ra
 
 // GetRegion returns ServiceInstanceUpdateInput.Region, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRegion() *string { return v.Region }
+
+// GetRegistryCredentials returns ServiceInstanceUpdateInput.RegistryCredentials, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetRegistryCredentials() RegistryCredentialsInput {
+	return v.RegistryCredentials
+}
 
 // GetRestartPolicyMaxRetries returns ServiceInstanceUpdateInput.RestartPolicyMaxRetries, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRestartPolicyMaxRetries() *int {

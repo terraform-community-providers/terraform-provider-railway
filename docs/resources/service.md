@@ -36,6 +36,8 @@ resource "railway_service" "example" {
 - `cron_schedule` (String) Cron schedule of the service.
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
+- `source_image_private_registry_password` (String, Sensitive) Private Docker registry credentials. Only available for Pro plan deployments
+- `source_image_private_registry_username` (String) Private Docker registry credentials. Only available for Pro plan deployments
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
 - `source_repo_branch` (String) Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.
 - `volume` (Attributes) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))

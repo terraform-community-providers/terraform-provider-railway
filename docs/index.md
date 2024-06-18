@@ -4,7 +4,7 @@ page_title: "Railway Provider"
 
 # Railway Provider
 
-This provider is used to interact with the many resources supported by [Railway](https://railway.tech).
+This provider is used to interact with the many resources supported by [Railway](https://railway.app).
 
 ## Authentication
 
