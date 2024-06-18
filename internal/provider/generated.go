@@ -559,22 +559,22 @@ func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
 func (v *ServiceDomainUpdateInput) GetTargetPort() int { return v.TargetPort }
 
 type ServiceInstanceUpdateInput struct {
-	BuildCommand            *string                  `json:"buildCommand,omitempty"`
-	Builder                 *Builder                 `json:"builder,omitempty"`
-	CronSchedule            *string                  `json:"cronSchedule"`
-	HealthcheckPath         *string                  `json:"healthcheckPath,omitempty"`
-	HealthcheckTimeout      *int                     `json:"healthcheckTimeout,omitempty"`
-	NixpacksPlan            *map[string]interface{}  `json:"nixpacksPlan,omitempty"`
-	NumReplicas             *int                     `json:"numReplicas,omitempty"`
-	RailwayConfigFile       string                   `json:"railwayConfigFile"`
-	Region                  *string                  `json:"region,omitempty"`
-	RegistryCredentials     RegistryCredentialsInput `json:"registryCredentials"`
-	RestartPolicyMaxRetries *int                     `json:"restartPolicyMaxRetries,omitempty"`
-	RestartPolicyType       *RestartPolicyType       `json:"restartPolicyType,omitempty"`
-	RootDirectory           string                   `json:"rootDirectory"`
-	Source                  *ServiceSourceInput      `json:"source,omitempty"`
-	StartCommand            *string                  `json:"startCommand,omitempty"`
-	WatchPatterns           []*string                `json:"watchPatterns"`
+	BuildCommand            *string                   `json:"buildCommand,omitempty"`
+	Builder                 *Builder                  `json:"builder,omitempty"`
+	CronSchedule            *string                   `json:"cronSchedule"`
+	HealthcheckPath         *string                   `json:"healthcheckPath,omitempty"`
+	HealthcheckTimeout      *int                      `json:"healthcheckTimeout,omitempty"`
+	NixpacksPlan            *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
+	NumReplicas             int                       `json:"numReplicas"`
+	RailwayConfigFile       *string                   `json:"railwayConfigFile,omitempty"`
+	Region                  string                    `json:"region"`
+	RegistryCredentials     *RegistryCredentialsInput `json:"registryCredentials,omitempty"`
+	RestartPolicyMaxRetries *int                      `json:"restartPolicyMaxRetries,omitempty"`
+	RestartPolicyType       *RestartPolicyType        `json:"restartPolicyType,omitempty"`
+	RootDirectory           *string                   `json:"rootDirectory,omitempty"`
+	Source                  *ServiceSourceInput       `json:"source,omitempty"`
+	StartCommand            *string                   `json:"startCommand,omitempty"`
+	WatchPatterns           []*string                 `json:"watchPatterns"`
 }
 
 // GetBuildCommand returns ServiceInstanceUpdateInput.BuildCommand, and is useful for accessing the field via an interface.
@@ -596,16 +596,16 @@ func (v *ServiceInstanceUpdateInput) GetHealthcheckTimeout() *int { return v.Hea
 func (v *ServiceInstanceUpdateInput) GetNixpacksPlan() *map[string]interface{} { return v.NixpacksPlan }
 
 // GetNumReplicas returns ServiceInstanceUpdateInput.NumReplicas, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetNumReplicas() *int { return v.NumReplicas }
+func (v *ServiceInstanceUpdateInput) GetNumReplicas() int { return v.NumReplicas }
 
 // GetRailwayConfigFile returns ServiceInstanceUpdateInput.RailwayConfigFile, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() string { return v.RailwayConfigFile }
+func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() *string { return v.RailwayConfigFile }
 
 // GetRegion returns ServiceInstanceUpdateInput.Region, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRegion() *string { return v.Region }
+func (v *ServiceInstanceUpdateInput) GetRegion() string { return v.Region }
 
 // GetRegistryCredentials returns ServiceInstanceUpdateInput.RegistryCredentials, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRegistryCredentials() RegistryCredentialsInput {
+func (v *ServiceInstanceUpdateInput) GetRegistryCredentials() *RegistryCredentialsInput {
 	return v.RegistryCredentials
 }
 
@@ -620,7 +620,7 @@ func (v *ServiceInstanceUpdateInput) GetRestartPolicyType() *RestartPolicyType {
 }
 
 // GetRootDirectory returns ServiceInstanceUpdateInput.RootDirectory, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRootDirectory() string { return v.RootDirectory }
+func (v *ServiceInstanceUpdateInput) GetRootDirectory() *string { return v.RootDirectory }
 
 // GetSource returns ServiceInstanceUpdateInput.Source, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.Source }
@@ -2546,6 +2546,8 @@ type getServiceInstanceServiceInstance struct {
 	RootDirectory     *string                                               `json:"rootDirectory"`
 	RailwayConfigFile *string                                               `json:"railwayConfigFile"`
 	CronSchedule      *string                                               `json:"cronSchedule"`
+	Region            string                                                `json:"region"`
+	NumReplicas       int                                                   `json:"numReplicas"`
 }
 
 // GetSource returns getServiceInstanceServiceInstance.Source, and is useful for accessing the field via an interface.
@@ -2563,6 +2565,12 @@ func (v *getServiceInstanceServiceInstance) GetRailwayConfigFile() *string {
 
 // GetCronSchedule returns getServiceInstanceServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetCronSchedule() *string { return v.CronSchedule }
+
+// GetRegion returns getServiceInstanceServiceInstance.Region, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetRegion() string { return v.Region }
+
+// GetNumReplicas returns getServiceInstanceServiceInstance.NumReplicas, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetNumReplicas() int { return v.NumReplicas }
 
 // getServiceInstanceServiceInstanceSourceServiceSource includes the requested fields of the GraphQL type ServiceSource.
 type getServiceInstanceServiceInstanceSourceServiceSource struct {
@@ -4437,6 +4445,8 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 		rootDirectory
 		railwayConfigFile
 		cronSchedule
+		region
+		numReplicas
 	}
 }
 `,

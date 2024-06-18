@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -56,6 +60,8 @@ type ServiceResourceModel struct {
 	RootDirectory    types.String `tfsdk:"root_directory"`
 	ConfigPath       types.String `tfsdk:"config_path"`
 	Volume           types.Object `tfsdk:"volume"`
+	Region           types.String `tfsdk:"region"`
+	NumReplicas      types.Int64  `tfsdk:"num_replicas"`
 }
 
 func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -170,6 +176,21 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 							float64planmodifier.UseStateForUnknown(),
 						},
 					},
+				},
+			},
+			"region": schema.StringAttribute{
+				MarkdownDescription: "Region to deploy service in. **Default** `us-west1`.",
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString("us-west1"),
+			},
+			"num_replicas": schema.Int64Attribute{
+				MarkdownDescription: "Number of replicas to deploy. **Default** `1`.",
+				Optional:            true,
+				Computed:            true,
+				Default:             int64default.StaticInt64(1),
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
 				},
 			},
 		},
@@ -562,12 +583,15 @@ func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdate
 	}
 
 	if !data.RootDirectory.IsNull() {
-		instanceInput.RootDirectory = data.RootDirectory.ValueString()
+		instanceInput.RootDirectory = data.RootDirectory.ValueStringPointer()
 	}
 
 	if !data.ConfigPath.IsNull() {
-		instanceInput.RailwayConfigFile = data.ConfigPath.ValueString()
+		instanceInput.RailwayConfigFile = data.ConfigPath.ValueStringPointer()
 	}
+
+	instanceInput.Region = data.Region.ValueString()
+	instanceInput.NumReplicas = int(data.NumReplicas.ValueInt64())
 
 	return instanceInput
 }
@@ -590,13 +614,16 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		data.CronSchedule = types.StringValue(*response.ServiceInstance.CronSchedule)
 	}
 
-	if response.ServiceInstance.RootDirectory != nil && len(*response.ServiceInstance.RootDirectory) != 0 {
+	if response.ServiceInstance.RootDirectory != nil {
 		data.RootDirectory = types.StringValue(*response.ServiceInstance.RootDirectory)
 	}
 
-	if response.ServiceInstance.RailwayConfigFile != nil && len(*response.ServiceInstance.RailwayConfigFile) != 0 {
+	if response.ServiceInstance.RailwayConfigFile != nil {
 		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
 	}
+
+	data.Region = types.StringValue(response.ServiceInstance.Region)
+	data.NumReplicas = types.Int64Value(int64(response.ServiceInstance.NumReplicas))
 
 	if response.ServiceInstance.Source != nil {
 		if response.ServiceInstance.Source.Image != nil {
