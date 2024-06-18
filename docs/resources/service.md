@@ -34,6 +34,8 @@ resource "railway_service" "example" {
 
 - `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
 - `cron_schedule` (String) Cron schedule of the service.
+- `num_replicas` (Number) Number of replicas to deploy. Default is 1
+- `region` (String) Region to deploy service in
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
