@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -129,6 +131,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"region": schema.StringAttribute{
 				MarkdownDescription: "Region to deploy service in",
 				Optional:            true,
+				Computed:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("us-west1", "us-east4", "europe-west4", "asia-southeast1"),
 				},
@@ -136,6 +139,11 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"num_replicas": schema.Int64Attribute{
 				MarkdownDescription: "Number of replicas to deploy. Default is 1",
 				Optional:            true,
+				Computed:            true,
+				Default:             int64default.StaticInt64(1),
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+				},
 			},
 			"root_directory": schema.StringAttribute{
 				MarkdownDescription: "Directory to user for the service. Conflicts with `source_image`.",
