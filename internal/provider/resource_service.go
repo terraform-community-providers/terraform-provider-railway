@@ -129,7 +129,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"region": schema.StringAttribute{
-				MarkdownDescription: "Region to deploy service in",
+				MarkdownDescription: "Region to deploy service in. Allowed values are: us-west1, us-east4, europe-west4, asia-southeast1",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.String{
