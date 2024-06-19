@@ -2481,6 +2481,8 @@ type getServiceInstanceServiceInstance struct {
 	RootDirectory     *string                                               `json:"rootDirectory"`
 	RailwayConfigFile *string                                               `json:"railwayConfigFile"`
 	CronSchedule      *string                                               `json:"cronSchedule"`
+	NumReplicas       *int                                                  `json:"numReplicas"`
+	Region            *string                                               `json:"region"`
 }
 
 // GetSource returns getServiceInstanceServiceInstance.Source, and is useful for accessing the field via an interface.
@@ -2498,6 +2500,12 @@ func (v *getServiceInstanceServiceInstance) GetRailwayConfigFile() *string {
 
 // GetCronSchedule returns getServiceInstanceServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetCronSchedule() *string { return v.CronSchedule }
+
+// GetNumReplicas returns getServiceInstanceServiceInstance.NumReplicas, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetNumReplicas() *int { return v.NumReplicas }
+
+// GetRegion returns getServiceInstanceServiceInstance.Region, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetRegion() *string { return v.Region }
 
 // getServiceInstanceServiceInstanceSourceServiceSource includes the requested fields of the GraphQL type ServiceSource.
 type getServiceInstanceServiceInstanceSourceServiceSource struct {
@@ -4372,6 +4380,8 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 		rootDirectory
 		railwayConfigFile
 		cronSchedule
+		numReplicas
+		region
 	}
 }
 `,
