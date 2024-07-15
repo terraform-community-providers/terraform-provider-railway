@@ -1,4 +1,9 @@
-## master
+## 0.4.2
+
+### Bug fixes
+* Fix issue with root directory and config path not being read correctly
+
+## 0.4.1
 
 ### Enhancements
 * Added `region` to `railway_service`

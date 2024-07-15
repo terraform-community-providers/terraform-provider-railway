@@ -649,11 +649,11 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		data.CronSchedule = types.StringValue(*response.ServiceInstance.CronSchedule)
 	}
 
-	if response.ServiceInstance.RootDirectory != nil {
+	if response.ServiceInstance.RootDirectory != nil && len(*response.ServiceInstance.RootDirectory) != 0 {
 		data.RootDirectory = types.StringValue(*response.ServiceInstance.RootDirectory)
 	}
 
-	if response.ServiceInstance.RailwayConfigFile != nil {
+	if response.ServiceInstance.RailwayConfigFile != nil && len(*response.ServiceInstance.RailwayConfigFile) != 0 {
 		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
 	}
 
