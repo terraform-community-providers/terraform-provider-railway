@@ -3,6 +3,7 @@
 ### Enhancements
 * Added `region` to `railway_service`
 * Added `num_replicas` to `railway_service`
+* Added registry credentials to `railway_service`
 
 ## 0.4.0
 

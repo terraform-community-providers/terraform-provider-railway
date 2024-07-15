@@ -50,18 +50,20 @@ var volumeAttrTypes = map[string]attr.Type{
 }
 
 type ServiceResourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	ProjectId        types.String `tfsdk:"project_id"`
-	CronSchedule     types.String `tfsdk:"cron_schedule"`
-	SourceImage      types.String `tfsdk:"source_image"`
-	SourceRepo       types.String `tfsdk:"source_repo"`
-	SourceRepoBranch types.String `tfsdk:"source_repo_branch"`
-	RootDirectory    types.String `tfsdk:"root_directory"`
-	ConfigPath       types.String `tfsdk:"config_path"`
-	Volume           types.Object `tfsdk:"volume"`
-	Region           types.String `tfsdk:"region"`
-	NumReplicas      types.Int64  `tfsdk:"num_replicas"`
+	Id                                 types.String `tfsdk:"id"`
+	Name                               types.String `tfsdk:"name"`
+	ProjectId                          types.String `tfsdk:"project_id"`
+	CronSchedule                       types.String `tfsdk:"cron_schedule"`
+	SourceImage                        types.String `tfsdk:"source_image"`
+	SourceImagePrivateRegistryUsername types.String `tfsdk:"source_image_registry_username"`
+	SourceImagePrivateRegistryPassword types.String `tfsdk:"source_image_registry_password"`
+	SourceRepo                         types.String `tfsdk:"source_repo"`
+	SourceRepoBranch                   types.String `tfsdk:"source_repo_branch"`
+	RootDirectory                      types.String `tfsdk:"root_directory"`
+	ConfigPath                         types.String `tfsdk:"config_path"`
+	Volume                             types.Object `tfsdk:"volume"`
+	Region                             types.String `tfsdk:"region"`
+	NumReplicas                        types.Int64  `tfsdk:"num_replicas"`
 }
 
 func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -112,6 +114,31 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringvalidator.ConflictsWith(path.MatchRoot("source_repo_branch")),
 					stringvalidator.ConflictsWith(path.MatchRoot("root_directory")),
 					stringvalidator.ConflictsWith(path.MatchRoot("config_path")),
+				},
+			},
+			"source_image_registry_username": schema.StringAttribute{
+				MarkdownDescription: "Private Docker registry credentials.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_repo")),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_repo_branch")),
+					stringvalidator.ConflictsWith(path.MatchRoot("root_directory")),
+					stringvalidator.ConflictsWith(path.MatchRoot("config_path")),
+					stringvalidator.AlsoRequires(path.MatchRoot("source_image_registry_password")),
+				},
+			},
+			"source_image_registry_password": schema.StringAttribute{
+				MarkdownDescription: "Private Docker registry credentials.",
+				Optional:            true,
+				Sensitive:           true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_repo")),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_repo_branch")),
+					stringvalidator.ConflictsWith(path.MatchRoot("root_directory")),
+					stringvalidator.ConflictsWith(path.MatchRoot("config_path")),
+					stringvalidator.AlsoRequires(path.MatchRoot("source_image_registry_username")),
 				},
 			},
 			"source_repo": schema.StringAttribute{
@@ -592,6 +619,14 @@ func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdate
 
 	instanceInput.Region = data.Region.ValueString()
 	instanceInput.NumReplicas = int(data.NumReplicas.ValueInt64())
+
+	if !data.SourceImagePrivateRegistryUsername.IsNull() {
+		instanceInput.RegistryCredentials.Username = data.SourceImagePrivateRegistryUsername.ValueString()
+	}
+
+	if !data.SourceImagePrivateRegistryPassword.IsNull() {
+		instanceInput.RegistryCredentials.Password = data.SourceImagePrivateRegistryPassword.ValueString()
+	}
 
 	return instanceInput
 }

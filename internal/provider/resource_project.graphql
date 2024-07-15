@@ -26,6 +26,7 @@ query getProject($id: String!) {
 }
 
 # @genqlient(for: "ProjectCreateInput.teamId", pointer: true)
+# @genqlient(for: "ProjectCreateInput.runtime", pointer: true)
 # @genqlient(for: "ProjectCreateInput.repo", pointer: true)
 mutation createProject(
   $input: ProjectCreateInput!
