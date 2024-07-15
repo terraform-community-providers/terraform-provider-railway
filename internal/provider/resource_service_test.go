@@ -26,6 +26,8 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// ImportState testing
@@ -48,6 +50,8 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// Update and Read testing image
@@ -57,13 +61,15 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
 					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-					resource.TestCheckResourceAttr("railway_service.test", "cron_schedule", "0 0 * * *"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
 					resource.TestCheckResourceAttr("railway_service.test", "source_image", "hello-world"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-east4"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "2"),
 				),
 			},
 			// ImportState testing
@@ -86,6 +92,8 @@ func TestAccServiceResourceDefault(t *testing.T) {
 			// 		resource.TestCheckResourceAttr("railway_service.test", "root_directory", "blog"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "config_path", "blog/railway.yaml"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+			//		resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+			//		resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 			// 	),
 			// },
 			// ImportState testing
@@ -101,7 +109,7 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
 					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckResourceAttr("railway_service.test", "cron_schedule", "0 0 * * *"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
@@ -111,6 +119,8 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "todo-app-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/mnt"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -130,13 +140,15 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
 					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-					resource.TestCheckResourceAttr("railway_service.test", "cron_schedule", "0 0 * * *"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
 					resource.TestCheckResourceAttr("railway_service.test", "source_image", "hello-world"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-east4"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "2"),
 				),
 			},
 			// ImportState testing
@@ -152,13 +164,15 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
 					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-					resource.TestCheckResourceAttr("railway_service.test", "cron_schedule", "0 0 * * *"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
 					resource.TestCheckResourceAttr("railway_service.test", "source_image", "hello-world"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-east4"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "2"),
 				),
 			},
 			// Update with null values
@@ -175,6 +189,8 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// ImportState testing
@@ -207,6 +223,8 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 			// 		resource.TestCheckResourceAttr("railway_service.test", "root_directory", "blog"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "config_path", "blog/railway.yaml"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+			//		resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+			//		resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 			// 	),
 			// },
 			// // ImportState testing
@@ -229,6 +247,8 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 			// 		resource.TestCheckResourceAttr("railway_service.test", "root_directory", "blog"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "config_path", "blog/railway.yaml"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+			//		resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+			//		resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 			// 	),
 			// },
 			// Update with null values
@@ -243,6 +263,8 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// ImportState testing
@@ -268,7 +290,7 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
 					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckResourceAttr("railway_service.test", "cron_schedule", "0 0 * * *"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
@@ -278,6 +300,8 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "todo-app-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/mnt"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// ImportState testing
@@ -293,7 +317,7 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
 					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckResourceAttr("railway_service.test", "cron_schedule", "0 0 * * *"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
@@ -303,6 +327,8 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "todo-app-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/mnt"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// Update with different values
@@ -312,7 +338,7 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
 					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckResourceAttr("railway_service.test", "cron_schedule", "0 0 * * *"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
@@ -322,6 +348,8 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "data-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/data"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// Update with null values
@@ -338,6 +366,8 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
 				),
 			},
 			// ImportState testing
@@ -366,8 +396,9 @@ resource "railway_service" "test" {
   name = "%s"
   project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
 
-  cron_schedule = "0 0 * * *"
   source_image = "hello-world"
+  region = "us-east4"
+  num_replicas = 2
 }
 `, name)
 }
@@ -391,6 +422,8 @@ func testAccServiceResourceConfigNonDefaultVolume(name string, volumeName string
 resource "railway_service" "test" {
   name = "%s"
   project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
+
+  cron_schedule = "0 0 * * *"
 
   volume = {
     name = "%s"
