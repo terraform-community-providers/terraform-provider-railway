@@ -96,7 +96,7 @@ func TestAccServiceResourceDefault(t *testing.T) {
 			},
 			// Update and Read testing volume
 			{
-				Config: testAccServiceResourceConfigNonDefaultVolume("nue-todo-app", "my-volume", "/mnt"),
+				Config: testAccServiceResourceConfigNonDefaultVolume("nue-todo-app", "todo-app-volume", "/mnt"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
@@ -108,9 +108,9 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestMatchResourceAttr("railway_service.test", "volume.id", uuidRegex()),
-					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "my-volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "todo-app-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/mnt"),
-					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "5000"),
+					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -263,7 +263,7 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccServiceResourceConfigNonDefaultVolume("todo-app", "my-volume", "/mnt"),
+				Config: testAccServiceResourceConfigNonDefaultVolume("todo-app", "todo-app-volume", "/mnt"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
@@ -275,9 +275,9 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestMatchResourceAttr("railway_service.test", "volume.id", uuidRegex()),
-					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "my-volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "todo-app-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/mnt"),
-					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "5000"),
+					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
 				),
 			},
 			// ImportState testing
@@ -288,7 +288,7 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 			},
 			// Update with same values
 			{
-				Config: testAccServiceResourceConfigNonDefaultVolume("todo-app", "my-volume", "/mnt"),
+				Config: testAccServiceResourceConfigNonDefaultVolume("todo-app", "todo-app-volume", "/mnt"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
@@ -300,9 +300,9 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestMatchResourceAttr("railway_service.test", "volume.id", uuidRegex()),
-					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "my-volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "todo-app-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/mnt"),
-					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "5000"),
+					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
 				),
 			},
 			// Update with different values
@@ -321,7 +321,7 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_service.test", "volume.id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "data-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/data"),
-					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "5000"),
+					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
 				),
 			},
 			// Update with null values

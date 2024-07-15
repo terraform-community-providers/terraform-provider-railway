@@ -364,28 +364,30 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	input := ServiceUpdateInput{
-		Name: data.Name.ValueString(),
+	if data.Name.ValueString() != state.Name.ValueString() {
+		input := ServiceUpdateInput{
+			Name: data.Name.ValueString(),
+		}
+
+		response, err := updateService(ctx, *r.client, data.Id.ValueString(), input)
+
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service, got error: %s", err))
+			return
+		}
+
+		tflog.Trace(ctx, "updated a service")
+
+		service := response.ServiceUpdate.Service
+
+		data.Id = types.StringValue(service.Id)
+		data.Name = types.StringValue(service.Name)
+		data.ProjectId = types.StringValue(service.ProjectId)
 	}
-
-	response, err := updateService(ctx, *r.client, data.Id.ValueString(), input)
-
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service, got error: %s", err))
-		return
-	}
-
-	tflog.Trace(ctx, "updated a service")
-
-	service := response.ServiceUpdate.Service
-
-	data.Id = types.StringValue(service.Id)
-	data.Name = types.StringValue(service.Name)
-	data.ProjectId = types.StringValue(service.ProjectId)
 
 	instanceInput := buildServiceInstanceInput(data)
 
-	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
+	_, err := updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service settings, got error: %s", err))

@@ -22,6 +22,7 @@ query listServiceDomains(
   }
 }
 
+# @genqlient(for: "ServiceDomainCreateInput.targetPort", omitempty: true, pointer: true)
 mutation createServiceDomain(
   $input: ServiceDomainCreateInput!
 ) {

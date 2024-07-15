@@ -133,6 +133,7 @@ func testAccProjectResourceConfigDefault(name string) string {
 	return fmt.Sprintf(`
 resource "railway_project" "test" {
   name = "%s"
+  team_id = "ecb63be7-63fb-47fe-95fc-1585d24e172d"
 }
 `, name)
 }
@@ -141,6 +142,7 @@ func testAccProjectResourceConfigDefaultEnvironmentName(name string, environment
 	return fmt.Sprintf(`
 resource "railway_project" "test" {
   name = "%s"
+  team_id = "ecb63be7-63fb-47fe-95fc-1585d24e172d"
 
   default_environment = {
     name = "%s"
@@ -153,6 +155,7 @@ func testAccProjectResourceConfigNonDefault(name string, environmentName string)
 	return fmt.Sprintf(`
 resource "railway_project" "test" {
   name = "%s"
+  team_id = "ecb63be7-63fb-47fe-95fc-1585d24e172d"
   description = "nice project"
   private = false
   has_pr_deploys = true

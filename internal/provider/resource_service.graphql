@@ -15,6 +15,9 @@ query getService($id: String!) {
 # @genqlient(for: "ServiceCreateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceSourceInput.image", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceSourceInput.repo", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceCreateInput.icon", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceCreateInput.templateServiceId", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceCreateInput.registryCredentials", omitempty: true, pointer: true)
 mutation createService(
   $input: ServiceCreateInput!
 ) {

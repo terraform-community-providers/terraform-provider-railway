@@ -130,10 +130,18 @@ func (r *CustomDomainResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
 	input := CustomDomainCreateInput{
 		Domain:        data.Domain.ValueString(),
 		ServiceId:     data.ServiceId.ValueString(),
 		EnvironmentId: data.EnvironmentId.ValueString(),
+		ProjectId:     service.Service.ProjectId,
 	}
 
 	response, err := createCustomDomain(ctx, *r.client, input)
@@ -151,18 +159,10 @@ func (r *CustomDomainResource) Create(ctx context.Context, req resource.CreateRe
 	data.Domain = types.StringValue(domain.Domain)
 	data.EnvironmentId = types.StringValue(domain.EnvironmentId)
 	data.ServiceId = types.StringValue(domain.ServiceId)
+	data.ProjectId = types.StringValue(service.Service.ProjectId)
 	data.HostLabel = types.StringValue(domain.Status.DnsRecords[0].Hostlabel)
 	data.Zone = types.StringValue(domain.Status.DnsRecords[0].Zone)
 	data.DNSRecordValue = types.StringValue(domain.Status.DnsRecords[0].RequiredValue)
-
-	service, err := getService(ctx, *r.client, domain.ServiceId)
-
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
-		return
-	}
-
-	data.ProjectId = types.StringValue(service.Service.ProjectId)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
