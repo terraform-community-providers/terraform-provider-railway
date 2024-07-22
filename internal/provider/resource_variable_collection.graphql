@@ -4,10 +4,3 @@ mutation upsertVariableCollection(
 ) {
     variableCollectionUpsert(input: $input)
 }
-
-mutation redeployServiceInstance(
-    $environmentId: String!,
-    $serviceId: String!
-) {
-    serviceInstanceRedeploy(environmentId: $environmentId, serviceId: $serviceId)
-}

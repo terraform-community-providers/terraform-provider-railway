@@ -3,12 +3,12 @@
 page_title: "railway_variable_collection Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway variable collection. Group of variables managed as a whole. Any changes in collection are triggering service redeployment
+  Railway variable collection. Group of variables managed as a whole. Any changes in collection triggers service redeployment.
 ---
 
 # railway_variable_collection (Resource)
 
-Railway variable collection. Group of variables managed as a whole. Any changes in collection are triggering service redeployment
+Railway variable collection. Group of variables managed as a whole. Any changes in collection triggers service redeployment.
 
 ## Example Usage
 
@@ -17,10 +17,16 @@ resource "railway_variable_collection" "example" {
   environment_id = railway_project.example.default_environment.id
   service_id     = railway_service.example.id
 
-  variables = {
-    SENTRY_KEY    = "KEY"
-    SENTRY_SECRET = "SECRET"
-  }
+  variables = [
+    {
+      name  = "SENTRY_KEY"
+      value = "KEY"
+    },
+    {
+      name  = "SENTRY_SECRET"
+      value = "SECRET"
+    }
+  ]
 }
 ```
 
@@ -31,11 +37,20 @@ resource "railway_variable_collection" "example" {
 
 - `environment_id` (String) Identifier of the environment the variable collection belongs to.
 - `service_id` (String) Identifier of the service the variable collection belongs to.
-- `variables` (Map of String) Collection of variables.
+- `variables` (Attributes List) Collection of variables. (see [below for nested schema](#nestedatt--variables))
 
 ### Read-Only
 
 - `id` (String) Identifier of the variable collection.
+- `project_id` (String) Identifier of the project the variable collection belongs to.
+
+<a id="nestedatt--variables"></a>
+### Nested Schema for `variables`
+
+Required:
+
+- `name` (String) Name of the variable.
+- `value` (String, Sensitive) Value of the variable.
 
 ## Import
 

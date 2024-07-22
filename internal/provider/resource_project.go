@@ -33,7 +33,7 @@ type ProjectResource struct {
 	client *graphql.Client
 }
 
-type ProejctResourceDefaultEnvironmentModel struct {
+type ProjectResourceDefaultEnvironmentModel struct {
 	Id   types.String `tfsdk:"id"`
 	Name types.String `tfsdk:"name"`
 }
@@ -164,7 +164,7 @@ func (r *ProjectResource) Configure(ctx context.Context, req resource.ConfigureR
 
 func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data *ProjectResourceModel
-	var defaultEnvironmentData *ProejctResourceDefaultEnvironmentModel
+	var defaultEnvironmentData *ProjectResourceDefaultEnvironmentModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -266,7 +266,7 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data *ProjectResourceModel
-	var defaultEnvironmentData *ProejctResourceDefaultEnvironmentModel
+	var defaultEnvironmentData *ProjectResourceDefaultEnvironmentModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
