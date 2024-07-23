@@ -3,12 +3,12 @@
 page_title: "railway_variable Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway variable.
+  Railway variable. Any changes in collection triggers service redeployment.
 ---
 
 # railway_variable (Resource)
 
-Railway variable.
+Railway variable. Any changes in collection triggers service redeployment.
 
 ## Example Usage
 

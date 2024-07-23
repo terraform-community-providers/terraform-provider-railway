@@ -43,7 +43,7 @@ func (r *VariableResource) Metadata(ctx context.Context, req resource.MetadataRe
 
 func (r *VariableResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway variable.",
+		MarkdownDescription: "Railway variable. Any changes in collection triggers service redeployment.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the variable.",
@@ -152,6 +152,13 @@ func (r *VariableResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after variable created, got error: %s", err))
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -176,6 +183,7 @@ func (r *VariableResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 func (r *VariableResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data *VariableResourceModel
+	var state *VariableResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -183,10 +191,9 @@ func (r *VariableResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	service, err := getService(ctx, *r.client, data.ServiceId.ValueString())
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -195,10 +202,10 @@ func (r *VariableResource) Update(ctx context.Context, req resource.UpdateReques
 		Value:         data.Value.ValueString(),
 		ServiceId:     data.ServiceId.ValueStringPointer(),
 		EnvironmentId: data.EnvironmentId.ValueString(),
-		ProjectId:     service.Service.ProjectId,
+		ProjectId:     state.ProjectId.ValueString(),
 	}
 
-	_, err = upsertVariable(ctx, *r.client, input)
+	_, err := upsertVariable(ctx, *r.client, input)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update variable, got error: %s", err))
@@ -207,10 +214,17 @@ func (r *VariableResource) Update(ctx context.Context, req resource.UpdateReques
 
 	tflog.Trace(ctx, "updated a variable")
 
-	err = getVariable(ctx, *r.client, service.Service.ProjectId, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Name.ValueString(), data)
+	err = getVariable(ctx, *r.client, state.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Name.ValueString(), data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variable after updating it, got error: %s", err))
+		return
+	}
+
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after variable updated, got error: %s", err))
 		return
 	}
 
