@@ -1,3 +1,8 @@
+## 0.4.3
+
+### Enhancements
+* Added `railway_variable_collection` resource
+
 ## 0.4.2
 
 ### Bug fixes
