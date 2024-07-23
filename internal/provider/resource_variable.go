@@ -254,6 +254,13 @@ func (r *VariableResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after variable updated, got error: %s", err))
+		return
+	}
+
 	tflog.Trace(ctx, "deleted a variable")
 }
 
