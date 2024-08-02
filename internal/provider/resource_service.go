@@ -621,10 +621,16 @@ func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdate
 	instanceInput.NumReplicas = int(data.NumReplicas.ValueInt64())
 
 	if !data.SourceImagePrivateRegistryUsername.IsNull() {
+		if instanceInput.RegistryCredentials == nil {
+			instanceInput.RegistryCredentials = new(RegistryCredentialsInput)
+		}
 		instanceInput.RegistryCredentials.Username = data.SourceImagePrivateRegistryUsername.ValueString()
 	}
 
 	if !data.SourceImagePrivateRegistryPassword.IsNull() {
+		if instanceInput.RegistryCredentials == nil {
+			instanceInput.RegistryCredentials = new(RegistryCredentialsInput)
+		}
 		instanceInput.RegistryCredentials.Password = data.SourceImagePrivateRegistryPassword.ValueString()
 	}
 
