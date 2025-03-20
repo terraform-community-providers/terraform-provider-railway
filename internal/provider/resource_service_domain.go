@@ -140,9 +140,10 @@ func (r *ServiceDomainResource) Create(ctx context.Context, req resource.CreateR
 	domainName := data.Subdomain.ValueString() + "." + domain.Suffix
 
 	updateInput := ServiceDomainUpdateInput{
-		Domain:        domainName,
-		ServiceId:     data.ServiceId.ValueString(),
-		EnvironmentId: data.EnvironmentId.ValueString(),
+		ServiceDomainId: domain.Id,
+		Domain:          domainName,
+		ServiceId:       data.ServiceId.ValueString(),
+		EnvironmentId:   data.EnvironmentId.ValueString(),
 	}
 
 	updateResponse, err := updateServiceDomain(ctx, *r.client, updateInput)
@@ -214,9 +215,10 @@ func (r *ServiceDomainResource) Update(ctx context.Context, req resource.UpdateR
 	domainName := data.Subdomain.ValueString() + "." + state.Suffix.ValueString()
 
 	updateInput := ServiceDomainUpdateInput{
-		Domain:        domainName,
-		ServiceId:     data.ServiceId.ValueString(),
-		EnvironmentId: data.EnvironmentId.ValueString(),
+		ServiceDomainId: state.Id.ValueString(),
+		Domain:          domainName,
+		ServiceId:       data.ServiceId.ValueString(),
+		EnvironmentId:   data.EnvironmentId.ValueString(),
 	}
 
 	response, err := updateServiceDomain(ctx, *r.client, updateInput)

@@ -61,17 +61,20 @@ query getServiceInstance(
 # @genqlient(for: "ServiceInstanceUpdateInput.rootDirectory", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.railwayConfigFile", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.cronSchedule", pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.watchPatterns", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.watchPatterns", bind: "*[]string", omitempty: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.registryCredentials", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.multiRegionConfig", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.builder", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.preDeployCommand", bind: "*[]string", omitempty: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.startCommand", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.healthcheckPath", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.healthcheckTimeout", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.restartPolicyType", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.restartPolicyMaxRetries", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.sleepApplication", omitempty: true, pointer: true)
 mutation updateServiceInstance(
   $serviceId: String!
   $input: ServiceInstanceUpdateInput!
@@ -135,6 +138,7 @@ mutation updateVolume(
 }
 
 # @genqlient(for: "VolumeInstanceUpdateInput.state", omitempty: true, pointer: true)
+# @genqlient(for: "VolumeInstanceUpdateInput.type", omitempty: true, pointer: true)
 mutation updateVolumeInstance(
   $id: String!
   $input: VolumeInstanceUpdateInput!
