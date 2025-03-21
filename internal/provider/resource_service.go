@@ -283,6 +283,17 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	data.Name = types.StringValue(service.Name)
 	data.ProjectId = types.StringValue(service.ProjectId)
 
+	instanceInput := buildServiceInstanceInput(data)
+
+	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create service settings, got error: %s", err))
+		return
+	}
+
+	tflog.Trace(ctx, "created service settings")
+
 	if !data.Volume.IsNull() {
 		resp.Diagnostics.Append(data.Volume.As(ctx, &volumeData, basetypes.ObjectAsOptions{})...)
 
@@ -314,17 +325,6 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 
 		tflog.Trace(ctx, "updated a volume")
 	}
-
-	instanceInput := buildServiceInstanceInput(data)
-
-	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
-
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create service settings, got error: %s", err))
-		return
-	}
-
-	tflog.Trace(ctx, "created service settings")
 
 	if !data.SourceRepo.IsNull() || !data.SourceImage.IsNull() {
 		connectInput := buildServiceConnectInput(data)
