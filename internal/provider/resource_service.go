@@ -283,6 +283,17 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	data.Name = types.StringValue(service.Name)
 	data.ProjectId = types.StringValue(service.ProjectId)
 
+	instanceInput := buildServiceInstanceInput(data)
+
+	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create service settings, got error: %s", err))
+		return
+	}
+
+	tflog.Trace(ctx, "created service settings")
+
 	if !data.Volume.IsNull() {
 		resp.Diagnostics.Append(data.Volume.As(ctx, &volumeData, basetypes.ObjectAsOptions{})...)
 
@@ -315,17 +326,6 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 		tflog.Trace(ctx, "updated a volume")
 	}
 
-	instanceInput := buildServiceInstanceInput(data)
-
-	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
-
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create service settings, got error: %s", err))
-		return
-	}
-
-	tflog.Trace(ctx, "created service settings")
-
 	if !data.SourceRepo.IsNull() || !data.SourceImage.IsNull() {
 		connectInput := buildServiceConnectInput(data)
 
@@ -336,6 +336,8 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 			return
 		}
 	}
+
+	data.Region = types.StringValue(data.Region.ValueString())
 
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
@@ -382,6 +384,9 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service settings, got error: %s", err))
 		return
 	}
+
+	// TODO: This is a workaround to get the region of the service since the API is always returning null.
+	data.Region = types.StringValue(data.Region.ValueString())
 
 	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
@@ -544,6 +549,8 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service repo or image connection, got error: %s", err))
 	}
 
+	data.Region = types.StringValue(data.Region.ValueString())
+
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
@@ -663,7 +670,6 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
 	}
 
-	data.Region = types.StringValue(response.ServiceInstance.Region)
 	data.NumReplicas = types.Int64Value(int64(response.ServiceInstance.NumReplicas))
 
 	if response.ServiceInstance.Source != nil {

@@ -16,6 +16,7 @@ const (
 	BuilderHeroku   Builder = "HEROKU"
 	BuilderNixpacks Builder = "NIXPACKS"
 	BuilderPaketo   Builder = "PAKETO"
+	BuilderRailpack Builder = "RAILPACK"
 )
 
 // CustomDomain includes the GraphQL fields of CustomDomain requested by the fragment CustomDomain.
@@ -369,8 +370,8 @@ type ProjectUpdateInput struct {
 	IsPublic          bool   `json:"isPublic"`
 	Name              string `json:"name"`
 	PrDeploys         bool   `json:"prDeploys"`
-	// [Experimental] Will be deprecated eventually
-	PrForks bool `json:"prForks"`
+	// Enable/disable copying volume data to PR environment from the base environment
+	PrEnvCopyVolData bool `json:"prEnvCopyVolData"`
 }
 
 // GetBaseEnvironmentId returns ProjectUpdateInput.BaseEnvironmentId, and is useful for accessing the field via an interface.
@@ -391,8 +392,8 @@ func (v *ProjectUpdateInput) GetName() string { return v.Name }
 // GetPrDeploys returns ProjectUpdateInput.PrDeploys, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
 
-// GetPrForks returns ProjectUpdateInput.PrForks, and is useful for accessing the field via an interface.
-func (v *ProjectUpdateInput) GetPrForks() bool { return v.PrForks }
+// GetPrEnvCopyVolData returns ProjectUpdateInput.PrEnvCopyVolData, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetPrEnvCopyVolData() bool { return v.PrEnvCopyVolData }
 
 type PublicRuntime string
 
@@ -540,10 +541,11 @@ func (v *ServiceDomainCreateInput) GetServiceId() string { return v.ServiceId }
 func (v *ServiceDomainCreateInput) GetTargetPort() *int { return v.TargetPort }
 
 type ServiceDomainUpdateInput struct {
-	Domain        string `json:"domain"`
-	EnvironmentId string `json:"environmentId"`
-	ServiceId     string `json:"serviceId"`
-	TargetPort    int    `json:"targetPort"`
+	Domain          string `json:"domain"`
+	EnvironmentId   string `json:"environmentId"`
+	ServiceDomainId string `json:"serviceDomainId"`
+	ServiceId       string `json:"serviceId"`
+	TargetPort      int    `json:"targetPort"`
 }
 
 // GetDomain returns ServiceDomainUpdateInput.Domain, and is useful for accessing the field via an interface.
@@ -551,6 +553,9 @@ func (v *ServiceDomainUpdateInput) GetDomain() string { return v.Domain }
 
 // GetEnvironmentId returns ServiceDomainUpdateInput.EnvironmentId, and is useful for accessing the field via an interface.
 func (v *ServiceDomainUpdateInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceDomainId returns ServiceDomainUpdateInput.ServiceDomainId, and is useful for accessing the field via an interface.
+func (v *ServiceDomainUpdateInput) GetServiceDomainId() string { return v.ServiceDomainId }
 
 // GetServiceId returns ServiceDomainUpdateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
@@ -564,17 +569,20 @@ type ServiceInstanceUpdateInput struct {
 	CronSchedule            *string                   `json:"cronSchedule"`
 	HealthcheckPath         *string                   `json:"healthcheckPath,omitempty"`
 	HealthcheckTimeout      *int                      `json:"healthcheckTimeout,omitempty"`
+	MultiRegionConfig       *map[string]interface{}   `json:"multiRegionConfig,omitempty"`
 	NixpacksPlan            *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
 	NumReplicas             int                       `json:"numReplicas"`
+	PreDeployCommand        *[]string                 `json:"preDeployCommand,omitempty"`
 	RailwayConfigFile       *string                   `json:"railwayConfigFile,omitempty"`
 	Region                  string                    `json:"region"`
 	RegistryCredentials     *RegistryCredentialsInput `json:"registryCredentials,omitempty"`
 	RestartPolicyMaxRetries *int                      `json:"restartPolicyMaxRetries,omitempty"`
 	RestartPolicyType       *RestartPolicyType        `json:"restartPolicyType,omitempty"`
 	RootDirectory           *string                   `json:"rootDirectory,omitempty"`
+	SleepApplication        *bool                     `json:"sleepApplication,omitempty"`
 	Source                  *ServiceSourceInput       `json:"source,omitempty"`
 	StartCommand            *string                   `json:"startCommand,omitempty"`
-	WatchPatterns           []*string                 `json:"watchPatterns"`
+	WatchPatterns           *[]string                 `json:"watchPatterns,omitempty"`
 }
 
 // GetBuildCommand returns ServiceInstanceUpdateInput.BuildCommand, and is useful for accessing the field via an interface.
@@ -592,11 +600,19 @@ func (v *ServiceInstanceUpdateInput) GetHealthcheckPath() *string { return v.Hea
 // GetHealthcheckTimeout returns ServiceInstanceUpdateInput.HealthcheckTimeout, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetHealthcheckTimeout() *int { return v.HealthcheckTimeout }
 
+// GetMultiRegionConfig returns ServiceInstanceUpdateInput.MultiRegionConfig, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetMultiRegionConfig() *map[string]interface{} {
+	return v.MultiRegionConfig
+}
+
 // GetNixpacksPlan returns ServiceInstanceUpdateInput.NixpacksPlan, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetNixpacksPlan() *map[string]interface{} { return v.NixpacksPlan }
 
 // GetNumReplicas returns ServiceInstanceUpdateInput.NumReplicas, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetNumReplicas() int { return v.NumReplicas }
+
+// GetPreDeployCommand returns ServiceInstanceUpdateInput.PreDeployCommand, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetPreDeployCommand() *[]string { return v.PreDeployCommand }
 
 // GetRailwayConfigFile returns ServiceInstanceUpdateInput.RailwayConfigFile, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() *string { return v.RailwayConfigFile }
@@ -622,6 +638,9 @@ func (v *ServiceInstanceUpdateInput) GetRestartPolicyType() *RestartPolicyType {
 // GetRootDirectory returns ServiceInstanceUpdateInput.RootDirectory, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRootDirectory() *string { return v.RootDirectory }
 
+// GetSleepApplication returns ServiceInstanceUpdateInput.SleepApplication, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetSleepApplication() *bool { return v.SleepApplication }
+
 // GetSource returns ServiceInstanceUpdateInput.Source, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.Source }
 
@@ -629,7 +648,7 @@ func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.
 func (v *ServiceInstanceUpdateInput) GetStartCommand() *string { return v.StartCommand }
 
 // GetWatchPatterns returns ServiceInstanceUpdateInput.WatchPatterns, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetWatchPatterns() []*string { return v.WatchPatterns }
+func (v *ServiceInstanceUpdateInput) GetWatchPatterns() *[]string { return v.WatchPatterns }
 
 type ServiceSourceInput struct {
 	Image *string `json:"image,omitempty"`
@@ -804,6 +823,13 @@ func (v *VolumeCreateInput) GetProjectId() string { return v.ProjectId }
 // GetServiceId returns VolumeCreateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *VolumeCreateInput) GetServiceId() *string { return v.ServiceId }
 
+type VolumeInstanceType string
+
+const (
+	VolumeInstanceTypeCloud VolumeInstanceType = "CLOUD"
+	VolumeInstanceTypeMetal VolumeInstanceType = "METAL"
+)
+
 type VolumeInstanceUpdateInput struct {
 	// The mount path of the volume instance. If not provided, the mount path will not be updated.
 	MountPath string `json:"mountPath"`
@@ -811,6 +837,8 @@ type VolumeInstanceUpdateInput struct {
 	ServiceId string `json:"serviceId"`
 	// The state of the volume instance. If not provided, the state will not be updated.
 	State *VolumeState `json:"state,omitempty"`
+	// The type of the volume instance. If not provided, the type will not be updated.
+	Type *VolumeInstanceType `json:"type,omitempty"`
 }
 
 // GetMountPath returns VolumeInstanceUpdateInput.MountPath, and is useful for accessing the field via an interface.
@@ -821,6 +849,9 @@ func (v *VolumeInstanceUpdateInput) GetServiceId() string { return v.ServiceId }
 
 // GetState returns VolumeInstanceUpdateInput.State, and is useful for accessing the field via an interface.
 func (v *VolumeInstanceUpdateInput) GetState() *VolumeState { return v.State }
+
+// GetType returns VolumeInstanceUpdateInput.Type, and is useful for accessing the field via an interface.
+func (v *VolumeInstanceUpdateInput) GetType() *VolumeInstanceType { return v.Type }
 
 type VolumeState string
 

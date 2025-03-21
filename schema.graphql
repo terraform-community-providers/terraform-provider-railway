@@ -9,10 +9,17 @@ type AccessRule {
 }
 
 enum ActiveFeatureFlag {
+  CEPH_VOLUMES
+  DEFAULT_TO_RAILPACK
+  METAL_VOLUME_CREATION
   PRIORITY_BOARDING
+  V2_NEW_PROJECT_PAGE
 }
 
 enum ActiveServiceFeatureFlag {
+  BETTER_CRON_WORKFLOW
+  COPY_VOLUME_TO_ENVIRONMENT
+  LEGACY_CRONS
   PLACEHOLDER
 }
 
@@ -102,6 +109,7 @@ enum Builder {
   HEROKU
   NIXPACKS
   PAKETO
+  RAILPACK
 }
 
 scalar CanvasConfig
@@ -125,6 +133,7 @@ enum CertificateStatus {
   CERTIFICATE_STATUS_TYPE_ISSUING
   CERTIFICATE_STATUS_TYPE_UNSPECIFIED
   CERTIFICATE_STATUS_TYPE_VALID
+  CERTIFICATE_STATUS_TYPE_VALIDATING_OWNERSHIP
   UNRECOGNIZED
 }
 
@@ -183,6 +192,7 @@ type CustomDomain implements Domain {
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
+  edgeId: String
   environmentId: String!
   id: ID!
   projectId: String
@@ -226,9 +236,8 @@ type Customer implements Node {
   state: SubscriptionState!
   stripeCustomerId: String!
   subscriptions: [CustomerSubscription!]!
-  teamId: String
   usageLimit: UsageLimit
-  userId: String
+  workspace: Workspace!
 }
 
 type CustomerCreditsConnection {
@@ -285,6 +294,9 @@ type Deployment implements Node {
   canRollback: Boolean!
   createdAt: DateTime!
   creator: User
+
+  """Check if a deployment's instances have all stopped"""
+  deploymentStopped: Boolean!
   environment: Environment!
   environmentId: String!
   id: ID!
@@ -318,8 +330,47 @@ enum DeploymentEventStep {
   CREATE_CONTAINER
   DRAIN_INSTANCES
   HEALTHCHECK
+  MIGRATE_VOLUMES
+  PRE_DEPLOY_COMMAND
   PUBLISH_IMAGE
   SNAPSHOT_CODE
+  WAIT_FOR_DEPENDENCIES
+}
+
+type DeploymentInstanceExecution implements Node {
+  completedAt: DateTime
+  createdAt: DateTime!
+  deploymentId: String!
+  deploymentMeta: DeploymentMeta!
+  id: ID!
+  status: DeploymentInstanceStatus!
+  updatedAt: DateTime!
+}
+
+input DeploymentInstanceExecutionCreateInput {
+  serviceInstanceId: String!
+}
+
+input DeploymentInstanceExecutionInput {
+  deploymentId: String!
+}
+
+input DeploymentInstanceExecutionListInput {
+  environmentId: String!
+  serviceId: String!
+}
+
+enum DeploymentInstanceStatus {
+  CRASHED
+  CREATED
+  EXITED
+  INITIALIZING
+  REMOVED
+  REMOVING
+  RESTARTING
+  RUNNING
+  SKIPPED
+  STOPPED
 }
 
 input DeploymentListInput {
@@ -336,7 +387,7 @@ type DeploymentSnapshot implements Node {
   createdAt: DateTime!
   id: ID!
   updatedAt: DateTime!
-  variables: ServiceVariables!
+  variables: EnvironmentVariables!
 }
 
 type DeploymentSocket {
@@ -352,6 +403,7 @@ enum DeploymentStatus {
   DEPLOYING
   FAILED
   INITIALIZING
+  NEEDS_APPROVAL
   QUEUED
   REMOVED
   REMOVING
@@ -436,6 +488,7 @@ interface Domain {
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
+  edgeId: String
   environmentId: String!
   id: ID!
   projectId: String
@@ -559,6 +612,11 @@ input EnvironmentTriggersDeployInput {
   serviceId: String!
 }
 
+"""
+EnvironmentVariables is a custom scalar type that represents a map of environment variables.
+"""
+scalar EnvironmentVariables
+
 type EnvironmentVariablesConnection {
   edges: [EnvironmentVariablesConnectionEdge!]!
   pageInfo: PageInfo!
@@ -577,6 +635,10 @@ type EnvironmentVolumeInstancesConnection {
 type EnvironmentVolumeInstancesConnectionEdge {
   cursor: String!
   node: VolumeInstance!
+}
+
+type Errors {
+  errors: [String!]!
 }
 
 """The estimated usage of a single measurement."""
@@ -665,6 +727,14 @@ input GitHubRepoUpdateInput {
   serviceId: String!
 }
 
+type GitHubRepoWithoutInstallation {
+  defaultBranch: String!
+  fullName: String!
+  id: Int!
+  isPrivate: Boolean!
+  name: String!
+}
+
 type HerokuApp {
   id: String!
   name: String!
@@ -675,6 +745,66 @@ input HerokuImportVariablesInput {
   herokuAppId: String!
   projectId: String!
   serviceId: String!
+}
+
+"""The result of a http logs query."""
+type HttpLog {
+  """The client user agent"""
+  clientUa: String!
+
+  """The deployment ID that was requested"""
+  deploymentId: String!
+
+  """The deployment instance ID that was requested"""
+  deploymentInstanceId: String!
+
+  """The downstream HTTP protocol version"""
+  downstreamProto: String!
+
+  """The edge region the client connected to"""
+  edgeRegion: String!
+
+  """The requested host"""
+  host: String!
+
+  """The http status of the log"""
+  httpStatus: Int!
+
+  """The request HTTP method"""
+  method: String!
+
+  """The requested path"""
+  path: String!
+
+  """The unique request ID"""
+  requestId: String!
+
+  """Details about the upstream response"""
+  responseDetails: String!
+
+  """Received bytes"""
+  rxBytes: Int!
+
+  """The source IP of the request"""
+  srcIp: String!
+
+  """The timestamp the log was created"""
+  timestamp: String!
+
+  """The total duration the request took"""
+  totalDuration: Int!
+
+  """Outgoing bytes"""
+  txBytes: Int!
+
+  """The upstream address"""
+  upstreamAddress: String!
+
+  """The upstream HTTP protocol version"""
+  upstreamProto: String!
+
+  """How long the upstream request took to respond"""
+  upstreamRqDuration: Int!
 }
 
 type Incident {
@@ -824,8 +954,10 @@ type Metric {
 
 """A thing that can be measured on Railway."""
 enum MetricMeasurement {
+  BACKUP_USAGE_GB
   CPU_LIMIT
   CPU_USAGE
+  CPU_USAGE_2
   DISK_USAGE_GB
   EPHEMERAL_DISK_USAGE_GB
   MEASUREMENT_UNSPECIFIED
@@ -855,6 +987,7 @@ enum MetricTag {
   DEPLOYMENT_ID
   DEPLOYMENT_INSTANCE_ID
   ENVIRONMENT_ID
+  HOST_TYPE
   KEY_UNSPECIFIED
   PLUGIN_ID
   PROJECT_ID
@@ -897,14 +1030,17 @@ type Mutation {
   """Updates a custom domain."""
   customDomainUpdate(environmentId: String!, id: String!, targetPort: Int): Boolean!
 
-  """Migrate a customer to the hobby plan"""
-  customerMigrateToHobbyPlan(id: String!): Boolean!
-
   """Toggle whether a customer is automatically withdrawing to credits"""
   customerTogglePayoutsToCredits(customerId: String!, input: customerTogglePayoutsToCreditsInput!): Boolean!
 
+  """Approves a deployment."""
+  deploymentApprove(id: String!): Boolean!
+
   """Cancels a deployment."""
   deploymentCancel(id: String!): Boolean!
+
+  """Invoke a deployment instance execution."""
+  deploymentInstanceExecutionCreate(input: DeploymentInstanceExecutionCreateInput!): Boolean!
 
   """Redeploys a deployment."""
   deploymentRedeploy(id: String!, usePreviousImageTag: Boolean): Deployment!
@@ -918,6 +1054,9 @@ type Mutation {
   """Rolls back to a deployment."""
   deploymentRollback(id: String!): Boolean!
 
+  """Stops a deployment."""
+  deploymentStop(id: String!): Boolean!
+
   """Creates a deployment trigger."""
   deploymentTriggerCreate(input: DeploymentTriggerCreateInput!): DeploymentTrigger!
 
@@ -926,6 +1065,9 @@ type Mutation {
 
   """Updates a deployment trigger."""
   deploymentTriggerUpdate(id: String!, input: DeploymentTriggerUpdateInput!): DeploymentTrigger!
+
+  """Create services and volumes from docker compose"""
+  dockerComposeImport(environmentId: String!, projectId: String!, yaml: String!): Errors!
 
   """Create a new egress gateway association for a service instance"""
   egressGatewayAssociationCreate(input: EgressGatewayCreateInput!): [EgressGateway!]!
@@ -1045,6 +1187,16 @@ type Mutation {
   """Updates an existing plugin."""
   pluginUpdate(id: String!, input: PluginUpdateInput!): Plugin!
 
+  """
+  Create/Updates preferences overrides for a specific resource belonging to a user
+  """
+  preferenceOverridesCreateUpdate(input: PreferenceOverridesCreateUpdateData!): Boolean!
+
+  """
+  Destroy preferences overrides for a specific resource belonging to a user
+  """
+  preferenceOverridesDestroyForResource(input: PreferenceOverridesDestroyData!): Boolean!
+
   """Update the email preferences for a user"""
   preferencesUpdate(input: PreferencesUpdateData!): Preferences!
 
@@ -1064,7 +1216,7 @@ type Mutation {
   privateNetworksForEnvironmentDelete(environmentId: String!): Boolean!
 
   """Claims a project."""
-  projectClaim(id: String!): Project!
+  projectClaim(id: String!, workspaceId: String): Project!
 
   """Creates a new project."""
   projectCreate(input: ProjectCreateInput!): Project!
@@ -1095,6 +1247,17 @@ type Mutation {
 
   """Change the role for a user within a project"""
   projectMemberUpdate(input: ProjectMemberUpdateInput!): ProjectMember!
+
+  """Deletes a project with a 48 hour grace period."""
+  projectScheduleDelete(id: String!): Boolean!
+
+  """Cancel scheduled deletion of a project"""
+  projectScheduleDeleteCancel(id: String!): Boolean!
+
+  """
+  Force delete a scheduled deletion of a project (skips the grace period)
+  """
+  projectScheduleDeleteForce(id: String!): Boolean!
 
   """Create a token for a project that has access to a specific environment"""
   projectTokenCreate(input: ProjectTokenCreateInput!): String!
@@ -1168,7 +1331,13 @@ type Mutation {
   serviceFeatureFlagRemove(input: ServiceFeatureFlagToggleInput!): Boolean!
 
   """Deploy a service instance"""
-  serviceInstanceDeploy(environmentId: String!, serviceId: String!): Boolean!
+  serviceInstanceDeploy(commitSha: String, environmentId: String!, latestCommit: Boolean, serviceId: String!): Boolean!
+
+  """Deploy a service instance. Returns a deployment ID"""
+  serviceInstanceDeployV2(commitSha: String, environmentId: String!, serviceId: String!): String!
+
+  """Update the resource limits for a service instance"""
+  serviceInstanceLimitsUpdate(input: ServiceInstanceLimitsUpdateInput!): Boolean!
 
   """Redeploy a service instance"""
   serviceInstanceRedeploy(environmentId: String!, serviceId: String!): Boolean!
@@ -1206,14 +1375,8 @@ type Mutation {
   """Bulk transfer projects from user to team"""
   teamBulkProjectTransfer(input: TeamBulkProjectTransferInput!): Boolean!
 
-  """Create a team"""
-  teamCreate(input: TeamCreateInput!): Team!
-
   """Create a team and subscribe to the Pro plan"""
   teamCreateAndSubscribe(input: TeamCreateAndSubscribeInput!): TeamCreateAndSubscribeResponse!
-
-  """Delete a team and all data associated with it"""
-  teamDelete(id: String!): Boolean!
 
   """Get an invite code for a team and role"""
   teamInviteCodeCreate(id: String!, input: TeamInviteCodeCreateInput!): String!
@@ -1227,8 +1390,11 @@ type Mutation {
   """Changes a user team permissions."""
   teamPermissionChange(input: TeamPermissionChangeInput!): Boolean!
 
-  """Update a team by id"""
-  teamUpdate(id: String!, input: TeamUpdateInput!): Team!
+  """Create a new team trusted domain for this team"""
+  teamTrustedDomainCreate(input: TeamTrustedDomainCreateInput!): Boolean!
+
+  """Delete a team trusted domain"""
+  teamTrustedDomainDelete(id: String!): Boolean!
 
   """Invite a user by email to a team"""
   teamUserInvite(id: String!, input: TeamUserInviteInput!): Boolean!
@@ -1242,14 +1408,14 @@ type Mutation {
   """Duplicates an existing template"""
   templateClone(input: TemplateCloneInput!): Template!
 
-  """Creates a template."""
-  templateCreate(input: TemplateCreateInput!): Template!
-
   """Deletes a template."""
   templateDelete(id: String!, input: TemplateDeleteInput!): Boolean!
 
   """Deploys a template."""
-  templateDeploy(input: TemplateDeployInput!): TemplateDeployPayload!
+  templateDeploy(input: TemplateDeployInput!): TemplateDeployPayload! @deprecated(reason: "Deprecated in favor of templateDeployV2")
+
+  """Deploys a template using the serialized template config"""
+  templateDeployV2(input: TemplateDeployV2Input!): TemplateDeployPayload!
 
   """Generate a template for a project"""
   templateGenerate(input: TemplateGenerateInput!): Template!
@@ -1269,9 +1435,6 @@ type Mutation {
 
   """Unpublishes a template."""
   templateUnpublish(id: String!): Boolean!
-
-  """Updates a template."""
-  templateUpdate(id: String!, input: TemplateUpdateInput!): Template!
 
   """Setup 2FA authorization for authenticated user."""
   twoFactorInfoCreate(input: TwoFactorInfoCreateInput!): RecoveryCodes!
@@ -1336,6 +1499,48 @@ type Mutation {
   """Delete a persistent volume in a project"""
   volumeDelete(volumeId: String!): Boolean!
 
+  """Create backup of a volume instance"""
+  volumeInstanceBackupCreate(
+    """The id of the volume instance to create a backup of"""
+    volumeInstanceId: String!
+  ): WorkflowId!
+
+  """Deletes volume instance backup"""
+  volumeInstanceBackupDelete(
+    """The volume instance's backup id"""
+    volumeInstanceBackupId: String!
+
+    """The volume instance's id"""
+    volumeInstanceId: String!
+  ): WorkflowId!
+
+  """Removes backup expiration date"""
+  volumeInstanceBackupLock(
+    """The id of the backup to lock"""
+    volumeInstanceBackupId: String!
+
+    """The id of the volume instance to be restored from"""
+    volumeInstanceId: String!
+  ): Boolean!
+
+  """Restore a volume instance from a backup"""
+  volumeInstanceBackupRestore(
+    """The id of the backup to be restored from"""
+    volumeInstanceBackupId: String!
+
+    """The id of the volume instance to be restored from"""
+    volumeInstanceId: String!
+  ): WorkflowId!
+
+  """Manage schedule for backups of a volume instance"""
+  volumeInstanceBackupScheduleUpdate(
+    """The frequency/retention of the backups"""
+    kinds: [VolumeInstanceBackupScheduleKind!]!
+
+    """The id of the volume instance to create a backup of"""
+    volumeInstanceId: String!
+  ): Boolean!
+
   """
   Update a volume instance. If no environmentId is provided, all volume instances for the volume will be updated.
   """
@@ -1361,6 +1566,18 @@ type Mutation {
 
   """Update a webhook on a project"""
   webhookUpdate(id: String!, input: WebhookUpdateInput!): ProjectWebhook!
+
+  """Delete a workspace and all data associated with it"""
+  workspaceDelete(id: String!): Boolean!
+
+  """Leave a workspace"""
+  workspaceLeave(id: String!): Boolean!
+
+  """Update a workspace by id"""
+  workspaceUpdate(id: String!, input: WorkspaceUpdateInput!): Boolean!
+
+  """Generate a Slack channel for a workspace"""
+  workspaceUpsertSlackChannel(id: String!): Boolean!
 }
 
 interface Node {
@@ -1426,6 +1643,13 @@ input ObservabilityDashboardUpdateInput {
   dashboardItem: ObservabilityDashboardItemCreateInput!
   displayConfig: DisplayConfig!
   id: String!
+}
+
+input OverrideInput {
+  enabled: Boolean!
+  name: String!
+  resource: String!
+  resourceId: String!
 }
 
 type PageInfo {
@@ -1522,6 +1746,23 @@ type PluginVariablesConnectionEdge {
   node: Variable!
 }
 
+type PreferenceOverride implements Node {
+  enabled: Boolean!
+  id: ID!
+  name: String!
+  resource: String!
+  resourceId: String!
+}
+
+input PreferenceOverridesCreateUpdateData {
+  overrides: [OverrideInput!]!
+}
+
+input PreferenceOverridesDestroyData {
+  resource: String!
+  resourceId: String!
+}
+
 type Preferences implements Node {
   buildFailedEmail: Boolean!
   changelogEmail: Boolean!
@@ -1530,6 +1771,7 @@ type Preferences implements Node {
   ephemeralEnvironmentEmail: Boolean!
   id: ID!
   marketingEmail: Boolean!
+  preferenceOverrides: [PreferenceOverride!]
   subprocessorUpdatesEmail: Boolean!
   usageEmail: Boolean!
 }
@@ -1602,7 +1844,7 @@ type Project implements Node {
   name: String!
   plugins(after: String, before: String, first: Int, last: Int): ProjectPluginsConnection!
   prDeploys: Boolean!
-  prForks: Boolean!
+  prEnvCopyVolData: Boolean!
   projectPermissions(after: String, before: String, first: Int, last: Int): ProjectProjectPermissionsConnection!
   services(after: String, before: String, first: Int, last: Int): ProjectServicesConnection!
   subscriptionPlanLimit: SubscriptionPlanLimit!
@@ -1782,6 +2024,7 @@ input ProjectTokenCreateInput {
 }
 
 input ProjectTransferConfirmInput {
+  destinationWorkspaceId: String
   ownershipTransferId: String!
   projectId: String!
 }
@@ -1805,11 +2048,14 @@ input ProjectUpdateInput {
   name: String
   prDeploys: Boolean
 
-  """[Experimental] Will be deprecated eventually"""
-  prForks: Boolean
+  """
+  Enable/disable copying volume data to PR environment from the base environment
+  """
+  prEnvCopyVolData: Boolean
 }
 
 enum ProjectUsageProperty {
+  BACKUP_USAGE
   CPU_USAGE
   CURRENT_USAGE
   DISK_USAGE
@@ -1829,6 +2075,7 @@ type ProjectVolumesConnectionEdge {
 }
 
 type ProjectWebhook implements Node {
+  filters: [String!]
   id: ID!
   lastStatus: Int
   projectId: String!
@@ -1913,6 +2160,9 @@ type Query {
   """Get the deployment events for a deployment"""
   deploymentEvents(after: String, before: String, first: Int, id: String!, last: Int): QueryDeploymentEventsConnection!
 
+  """Get the deployment instance executions for a deployment."""
+  deploymentInstanceExecutions(after: String, before: String, first: Int, input: DeploymentInstanceExecutionListInput!, last: Int): QueryDeploymentInstanceExecutionsConnection!
+
   """Fetch logs for a deployment"""
   deploymentLogs(
     deploymentId: String!
@@ -1947,6 +2197,30 @@ type Query {
   """Find a single environment"""
   environment(id: String!): Environment!
 
+  """
+  Fetch logs for a project environment. Build logs are excluded unless a snapshot ID is explicitly provided in the filter
+  """
+  environmentLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit the number of logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit the number of logs returned before the anchor"""
+    beforeLimit: Int
+    environmentId: String!
+
+    """Filter logs using a query syntax"""
+    filter: String
+  ): [Log!]!
+
   """Get the patches for an environment"""
   environmentPatches(after: String, before: String, environmentId: String!, first: Int, last: Int): QueryEnvironmentPatchesConnection!
 
@@ -1954,7 +2228,9 @@ type Query {
   environments(after: String, before: String, first: Int, isEphemeral: Boolean, last: Int, projectId: String!): QueryEnvironmentsConnection!
 
   """
-  Get the estimated total cost of the project at the end of the current billing cycle
+  Get the estimated total cost of the project at the end of the current billing
+  cycle. If no `startDate` is provided, the usage for the current billing period
+  of the project owner is returned.
   """
   estimatedUsage(
     """Whether to include deleted projects in estimations."""
@@ -1962,7 +2238,6 @@ type Query {
     measurements: [MetricMeasurement!]!
     projectId: String
     teamId: String
-    userId: String
   ): [EstimatedUsage!]!
 
   """Gets the events for a project."""
@@ -1973,6 +2248,9 @@ type Query {
 
   """Check if a repo name is available"""
   githubIsRepoNameAvailable(fullRepoName: String!): Boolean!
+
+  """Checks if user has access to GitHub repository"""
+  githubRepo(fullRepoName: String!): GitHubRepoWithoutInstallation!
 
   """
   Get branches for a GitHub repo that the authenticated user has access to
@@ -1987,6 +2265,33 @@ type Query {
 
   """Get the Herokus apps for the current user"""
   herokuApps: [HerokuApp!]!
+
+  """Fetch HTTP logs for a deployment"""
+  httpLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit the number of logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit the number of logs returned before the anchor"""
+    beforeLimit: Int
+    deploymentId: String!
+    endDate: String
+
+    """Filter logs using a query syntax"""
+    filter: String
+
+    """Limit the number of logs returned (defaults 100, max 5000)"""
+    limit: Int
+    startDate: String
+  ): [HttpLog!]!
 
   """Get an integration auth by provider providerId"""
   integrationAuth(provider: String!, providerId: String!): IntegrationAuth!
@@ -2037,20 +2342,14 @@ type Query {
     """The start of the period to get metrics for."""
     startDate: DateTime!
     teamId: String
-    userId: String
     volumeId: String
+    workspaceId: String
   ): [MetricsResult!]!
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
 
   """Get all observability dashboards for an environment"""
   observabilityDashboards(after: String, before: String, environmentId: String!, first: Int, last: Int): QueryObservabilityDashboardsConnection!
-
-  """Get a user's Plain Customer ID given their Discord ID."""
-  plainCustomerIdForDiscordId(discordId: String!): String!
-
-  """Get a user JWT token for a Discord id"""
-  plainJWTForDiscordId(discordId: String!): String!
 
   """Get the current status of the platform"""
   platformStatus: PlatformStatus!
@@ -2111,14 +2410,14 @@ type Query {
   """Gets all projects for a user or a team."""
   projects(after: String, before: String, first: Int, includeDeleted: Boolean, last: Int, teamId: String, userId: String): QueryProjectsConnection!
 
-  """Get public Railway stats. Primarily used for the landing page."""
+  """Get public Railway stats."""
   publicStats: PublicStats!
 
   """Gets the ReferralInfo for the authenticated user."""
-  referralInfo: ReferralInfo!
+  referralInfo(workspaceId: String): ReferralInfo!
 
   """List available regions"""
-  regions: [Region!]!
+  regions(projectId: String): [Region!]!
 
   """Get resource access for the current user or team"""
   resourceAccess(explicitResourceOwner: ExplicitOwnerInput): ResourceAccess!
@@ -2138,6 +2437,9 @@ type Query {
   """Get the resource limits for a service instance"""
   serviceInstanceLimitOverride(environmentId: String!, projectId: String!, serviceId: String!): ServiceInstanceLimit!
 
+  """Get the resource limits for a service instance"""
+  serviceInstanceLimits(environmentId: String!, projectId: String!, serviceId: String!): ServiceInstanceLimit!
+
   """Gets all sessions for authenticated user."""
   sessions(after: String, before: String, first: Int, last: Int): QuerySessionsConnection!
 
@@ -2150,21 +2452,14 @@ type Query {
   """Find a team by invite code"""
   teamByCode(code: String!): Team!
 
-  """
-  Fetch Discord info associated with Direct Support-eligible team members, given a Discord UID
-  """
-  teamDirectSupportDiscordInfoForDiscordId(discordId: String!): TeamDirectSupportDiscordInfo
-
   """Get all templates for a team."""
   teamTemplates(after: String, before: String, first: Int, last: Int, teamId: String!): QueryTeamTemplatesConnection!
 
+  """Get all team trusted domains"""
+  teamTrustedDomains(after: String, before: String, first: Int, last: Int, teamId: String!): QueryTeamTrustedDomainsConnection!
+
   """Get a template by code or GitHub owner and repo."""
   template(code: String, owner: String, repo: String): Template!
-
-  """
-  Convert a Heroku template to a (legacy) Railway template config object.
-  """
-  templateFromHerokuTemplate(repoUrl: String!): JSON!
 
   """Get the top 25 users with the most template kickback earnings."""
   templateKickbacksLeaderboard: [TemplateKickbacksLeaderboard!]!
@@ -2186,12 +2481,17 @@ type Query {
     recommended: Boolean
   ): QueryTemplatesConnection!
 
+  """Count all published templates."""
+  templatesCount: Int!
+
   """Gets the TwoFactorInfo for the authenticated user."""
   twoFactorInfo: TwoFactorInfo!
 
   """
   Get the usage for a single project or all projects for a user/team. If no
-  `projectId` or `teamId` is provided, the usage for the current user is returned.
+  `projectId` or `teamId` is provided, the usage for the current user is
+  returned. If no `startDate` is provided, the usage for the current billing
+  period of the project owner is returned.
   """
   usage(
     endDate: DateTime
@@ -2207,14 +2507,13 @@ type Query {
     projectId: String
     startDate: DateTime
     teamId: String
-    userId: String
   ): [AggregatedUsage!]!
 
   """Get the user id corresponding to a Discord id"""
   userIdForDiscordId(discordId: String!): String!
 
   """Get the user id corresponding to a Slack id"""
-  userIdForSlackId(slackId: String!): String!
+  userIdForSlackId(slackId: String!): String
 
   """Get the total kickback earnings for a user."""
   userKickbackEarnings(userId: String!): UserKickbackEarnings! @deprecated(reason: "This field is deprecated and will be removed in future versions.")
@@ -2223,7 +2522,7 @@ type Query {
   userProfile(username: String!): UserProfileResponse!
 
   """Get all templates for the current user."""
-  userTemplates(after: String, before: String, first: Int, last: Int): QueryUserTemplatesConnection!
+  userTemplates(after: String, before: String, first: Int, last: Int): QueryUserTemplatesConnection! @deprecated(reason: "Users don't have personal templates anymore, they belong to their team now")
 
   """
   All variables by pluginId or serviceId. If neither are provided, all shared variables are returned.
@@ -2238,10 +2537,10 @@ type Query {
     """Provide a serviceId to get all variables for a specific service."""
     serviceId: String
     unrendered: Boolean
-  ): ServiceVariables!
+  ): EnvironmentVariables!
 
   """All rendered variables that are required for a service deployment."""
-  variablesForServiceDeployment(environmentId: String!, projectId: String!, serviceId: String!): ServiceVariables!
+  variablesForServiceDeployment(environmentId: String!, projectId: String!, serviceId: String!): EnvironmentVariables!
 
   """Get information about the user's Vercel accounts"""
   vercelInfo: VercelInfo!
@@ -2249,11 +2548,26 @@ type Query {
   """Get a single volume instance by id"""
   volumeInstance(id: String!): VolumeInstance!
 
+  """List backups of a volume instance"""
+  volumeInstanceBackupList(
+    """The id of the volume instance to list the backups of"""
+    volumeInstanceId: String!
+  ): [VolumeInstanceBackup!]!
+
+  """List backups schedules of a volume instance"""
+  volumeInstanceBackupScheduleList(
+    """The id of the volume instance to list the schedules of"""
+    volumeInstanceId: String!
+  ): [VolumeInstanceBackupSchedule!]!
+
   """Get all webhooks for a project"""
   webhooks(after: String, before: String, first: Int, last: Int, projectId: String!): QueryWebhooksConnection!
 
   """Gets the status of a workflow"""
   workflowStatus(workflowId: String!): WorkflowResult!
+
+  """Get the workspace"""
+  workspace(workspaceId: String!): Workspace!
 }
 
 type QueryApiTokensConnection {
@@ -2274,6 +2588,16 @@ type QueryDeploymentEventsConnection {
 type QueryDeploymentEventsConnectionEdge {
   cursor: String!
   node: DeploymentEvent!
+}
+
+type QueryDeploymentInstanceExecutionsConnection {
+  edges: [QueryDeploymentInstanceExecutionsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryDeploymentInstanceExecutionsConnectionEdge {
+  cursor: String!
+  node: DeploymentInstanceExecution!
 }
 
 type QueryDeploymentsConnection {
@@ -2395,6 +2719,16 @@ type QueryTeamTemplatesConnectionEdge {
   node: Template!
 }
 
+type QueryTeamTrustedDomainsConnection {
+  edges: [QueryTeamTrustedDomainsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryTeamTrustedDomainsConnectionEdge {
+  cursor: String!
+  node: TeamTrustedDomain!
+}
+
 type QueryTemplatesConnection {
   edges: [QueryTemplatesConnectionEdge!]!
   pageInfo: PageInfo!
@@ -2425,6 +2759,8 @@ type QueryWebhooksConnectionEdge {
   node: ProjectWebhook!
 }
 
+scalar RailpackInfo
+
 type RecoveryCodes {
   recoveryCodes: [String!]!
 }
@@ -2443,6 +2779,7 @@ type ReferralInfo implements Node {
 
 input ReferralInfoUpdateInput {
   code: String!
+  workspaceId: String
 }
 
 type ReferralStats {
@@ -2469,8 +2806,8 @@ type RefundRequest implements Node {
   invoiceId: String!
   plainThreadId: String
   reason: String!
-  teamId: String
-  userId: String!
+  userId: String
+  workspace: Workspace!
 }
 
 """Possible decisions for a RefundRequest"""
@@ -2481,7 +2818,30 @@ enum RefundRequestDecisionEnum {
 }
 
 type Region {
+  adminOnly: Boolean @deprecated(reason: "Use deploymentConstraints.adminOnly")
+
+  """Region country"""
+  country: String!
+  deploymentConstraints: RegionDeploymentConstraints
+  location: String!
   name: String!
+
+  """Region is on Railway Metal"""
+  railwayMetal: Boolean
+  region: String
+  teamId: String
+}
+
+type RegionDeploymentConstraints {
+  """Admin only region"""
+  adminOnly: Boolean
+
+  """Region doesn't allow volumes"""
+  computeOnly: Boolean
+  runtimeExclusivity: [String!]
+
+  """Staging only region"""
+  stagingOnly: Boolean
 }
 
 enum RegistrationStatus {
@@ -2522,6 +2882,7 @@ enum RestartPolicyType {
 }
 
 input SendCommunityThreadNotificationEmailInput {
+  postEntryContent: String
   threadTitle: String!
   threadUrl: String!
   userIds: [String!]!
@@ -2572,7 +2933,7 @@ input ServiceCreateInput {
   registryCredentials: RegistryCredentialsInput
   source: ServiceSourceInput
   templateServiceId: String
-  variables: ServiceVariables
+  variables: EnvironmentVariables
 }
 
 type ServiceDeploymentsConnection {
@@ -2589,6 +2950,7 @@ type ServiceDomain implements Domain {
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
+  edgeId: String
   environmentId: String!
   id: ID!
   projectId: String
@@ -2607,6 +2969,7 @@ input ServiceDomainCreateInput {
 input ServiceDomainUpdateInput {
   domain: String!
   environmentId: String!
+  serviceDomainId: String
   serviceId: String!
   targetPort: Int
 }
@@ -2632,12 +2995,15 @@ type ServiceInstance implements Node {
   nextCronRunAt: DateTime
   nixpacksPlan: JSON
   numReplicas: Int
+  preDeployCommand: JSON
+  railpackInfo: RailpackInfo
   railwayConfigFile: String
   region: String
   restartPolicyMaxRetries: Int!
   restartPolicyType: RestartPolicyType!
   rootDirectory: String
   serviceId: String!
+  serviceName: String!
   sleepApplication: Boolean
   source: ServiceSource
   startCommand: String
@@ -2648,20 +3014,34 @@ type ServiceInstance implements Node {
 
 scalar ServiceInstanceLimit
 
+input ServiceInstanceLimitsUpdateInput {
+  environmentId: String!
+
+  """Amount of memory in GB to allocate to the service instance"""
+  memoryGB: Float
+  serviceId: String!
+
+  """Number of vCPUs to allocate to the service instance"""
+  vCPUs: Float
+}
+
 input ServiceInstanceUpdateInput {
   buildCommand: String
   builder: Builder
   cronSchedule: String
   healthcheckPath: String
   healthcheckTimeout: Int
+  multiRegionConfig: JSON
   nixpacksPlan: JSON
   numReplicas: Int
+  preDeployCommand: [String!]
   railwayConfigFile: String
   region: String
   registryCredentials: RegistryCredentialsInput
   restartPolicyMaxRetries: Int
   restartPolicyType: RestartPolicyType
   rootDirectory: String
+  sleepApplication: Boolean
   source: ServiceSourceInput
   startCommand: String
   watchPatterns: [String!]
@@ -2701,12 +3081,6 @@ input ServiceUpdateInput {
   icon: String
   name: String
 }
-
-"""
-The ServiceVariables scalar type represents values as the TypeScript type:
-Record<string, string>. Example: "{ foo: 'bar', baz: 'qux' }"
-"""
-scalar ServiceVariables
 
 type Session implements Node {
   createdAt: DateTime!
@@ -2763,6 +3137,9 @@ type Subscription {
   """Subscribe to deployment events for a specific deployment"""
   deploymentEvents(id: String!): DeploymentEvent!
 
+  """Subscribe to deployment instance executions for a specific deployment"""
+  deploymentInstanceExecutions(input: DeploymentInstanceExecutionInput!): DeploymentInstanceExecution!
+
   """Stream logs for a deployment"""
   deploymentLogs(
     deploymentId: String!
@@ -2773,6 +3150,50 @@ type Subscription {
     """Limit the number of logs returned (defaults 100, max 5000)"""
     limit: Int
   ): [Log!]!
+
+  """Stream logs for a project environment"""
+  environmentLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit the number of logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit the number of logs returned before the anchor"""
+    beforeLimit: Int
+    environmentId: String!
+
+    """Filter logs using a query syntax"""
+    filter: String
+  ): [Log!]!
+
+  """Stream HTTP logs for a deployment"""
+  httpLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit the number of logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit the number of logs returned before the anchor"""
+    beforeLimit: Int
+    deploymentId: String!
+
+    """Filter logs using a query syntax"""
+    filter: String
+  ): [HttpLog!]!
 
   """Stream logs for a plugin"""
   pluginLogs(
@@ -2798,9 +3219,16 @@ type SubscriptionItem {
   quantity: BigInt
 }
 
+enum SubscriptionModel {
+  FREE
+  TEAM
+  USER
+}
+
 scalar SubscriptionPlanLimit
 
 enum SubscriptionPlanType {
+  free
   hobby
   pro
   trial
@@ -2812,6 +3240,11 @@ enum SubscriptionState {
   INACTIVE
   PAST_DUE
   UNPAID
+}
+
+enum SupportTierOverride {
+  BUSINESS_CLASS
+  BUSINESS_CLASS_TRIAL
 }
 
 type TCPProxy {
@@ -2835,19 +3268,19 @@ input TCPProxyCreateInput {
 type Team implements Node {
   adoptionHistory: [AdoptionInfo!]!
   adoptionLevel: Float!
-  avatar: String
-  banReason: String
+  avatar: String @deprecated(reason: "This property is not part of Teams anymore, go through the Workspace to access it")
   createdAt: DateTime!
-  customer: Customer!
-  discordRole: String
+  customer: Customer! @deprecated(reason: "Access the customer through the workspace")
   id: ID!
-  isEligibleForDirectSupport: Boolean!
   members: [TeamMember!]!
-  name: String!
+  name: String! @deprecated(reason: "This property is not part of Teams anymore, go through the Workspace to access it")
+  preferredRegion: String @deprecated(reason: "This property is not part of Teams anymore, go through the Workspace to access it")
   projects(after: String, before: String, first: Int, last: Int): TeamProjectsConnection!
-  slackChannelId: String
+  slackChannelId: String @deprecated(reason: "This property is not part of Teams anymore, go through the Workspace to access it")
+  supportTierOverride: SupportTierOverride @deprecated(reason: "This property is not part of Teams anymore, go through the Workspace to access it")
   teamPermissions: [TeamPermission!]!
   updatedAt: DateTime!
+  workspace: Workspace!
 }
 
 input TeamBulkProjectTransferInput {
@@ -2865,17 +3298,6 @@ type TeamCreateAndSubscribeResponse {
   customerId: String!
   paymentIntent: JSON
   teamId: String!
-}
-
-input TeamCreateInput {
-  avatar: String
-  name: String!
-}
-
-type TeamDirectSupportDiscordInfo {
-  memberDiscordIds: [String!]!
-  teamId: String!
-  teamName: String!
 }
 
 input TeamInviteCodeCreateInput {
@@ -2921,11 +3343,22 @@ type TeamProjectsConnectionEdge {
 enum TeamRole {
   ADMIN
   MEMBER
+  VIEWER
 }
 
-input TeamUpdateInput {
-  avatar: String
-  name: String!
+type TeamTrustedDomain implements Node {
+  domainName: String!
+  id: ID!
+  teamId: String!
+  teamRole: String!
+  verificationData: TrustedDomainVerificationData!
+  verificationType: String!
+}
+
+input TeamTrustedDomainCreateInput {
+  domainName: String!
+  teamId: String!
+  teamRole: String!
 }
 
 input TeamUserInviteInput {
@@ -2949,25 +3382,32 @@ input TelemetrySendInput {
 type Template implements Node {
   activeProjects: Int!
   canvasConfig: CanvasConfig
+  category: String
   code: String!
   communityThreadSlug: String
   config: TemplateConfig!
   createdAt: DateTime!
   creator: TemplateCreator
   demoProjectId: String
+  description: String
+  guides: TemplateGuide
   health: Float
   id: ID!
+  image: String
   isApproved: Boolean!
   isV2Template: Boolean!
-  metadata: TemplateMetadata!
+  languages: [String!]
+  metadata: TemplateMetadata! @deprecated(reason: "Deprecated in favor of listing the fields individually.")
+  name: String!
   projects: Int!
+  readme: String
   serializedConfig: SerializedTemplateConfig
   services(after: String, before: String, first: Int, last: Int): TemplateServicesConnection!
   similarTemplates: [SimilarTemplate!]!
   status: TemplateStatus!
+  tags: [String!]
   teamId: String
   totalPayout: Float!
-  userId: String
 }
 
 input TemplateCloneInput {
@@ -2976,15 +3416,6 @@ input TemplateCloneInput {
 }
 
 scalar TemplateConfig
-
-input TemplateCreateInput {
-  canvasConfig: CanvasConfig
-  config: TemplateConfig!
-  demoProjectId: String
-  metadata: TemplateMetadata!
-  services: [TemplateServiceCreateInput!]!
-  teamId: String
-}
 
 type TemplateCreator {
   avatar: String
@@ -3014,23 +3445,38 @@ input TemplateDeployService {
   commit: String
   hasDomain: Boolean
   healthcheckPath: String
-  id: String
+  id: String!
   isPrivate: Boolean
   name: String
   owner: String
+  preDeployCommand: [String!]
   rootDirectory: String
   serviceIcon: String
   serviceName: String!
   startCommand: String
   tcpProxyApplicationPort: Int
   template: String!
-  variables: ServiceVariables
+  variables: EnvironmentVariables
   volumes: [TemplateVolume!]
 }
 
+input TemplateDeployV2Input {
+  environmentId: String
+  projectId: String
+  serializedConfig: SerializedTemplateConfig!
+  teamId: String
+  templateId: String!
+}
+
 input TemplateGenerateInput {
+  environmentId: String
   projectId: String!
   teamId: String
+}
+
+type TemplateGuide {
+  post: String
+  video: String
 }
 
 type TemplateKickbacksLeaderboard {
@@ -3059,10 +3505,6 @@ type TemplateService implements Node {
 
 scalar TemplateServiceConfig
 
-input TemplateServiceCreateInput {
-  config: TemplateServiceConfig!
-}
-
 type TemplateServicesConnection {
   edges: [TemplateServicesConnectionEdge!]!
   pageInfo: PageInfo!
@@ -3083,30 +3525,18 @@ input TemplateServiceSourceEjectInput {
   upstreamUrl: String!
 }
 
-input TemplateServiceUpdateInput {
-  config: TemplateServiceConfig!
-  id: String
-}
-
 enum TemplateStatus {
   HIDDEN
   PUBLISHED
   UNPUBLISHED
 }
 
-input TemplateUpdateInput {
-  canvasConfig: CanvasConfig
-  config: TemplateConfig!
-  demoProjectId: String
-
-  """An admin-only flag to force-update a template."""
-  forceUpdate: Boolean = false
-  metadata: TemplateMetadata!
-  services: [TemplateServiceUpdateInput!]!
-  teamId: String
-}
-
 scalar TemplateVolume
+
+type TrustedDomainVerificationData {
+  domainMatch: Domain
+  domainStatus: CustomDomainStatus
+}
 
 type TwoFactorInfo {
   hasRecoveryCodes: Boolean!
@@ -3157,6 +3587,7 @@ type UsageLimit implements Node {
   customerId: String!
   hardLimit: Int
   id: ID!
+  isOverLimit: Boolean!
   softLimit: Int!
 }
 
@@ -3174,9 +3605,8 @@ type User implements Node {
   agreedFairUse: Boolean!
   avatar: String
   banReason: String
-  cost: UserCost!
+  cost: UserCost! @deprecated(reason: "Migrate to workspace customer cost, as soon enough users wont have a customer attached")
   createdAt: DateTime!
-  customer: Customer!
   email: String!
   featureFlags: [ActiveFeatureFlag!]!
   flags: [UserFlag!]!
@@ -3184,21 +3614,24 @@ type User implements Node {
   id: ID!
   isAdmin: Boolean!
   isConductor: Boolean!
-  isDevPlan: Boolean!
-  isEligibleForFreeHobbyPlan: Boolean!
-  isOnHobbyPlan: Boolean!
+  isDevPlan: Boolean! @deprecated(reason: "This property doesn't make sense anymore, it does not return what you expect it to return")
+  isEligibleForFreeHobbyPlan: Boolean! @deprecated(reason: "We don't give out free hobby plan anymore")
+  isOnHobbyPlan: Boolean! @deprecated(reason: "This property will return the wrong value pretty soon, use workspaces")
   isVerified: Boolean!
   lastLogin: DateTime!
   name: String
   profile: UserProfile
-  projects(after: String, before: String, first: Int, last: Int): UserProjectsConnection!
   providerAuths(after: String, before: String, first: Int, last: Int): UserProviderAuthsConnection!
-  referredUsers: [ReferralUser!]!
+  referredUsers: [ReferralUser!]! @deprecated(reason: "Soon enough this field will always return an empty array, as referrals will be based on workspaces")
   registrationStatus: RegistrationStatus!
   riskLevel: Float
-  teams(after: String, before: String, first: Int, last: Int): UserTeamsConnection!
+  teams(after: String, before: String, first: Int, last: Int): UserTeamsConnection! @deprecated(reason: "Use the workspaces relation to access the teams")
   termsAgreedOn: DateTime
   username: String
+  workspace: Workspace @deprecated(reason: "Use user.workspaces instead, pretty soon no user will be associated to a workspace")
+
+  """Workspaces user is member of"""
+  workspaces: [Workspace!]!
 }
 
 type UserCost {
@@ -3241,7 +3674,7 @@ type UserProfileResponse {
 
   """Gets all public projects for a user."""
   publicProjects(after: String, before: String, first: Int, last: Int): UserProfileResponsePublicProjectsConnection!
-  publishedTemplates: [SimilarTemplate!]!
+  publishedTemplates: [SimilarTemplate!]! @deprecated(reason: "There are no personal templates anymore, they all belong to a workspace")
   state: String
   totalDeploys: Int!
   username: String
@@ -3261,16 +3694,6 @@ input UserProfileUpdateInput {
   bio: String
   isPublic: Boolean!
   website: String
-}
-
-type UserProjectsConnection {
-  edges: [UserProjectsConnectionEdge!]!
-  pageInfo: PageInfo!
-}
-
-type UserProjectsConnectionEdge {
-  cursor: String!
-  node: Project!
 }
 
 type UserProviderAuthsConnection {
@@ -3304,6 +3727,7 @@ type Variable implements Node {
   environment: Environment!
   environmentId: String
   id: ID!
+  isSealed: Boolean!
   name: String!
   plugin: Plugin!
   pluginId: String
@@ -3322,7 +3746,7 @@ input VariableCollectionUpsertInput {
   """
   replace: Boolean = false
   serviceId: String
-  variables: ServiceVariables!
+  variables: EnvironmentVariables!
 }
 
 input VariableDeleteInput {
@@ -3400,8 +3824,40 @@ type VolumeInstance implements Node {
   serviceId: String
   sizeMB: Int!
   state: VolumeState
+  type: VolumeInstanceType!
   volume: Volume!
   volumeId: String!
+}
+
+type VolumeInstanceBackup {
+  createdAt: DateTime!
+  creatorId: String
+  expiresAt: DateTime
+  externalId: String!
+  id: String!
+  name: String
+  referencedMB: Int
+  usedMB: Int
+}
+
+type VolumeInstanceBackupSchedule implements Node {
+  createdAt: DateTime!
+  cron: String!
+  id: ID!
+  kind: VolumeInstanceBackupScheduleKind!
+  name: String!
+  retentionSeconds: Int
+}
+
+enum VolumeInstanceBackupScheduleKind {
+  DAILY
+  MONTHLY
+  WEEKLY
+}
+
+enum VolumeInstanceType {
+  CLOUD
+  METAL
 }
 
 input VolumeInstanceUpdateInput {
@@ -3419,6 +3875,11 @@ input VolumeInstanceUpdateInput {
   The state of the volume instance. If not provided, the state will not be updated.
   """
   state: VolumeState
+
+  """
+  The type of the volume instance. If not provided, the type will not be updated.
+  """
+  type: VolumeInstanceType
 }
 
 enum VolumeState {
@@ -3447,11 +3908,13 @@ type VolumeVolumeInstancesConnectionEdge {
 }
 
 input WebhookCreateInput {
+  filters: [String!]
   projectId: String!
   url: String!
 }
 
 input WebhookUpdateInput {
+  filters: [String!]
   url: String!
 }
 
@@ -3485,6 +3948,10 @@ enum WithdrawalStatusType {
   PENDING
 }
 
+type WorkflowId {
+  workflowId: String
+}
+
 type WorkflowResult {
   error: String
   status: WorkflowStatus!
@@ -3495,5 +3962,26 @@ enum WorkflowStatus {
   Error
   NotFound
   Running
+}
+
+type Workspace implements Node {
+  avatar: String
+  banReason: String
+  createdAt: DateTime!
+  customer: Customer!
+  discordRole: String
+  id: ID!
+  name: String
+  preferredRegion: String
+  slackChannelId: String
+  subscriptionModel: SubscriptionModel!
+  supportTierOverride: SupportTierOverride
+  team: Team
+}
+
+input WorkspaceUpdateInput {
+  avatar: String
+  name: String
+  preferredRegion: String
 }
 

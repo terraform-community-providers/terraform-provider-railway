@@ -20,7 +20,7 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
@@ -41,7 +41,7 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
@@ -58,7 +58,7 @@ func testAccCustomDomainResourceConfigDefault(name string) string {
 resource "railway_custom_domain" "test" {
   domain = "%s"
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
-  service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
+  service_id = "39da7e07-fa3a-42fd-b695-d229319f2993"
 }
 `, name)
 }

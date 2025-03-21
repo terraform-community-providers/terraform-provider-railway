@@ -1,3 +1,9 @@
+## 0.4.4
+
+### Bug fixes
+* Fix issue with optional `team_id` in `resource_project`
+* Fix issue with `region` and `volume` in `resource_service`
+
 ## 0.4.3
 
 ### Enhancements

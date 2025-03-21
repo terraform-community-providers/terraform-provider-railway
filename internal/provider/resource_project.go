@@ -95,8 +95,10 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"team_id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the team the project belongs to.",
+				Computed:            true,
 				Optional:            true,
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -177,7 +179,10 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		Description: data.Description.ValueString(),
 		IsPublic:    !data.Private.ValueBool(),
 		PrDeploys:   data.HasPrDeploys.ValueBool(),
-		TeamId:      data.TeamId.ValueStringPointer(),
+	}
+
+	if !data.TeamId.IsUnknown() && !data.TeamId.IsNull() {
+		input.TeamId = data.TeamId.ValueStringPointer()
 	}
 
 	resp.Diagnostics.Append(data.DefaultEnvironment.As(ctx, &defaultEnvironmentData, basetypes.ObjectAsOptions{})...)

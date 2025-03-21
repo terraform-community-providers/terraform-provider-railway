@@ -21,7 +21,7 @@ package provider
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "main"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "false"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 // 				),
 // 			},
@@ -29,7 +29,7 @@ package provider
 // 			{
 // 				ResourceName:      "railway_deployment_trigger.test",
 // 				ImportState:       true,
-// 				ImportStateId:     "89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging",
+// 				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging",
 // 				ImportStateVerify: true,
 // 			},
 // 			// Update with default values
@@ -41,7 +41,7 @@ package provider
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "main"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "false"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 // 				),
 // 			},
@@ -54,7 +54,7 @@ package provider
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "master"),
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "true"),
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-// 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+// 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 // 			// 	),
 // 			// },
@@ -62,7 +62,7 @@ package provider
 // 			{
 // 				ResourceName:      "railway_deployment_trigger.test",
 // 				ImportState:       true,
-// 				ImportStateId:     "89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging",
+// 				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging",
 // 				ImportStateVerify: true,
 // 			},
 // 			// Delete testing automatically occurs in TestCase
@@ -84,7 +84,7 @@ package provider
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "master"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "true"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 // 				),
 // 			},
@@ -92,7 +92,7 @@ package provider
 // 			{
 // 				ResourceName:      "railway_deployment_trigger.test",
 // 				ImportState:       true,
-// 				ImportStateId:     "89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging",
+// 				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging",
 // 				ImportStateVerify: true,
 // 			},
 // 			// Update with same values
@@ -104,7 +104,7 @@ package provider
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "master"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "true"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+// 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 // 					resource.TestCheckResourceAttr("railway_deployment_trigger.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 // 				),
 // 			},
@@ -117,7 +117,7 @@ package provider
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "branch", "main"),
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "check_suites", "false"),
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-// 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"),
+// 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 // 			// 		resource.TestCheckResourceAttr("railway_deployment_trigger.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 // 			// 	),
 // 			// },
@@ -125,7 +125,7 @@ package provider
 // 			{
 // 				ResourceName:      "railway_deployment_trigger.test",
 // 				ImportState:       true,
-// 				ImportStateId:     "89fa0236-2b1b-4a8c-b12d-ae3634b30d97:staging",
+// 				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging",
 // 				ImportStateVerify: true,
 // 			},
 // 			// Delete testing automatically occurs in TestCase
@@ -139,7 +139,7 @@ package provider
 //   repository = "%s"
 //   branch = "main"
 //   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
-//   service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
+//   service_id = "39da7e07-fa3a-42fd-b695-d229319f2993"
 // }
 // `, value)
 // }
@@ -151,7 +151,7 @@ package provider
 //   branch = "master"
 //   check_suites = true
 //   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
-//   service_id = "89fa0236-2b1b-4a8c-b12d-ae3634b30d97"
+//   service_id = "39da7e07-fa3a-42fd-b695-d229319f2993"
 // }
 // `, value)
 // }
