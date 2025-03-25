@@ -53,8 +53,24 @@ query getServiceInstance(
     rootDirectory
     railwayConfigFile
     cronSchedule
-    region
-    numReplicas
+    latestDeployment {
+      meta
+    }
+  }
+}
+
+query getServiceInstances(
+  $serviceId: String!
+) {
+  service(id: $serviceId) {
+    serviceInstances {
+      edges {
+        node {
+          id
+          environmentId
+        }
+      }
+    }
   }
 }
 
@@ -65,6 +81,8 @@ query getServiceInstance(
 # @genqlient(for: "ServiceInstanceUpdateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.registryCredentials", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.multiRegionConfig", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.region", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.numReplicas", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.builder", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", omitempty: true, pointer: true)

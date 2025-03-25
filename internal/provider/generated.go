@@ -476,10 +476,10 @@ type ServiceInstanceUpdateInput struct {
 	HealthcheckTimeout      *int                      `json:"healthcheckTimeout,omitempty"`
 	MultiRegionConfig       *map[string]interface{}   `json:"multiRegionConfig,omitempty"`
 	NixpacksPlan            *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
-	NumReplicas             int                       `json:"numReplicas"`
+	NumReplicas             *int                      `json:"numReplicas,omitempty"`
 	PreDeployCommand        *[]string                 `json:"preDeployCommand,omitempty"`
 	RailwayConfigFile       *string                   `json:"railwayConfigFile,omitempty"`
-	Region                  string                    `json:"region"`
+	Region                  *string                   `json:"region,omitempty"`
 	RegistryCredentials     *RegistryCredentialsInput `json:"registryCredentials,omitempty"`
 	RestartPolicyMaxRetries *int                      `json:"restartPolicyMaxRetries,omitempty"`
 	RestartPolicyType       *RestartPolicyType        `json:"restartPolicyType,omitempty"`
@@ -514,7 +514,7 @@ func (v *ServiceInstanceUpdateInput) GetMultiRegionConfig() *map[string]interfac
 func (v *ServiceInstanceUpdateInput) GetNixpacksPlan() *map[string]interface{} { return v.NixpacksPlan }
 
 // GetNumReplicas returns ServiceInstanceUpdateInput.NumReplicas, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetNumReplicas() int { return v.NumReplicas }
+func (v *ServiceInstanceUpdateInput) GetNumReplicas() *int { return v.NumReplicas }
 
 // GetPreDeployCommand returns ServiceInstanceUpdateInput.PreDeployCommand, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetPreDeployCommand() *[]string { return v.PreDeployCommand }
@@ -523,7 +523,7 @@ func (v *ServiceInstanceUpdateInput) GetPreDeployCommand() *[]string { return v.
 func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() *string { return v.RailwayConfigFile }
 
 // GetRegion returns ServiceInstanceUpdateInput.Region, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRegion() string { return v.Region }
+func (v *ServiceInstanceUpdateInput) GetRegion() *string { return v.Region }
 
 // GetRegistryCredentials returns ServiceInstanceUpdateInput.RegistryCredentials, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRegistryCredentials() *RegistryCredentialsInput {
@@ -1016,6 +1016,14 @@ func (v *__getServiceInstanceInput) GetEnvironmentId() string { return v.Environ
 
 // GetServiceId returns __getServiceInstanceInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *__getServiceInstanceInput) GetServiceId() string { return v.ServiceId }
+
+// __getServiceInstancesInput is used internally by genqlient
+type __getServiceInstancesInput struct {
+	ServiceId string `json:"serviceId"`
+}
+
+// GetServiceId returns __getServiceInstancesInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__getServiceInstancesInput) GetServiceId() string { return v.ServiceId }
 
 // __getSharedVariablesInput is used internally by genqlient
 type __getSharedVariablesInput struct {
@@ -2284,8 +2292,7 @@ type getServiceInstanceServiceInstance struct {
 	RootDirectory     *string                                               `json:"rootDirectory"`
 	RailwayConfigFile *string                                               `json:"railwayConfigFile"`
 	CronSchedule      *string                                               `json:"cronSchedule"`
-	Region            string                                                `json:"region"`
-	NumReplicas       int                                                   `json:"numReplicas"`
+	LatestDeployment  getServiceInstanceServiceInstanceLatestDeployment     `json:"latestDeployment"`
 }
 
 // GetSource returns getServiceInstanceServiceInstance.Source, and is useful for accessing the field via an interface.
@@ -2304,11 +2311,20 @@ func (v *getServiceInstanceServiceInstance) GetRailwayConfigFile() *string {
 // GetCronSchedule returns getServiceInstanceServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetCronSchedule() *string { return v.CronSchedule }
 
-// GetRegion returns getServiceInstanceServiceInstance.Region, and is useful for accessing the field via an interface.
-func (v *getServiceInstanceServiceInstance) GetRegion() string { return v.Region }
+// GetLatestDeployment returns getServiceInstanceServiceInstance.LatestDeployment, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetLatestDeployment() getServiceInstanceServiceInstanceLatestDeployment {
+	return v.LatestDeployment
+}
 
-// GetNumReplicas returns getServiceInstanceServiceInstance.NumReplicas, and is useful for accessing the field via an interface.
-func (v *getServiceInstanceServiceInstance) GetNumReplicas() int { return v.NumReplicas }
+// getServiceInstanceServiceInstanceLatestDeployment includes the requested fields of the GraphQL type Deployment.
+type getServiceInstanceServiceInstanceLatestDeployment struct {
+	Meta map[string]interface{} `json:"meta"`
+}
+
+// GetMeta returns getServiceInstanceServiceInstanceLatestDeployment.Meta, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstanceLatestDeployment) GetMeta() map[string]interface{} {
+	return v.Meta
+}
 
 // getServiceInstanceServiceInstanceSourceServiceSource includes the requested fields of the GraphQL type ServiceSource.
 type getServiceInstanceServiceInstanceSourceServiceSource struct {
@@ -2321,6 +2337,61 @@ func (v *getServiceInstanceServiceInstanceSourceServiceSource) GetImage() *strin
 
 // GetRepo returns getServiceInstanceServiceInstanceSourceServiceSource.Repo, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstanceSourceServiceSource) GetRepo() *string { return v.Repo }
+
+// getServiceInstancesResponse is returned by getServiceInstances on success.
+type getServiceInstancesResponse struct {
+	// Get a service by ID
+	Service getServiceInstancesService `json:"service"`
+}
+
+// GetService returns getServiceInstancesResponse.Service, and is useful for accessing the field via an interface.
+func (v *getServiceInstancesResponse) GetService() getServiceInstancesService { return v.Service }
+
+// getServiceInstancesService includes the requested fields of the GraphQL type Service.
+type getServiceInstancesService struct {
+	ServiceInstances getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection `json:"serviceInstances"`
+}
+
+// GetServiceInstances returns getServiceInstancesService.ServiceInstances, and is useful for accessing the field via an interface.
+func (v *getServiceInstancesService) GetServiceInstances() getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection {
+	return v.ServiceInstances
+}
+
+// getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection includes the requested fields of the GraphQL type ServiceServiceInstancesConnection.
+type getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection struct {
+	Edges []getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge `json:"edges"`
+}
+
+// GetEdges returns getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection) GetEdges() []getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge {
+	return v.Edges
+}
+
+// getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge includes the requested fields of the GraphQL type ServiceServiceInstancesConnectionEdge.
+type getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge struct {
+	Node getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance `json:"node"`
+}
+
+// GetNode returns getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge) GetNode() getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance {
+	return v.Node
+}
+
+// getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance includes the requested fields of the GraphQL type ServiceInstance.
+type getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance struct {
+	Id            string `json:"id"`
+	EnvironmentId string `json:"environmentId"`
+}
+
+// GetId returns getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.Id, and is useful for accessing the field via an interface.
+func (v *getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetId() string {
+	return v.Id
+}
+
+// GetEnvironmentId returns getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetEnvironmentId() string {
+	return v.EnvironmentId
+}
 
 // getServiceResponse is returned by getService on success.
 type getServiceResponse struct {
@@ -3976,8 +4047,9 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 		rootDirectory
 		railwayConfigFile
 		cronSchedule
-		region
-		numReplicas
+		latestDeployment {
+			meta
+		}
 	}
 }
 `,
@@ -3989,6 +4061,45 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 	var err error
 
 	var data getServiceInstanceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getServiceInstances(
+	ctx context.Context,
+	client graphql.Client,
+	serviceId string,
+) (*getServiceInstancesResponse, error) {
+	req := &graphql.Request{
+		OpName: "getServiceInstances",
+		Query: `
+query getServiceInstances ($serviceId: String!) {
+	service(id: $serviceId) {
+		serviceInstances {
+			edges {
+				node {
+					id
+					environmentId
+				}
+			}
+		}
+	}
+}
+`,
+		Variables: &__getServiceInstancesInput{
+			ServiceId: serviceId,
+		},
+	}
+	var err error
+
+	var data getServiceInstancesResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
