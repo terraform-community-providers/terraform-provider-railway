@@ -274,7 +274,7 @@ type ProjectCreateInput struct {
 	Plugins                []string           `json:"plugins"`
 	PrDeploys              bool               `json:"prDeploys"`
 	Repo                   *ProjectCreateRepo `json:"repo"`
-	Runtime                *PublicRuntime     `json:"runtime"`
+	Runtime                PublicRuntime      `json:"runtime"`
 	TeamId                 *string            `json:"teamId"`
 }
 
@@ -300,7 +300,7 @@ func (v *ProjectCreateInput) GetPrDeploys() bool { return v.PrDeploys }
 func (v *ProjectCreateInput) GetRepo() *ProjectCreateRepo { return v.Repo }
 
 // GetRuntime returns ProjectCreateInput.Runtime, and is useful for accessing the field via an interface.
-func (v *ProjectCreateInput) GetRuntime() *PublicRuntime { return v.Runtime }
+func (v *ProjectCreateInput) GetRuntime() PublicRuntime { return v.Runtime }
 
 // GetTeamId returns ProjectCreateInput.TeamId, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetTeamId() *string { return v.TeamId }
@@ -2641,6 +2641,7 @@ type getServiceInstanceServiceInstance struct {
 	CronSchedule      *string                                               `json:"cronSchedule"`
 	Region            string                                                `json:"region"`
 	NumReplicas       int                                                   `json:"numReplicas"`
+	LatestDeployment  getServiceInstanceServiceInstanceLatestDeployment     `json:"latestDeployment"`
 }
 
 // GetSource returns getServiceInstanceServiceInstance.Source, and is useful for accessing the field via an interface.
@@ -2664,6 +2665,21 @@ func (v *getServiceInstanceServiceInstance) GetRegion() string { return v.Region
 
 // GetNumReplicas returns getServiceInstanceServiceInstance.NumReplicas, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetNumReplicas() int { return v.NumReplicas }
+
+// GetLatestDeployment returns getServiceInstanceServiceInstance.LatestDeployment, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetLatestDeployment() getServiceInstanceServiceInstanceLatestDeployment {
+	return v.LatestDeployment
+}
+
+// getServiceInstanceServiceInstanceLatestDeployment includes the requested fields of the GraphQL type Deployment.
+type getServiceInstanceServiceInstanceLatestDeployment struct {
+	Meta map[string]interface{} `json:"meta"`
+}
+
+// GetMeta returns getServiceInstanceServiceInstanceLatestDeployment.Meta, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstanceLatestDeployment) GetMeta() map[string]interface{} {
+	return v.Meta
+}
 
 // getServiceInstanceServiceInstanceSourceServiceSource includes the requested fields of the GraphQL type ServiceSource.
 type getServiceInstanceServiceInstanceSourceServiceSource struct {
@@ -4564,6 +4580,9 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 		cronSchedule
 		region
 		numReplicas
+		latestDeployment {
+			meta
+		}
 	}
 }
 `,

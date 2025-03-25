@@ -179,6 +179,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		Description: data.Description.ValueString(),
 		IsPublic:    !data.Private.ValueBool(),
 		PrDeploys:   data.HasPrDeploys.ValueBool(),
+		Runtime:     PublicRuntimeV2,
 	}
 
 	if !data.TeamId.IsUnknown() && !data.TeamId.IsNull() {

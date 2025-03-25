@@ -11,3 +11,5 @@ bindings:
     type: time.Time
   JSON:
     type: map[string]interface{}
+  DeploymentMeta:
+    type: map[string]interface{}
