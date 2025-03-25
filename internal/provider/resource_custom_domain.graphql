@@ -10,6 +10,7 @@ fragment CustomDomain on CustomDomain {
   }
   environmentId
   serviceId
+  targetPort
 }
 
 query getCustomDomain(

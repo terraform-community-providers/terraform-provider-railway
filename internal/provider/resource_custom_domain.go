@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"strings"
 
 	"github.com/Khan/genqlient/graphql"
@@ -37,6 +39,7 @@ type CustomDomainResourceModel struct {
 	HostLabel      types.String `tfsdk:"host_label"`
 	Zone           types.String `tfsdk:"zone"`
 	DNSRecordValue types.String `tfsdk:"dns_record_value"`
+	TargetPort     types.Int64  `tfsdk:"target_port"`
 }
 
 func (r *CustomDomainResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -97,6 +100,16 @@ func (r *CustomDomainResource) Schema(ctx context.Context, req resource.SchemaRe
 				MarkdownDescription: "DNS record value of the custom domain.",
 				Computed:            true,
 			},
+			"target_port": schema.Int64Attribute{
+				MarkdownDescription: "Target port of the service.",
+				Required:            true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Int64{
+					int64validator.Between(0, 65535),
+				},
+			},
 		},
 	}
 }
@@ -142,6 +155,7 @@ func (r *CustomDomainResource) Create(ctx context.Context, req resource.CreateRe
 		ServiceId:     data.ServiceId.ValueString(),
 		EnvironmentId: data.EnvironmentId.ValueString(),
 		ProjectId:     service.Service.ProjectId,
+		TargetPort:    int(data.TargetPort.ValueInt64()),
 	}
 
 	response, err := createCustomDomain(ctx, *r.client, input)
@@ -163,6 +177,7 @@ func (r *CustomDomainResource) Create(ctx context.Context, req resource.CreateRe
 	data.HostLabel = types.StringValue(domain.Status.DnsRecords[0].Hostlabel)
 	data.Zone = types.StringValue(domain.Status.DnsRecords[0].Zone)
 	data.DNSRecordValue = types.StringValue(domain.Status.DnsRecords[0].RequiredValue)
+	data.TargetPort = types.Int64Value(int64(domain.TargetPort))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -192,6 +207,7 @@ func (r *CustomDomainResource) Read(ctx context.Context, req resource.ReadReques
 	data.HostLabel = types.StringValue(domain.Status.DnsRecords[0].Hostlabel)
 	data.Zone = types.StringValue(domain.Status.DnsRecords[0].Zone)
 	data.DNSRecordValue = types.StringValue(domain.Status.DnsRecords[0].RequiredValue)
+	data.TargetPort = types.Int64Value(int64(domain.TargetPort))
 
 	service, err := getService(ctx, *r.client, domain.ServiceId)
 
