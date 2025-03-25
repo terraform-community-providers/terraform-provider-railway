@@ -1,14 +1,19 @@
-## 0.4.5
+## 0.4.6
 
 ### Bug fixes
 * Fix issue with `targetPort` for custom domains being set to `0` if not provided
 * Changed reading custom domain from service instance instead of using id
 
-## 0.4.4
+## 0.4.5
 
 ### Bug fixes
 * Fix issue with optional `team_id` in `resource_project`
 * Fix issue with `region` and `volume` in `resource_service`
+
+## 0.4.4
+
+### Bug fixes
+* Fix issue with setting `source_image_registry_*` in `resource_service`
 
 ## 0.4.3
 
