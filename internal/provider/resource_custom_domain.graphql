@@ -24,6 +24,7 @@ query getCustomDomain(
   }
 }
 
+# @genqlient(for: "CustomDomainCreateInput.targetPort", omitempty: true, pointer: true)
 mutation createCustomDomain(
   $input: CustomDomainCreateInput!
 ) {

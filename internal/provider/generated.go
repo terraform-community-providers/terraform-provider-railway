@@ -48,7 +48,7 @@ type CustomDomainCreateInput struct {
 	EnvironmentId string `json:"environmentId"`
 	ProjectId     string `json:"projectId"`
 	ServiceId     string `json:"serviceId"`
-	TargetPort    int    `json:"targetPort"`
+	TargetPort    *int   `json:"targetPort,omitempty"`
 }
 
 // GetDomain returns CustomDomainCreateInput.Domain, and is useful for accessing the field via an interface.
@@ -64,7 +64,7 @@ func (v *CustomDomainCreateInput) GetProjectId() string { return v.ProjectId }
 func (v *CustomDomainCreateInput) GetServiceId() string { return v.ServiceId }
 
 // GetTargetPort returns CustomDomainCreateInput.TargetPort, and is useful for accessing the field via an interface.
-func (v *CustomDomainCreateInput) GetTargetPort() int { return v.TargetPort }
+func (v *CustomDomainCreateInput) GetTargetPort() *int { return v.TargetPort }
 
 // CustomDomainStatus includes the requested fields of the GraphQL type CustomDomainStatus.
 type CustomDomainStatus struct {
