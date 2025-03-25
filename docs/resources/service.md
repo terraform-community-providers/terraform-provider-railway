@@ -35,7 +35,7 @@ resource "railway_service" "example" {
 - `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
 - `cron_schedule` (String) Cron schedule of the service.
 - `num_replicas` (Number) Number of replicas to deploy. **Default** `1`.
-- `region` (String) Region to deploy service in. **Default** `us-west1`.
+- `regions` (Attributes List) Regions to deploy service in with numbers of replicas in each. (see [below for nested schema](#nestedatt--regions))
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
 - `source_image_registry_password` (String, Sensitive) Private Docker registry credentials.
@@ -47,6 +47,18 @@ resource "railway_service" "example" {
 ### Read-Only
 
 - `id` (String) Identifier of the service.
+
+<a id="nestedatt--regions"></a>
+### Nested Schema for `regions`
+
+Required:
+
+- `region` (String) Region to deploy service in. Some of well known regions are: us-west1, us-east4, europe-west4, asia-southeast1.
+
+Optional:
+
+- `num_replicas` (Number) Number of replicas to deploy.
+
 
 <a id="nestedatt--volume"></a>
 ### Nested Schema for `volume`

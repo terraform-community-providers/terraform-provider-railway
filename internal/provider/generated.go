@@ -26,6 +26,7 @@ type CustomDomain struct {
 	Status        CustomDomainStatus `json:"status"`
 	EnvironmentId string             `json:"environmentId"`
 	ServiceId     string             `json:"serviceId"`
+	TargetPort    int                `json:"targetPort"`
 }
 
 // GetId returns CustomDomain.Id, and is useful for accessing the field via an interface.
@@ -42,6 +43,9 @@ func (v *CustomDomain) GetEnvironmentId() string { return v.EnvironmentId }
 
 // GetServiceId returns CustomDomain.ServiceId, and is useful for accessing the field via an interface.
 func (v *CustomDomain) GetServiceId() string { return v.ServiceId }
+
+// GetTargetPort returns CustomDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *CustomDomain) GetTargetPort() int { return v.TargetPort }
 
 type CustomDomainCreateInput struct {
 	Domain        string `json:"domain"`
@@ -270,7 +274,7 @@ type ProjectCreateInput struct {
 	Plugins                []string           `json:"plugins"`
 	PrDeploys              bool               `json:"prDeploys"`
 	Repo                   *ProjectCreateRepo `json:"repo"`
-	Runtime                *PublicRuntime     `json:"runtime"`
+	Runtime                PublicRuntime      `json:"runtime"`
 	TeamId                 *string            `json:"teamId"`
 }
 
@@ -296,7 +300,7 @@ func (v *ProjectCreateInput) GetPrDeploys() bool { return v.PrDeploys }
 func (v *ProjectCreateInput) GetRepo() *ProjectCreateRepo { return v.Repo }
 
 // GetRuntime returns ProjectCreateInput.Runtime, and is useful for accessing the field via an interface.
-func (v *ProjectCreateInput) GetRuntime() *PublicRuntime { return v.Runtime }
+func (v *ProjectCreateInput) GetRuntime() PublicRuntime { return v.Runtime }
 
 // GetTeamId returns ProjectCreateInput.TeamId, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetTeamId() *string { return v.TeamId }
@@ -1430,6 +1434,11 @@ func (v *createCustomDomainCustomDomainCreateCustomDomain) GetServiceId() string
 	return v.CustomDomain.ServiceId
 }
 
+// GetTargetPort returns createCustomDomainCustomDomainCreateCustomDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *createCustomDomainCustomDomainCreateCustomDomain) GetTargetPort() int {
+	return v.CustomDomain.TargetPort
+}
+
 func (v *createCustomDomainCustomDomainCreateCustomDomain) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -1465,6 +1474,8 @@ type __premarshalcreateCustomDomainCustomDomainCreateCustomDomain struct {
 	EnvironmentId string `json:"environmentId"`
 
 	ServiceId string `json:"serviceId"`
+
+	TargetPort int `json:"targetPort"`
 }
 
 func (v *createCustomDomainCustomDomainCreateCustomDomain) MarshalJSON() ([]byte, error) {
@@ -1483,6 +1494,7 @@ func (v *createCustomDomainCustomDomainCreateCustomDomain) __premarshalJSON() (*
 	retval.Status = v.CustomDomain.Status
 	retval.EnvironmentId = v.CustomDomain.EnvironmentId
 	retval.ServiceId = v.CustomDomain.ServiceId
+	retval.TargetPort = v.CustomDomain.TargetPort
 	return &retval, nil
 }
 
@@ -2264,6 +2276,9 @@ func (v *getCustomDomainCustomDomain) GetEnvironmentId() string { return v.Custo
 // GetServiceId returns getCustomDomainCustomDomain.ServiceId, and is useful for accessing the field via an interface.
 func (v *getCustomDomainCustomDomain) GetServiceId() string { return v.CustomDomain.ServiceId }
 
+// GetTargetPort returns getCustomDomainCustomDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *getCustomDomainCustomDomain) GetTargetPort() int { return v.CustomDomain.TargetPort }
+
 func (v *getCustomDomainCustomDomain) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -2299,6 +2314,8 @@ type __premarshalgetCustomDomainCustomDomain struct {
 	EnvironmentId string `json:"environmentId"`
 
 	ServiceId string `json:"serviceId"`
+
+	TargetPort int `json:"targetPort"`
 }
 
 func (v *getCustomDomainCustomDomain) MarshalJSON() ([]byte, error) {
@@ -2317,6 +2334,7 @@ func (v *getCustomDomainCustomDomain) __premarshalJSON() (*__premarshalgetCustom
 	retval.Status = v.CustomDomain.Status
 	retval.EnvironmentId = v.CustomDomain.EnvironmentId
 	retval.ServiceId = v.CustomDomain.ServiceId
+	retval.TargetPort = v.CustomDomain.TargetPort
 	return &retval, nil
 }
 
@@ -2623,6 +2641,7 @@ type getServiceInstanceServiceInstance struct {
 	CronSchedule      *string                                               `json:"cronSchedule"`
 	Region            string                                                `json:"region"`
 	NumReplicas       int                                                   `json:"numReplicas"`
+	LatestDeployment  getServiceInstanceServiceInstanceLatestDeployment     `json:"latestDeployment"`
 }
 
 // GetSource returns getServiceInstanceServiceInstance.Source, and is useful for accessing the field via an interface.
@@ -2646,6 +2665,21 @@ func (v *getServiceInstanceServiceInstance) GetRegion() string { return v.Region
 
 // GetNumReplicas returns getServiceInstanceServiceInstance.NumReplicas, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetNumReplicas() int { return v.NumReplicas }
+
+// GetLatestDeployment returns getServiceInstanceServiceInstance.LatestDeployment, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetLatestDeployment() getServiceInstanceServiceInstanceLatestDeployment {
+	return v.LatestDeployment
+}
+
+// getServiceInstanceServiceInstanceLatestDeployment includes the requested fields of the GraphQL type Deployment.
+type getServiceInstanceServiceInstanceLatestDeployment struct {
+	Meta map[string]interface{} `json:"meta"`
+}
+
+// GetMeta returns getServiceInstanceServiceInstanceLatestDeployment.Meta, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstanceLatestDeployment) GetMeta() map[string]interface{} {
+	return v.Meta
+}
 
 // getServiceInstanceServiceInstanceSourceServiceSource includes the requested fields of the GraphQL type ServiceSource.
 type getServiceInstanceServiceInstanceSourceServiceSource struct {
@@ -3696,6 +3730,7 @@ fragment CustomDomain on CustomDomain {
 	}
 	environmentId
 	serviceId
+	targetPort
 }
 `,
 		Variables: &__createCustomDomainInput{
@@ -4337,6 +4372,7 @@ fragment CustomDomain on CustomDomain {
 	}
 	environmentId
 	serviceId
+	targetPort
 }
 `,
 		Variables: &__getCustomDomainInput{
@@ -4544,6 +4580,9 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 		cronSchedule
 		region
 		numReplicas
+		latestDeployment {
+			meta
+		}
 	}
 }
 `,

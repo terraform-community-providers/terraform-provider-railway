@@ -55,6 +55,9 @@ query getServiceInstance(
     cronSchedule
     region
     numReplicas
+    latestDeployment {
+      meta
+    }
   }
 }
 
