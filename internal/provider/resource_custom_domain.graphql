@@ -12,15 +12,19 @@ fragment CustomDomain on CustomDomain {
   serviceId
 }
 
-query getCustomDomain(
-  $id: String!
+query listCustomDomains(
+  $environmentId: String!
+  $serviceId: String!
   $projectId: String!
 ) {
-  customDomain(
-    id: $id
+  domains(
+    environmentId: $environmentId
+    serviceId: $serviceId
     projectId: $projectId
   ) {
-    ...CustomDomain
+    customDomains {
+      ...CustomDomain
+    }
   }
 }
 

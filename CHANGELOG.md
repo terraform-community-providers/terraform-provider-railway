@@ -2,6 +2,7 @@
 
 ### Bug fixes
 * Fix issue with `targetPort` for custom domains being set to `0` if not provided
+* Changed reading custom domain from service instance instead of using id
 
 ## 0.4.4
 

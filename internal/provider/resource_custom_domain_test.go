@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccCustomDomainResourceDefault(t *testing.T) {
@@ -31,7 +30,7 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 			{
 				ResourceName:      "railway_custom_domain.test",
 				ImportState:       true,
-				ImportStateIdFunc: customDomainImportIdFunc,
+				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging:terraform.example.com",
 				ImportStateVerify: true,
 			},
 			// Update with default values
@@ -61,14 +60,4 @@ resource "railway_custom_domain" "test" {
   service_id = "39da7e07-fa3a-42fd-b695-d229319f2993"
 }
 `, name)
-}
-
-func customDomainImportIdFunc(state *terraform.State) (string, error) {
-	rawState, ok := state.RootModule().Resources["railway_custom_domain.test"]
-
-	if !ok {
-		return "", fmt.Errorf("Resource Not found")
-	}
-
-	return fmt.Sprintf("%s:%s", rawState.Primary.Attributes["project_id"], rawState.Primary.Attributes["id"]), nil
 }

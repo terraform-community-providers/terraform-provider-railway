@@ -176,14 +176,26 @@ func (r *CustomDomainResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	response, err := getCustomDomain(ctx, *r.client, data.Id.ValueString(), data.ProjectId.ValueString())
+	var domain CustomDomain
+
+	response, err := listCustomDomains(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.ProjectId.ValueString())
 
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read custom domain, got error: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to list custom domains, got error: %s", err))
 		return
 	}
 
-	domain := response.CustomDomain.CustomDomain
+	for _, customDomain := range response.Domains.CustomDomains {
+		if customDomain.CustomDomain.Domain == data.Domain.ValueString() {
+			domain = customDomain.CustomDomain
+			break
+		}
+	}
+
+	if domain.Id == "" {
+		resp.Diagnostics.AddError("Client Error", "Unable to find custom domain")
+		return
+	}
 
 	data.Id = types.StringValue(domain.Id)
 	data.Domain = types.StringValue(domain.Domain)
@@ -239,15 +251,32 @@ func (r *CustomDomainResource) Delete(ctx context.Context, req resource.DeleteRe
 func (r *CustomDomainResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.Split(req.ID, ":")
 
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: project_id:domain_id. Got: %q", req.ID),
+			fmt.Sprintf("Expected import identifier with format: service_id:environment_name:domain. Got: %q", req.ID),
 		)
 
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project_id"), parts[0])...)
+	service, err := getService(ctx, *r.client, parts[0])
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service, got error: %s", err))
+		return
+	}
+
+	projectId := service.Service.ProjectId
+	environmentId, err := findEnvironment(ctx, *r.client, projectId, parts[1])
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read environment, got error: %s", err))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("domain"), parts[2])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("service_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("environment_id"), environmentId)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project_id"), projectId)...)
 }

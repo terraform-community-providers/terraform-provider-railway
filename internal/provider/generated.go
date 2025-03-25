@@ -1083,18 +1083,6 @@ type __disconnectServiceInput struct {
 // GetId returns __disconnectServiceInput.Id, and is useful for accessing the field via an interface.
 func (v *__disconnectServiceInput) GetId() string { return v.Id }
 
-// __getCustomDomainInput is used internally by genqlient
-type __getCustomDomainInput struct {
-	Id        string `json:"id"`
-	ProjectId string `json:"projectId"`
-}
-
-// GetId returns __getCustomDomainInput.Id, and is useful for accessing the field via an interface.
-func (v *__getCustomDomainInput) GetId() string { return v.Id }
-
-// GetProjectId returns __getCustomDomainInput.ProjectId, and is useful for accessing the field via an interface.
-func (v *__getCustomDomainInput) GetProjectId() string { return v.ProjectId }
-
 // __getEnvironmentInput is used internally by genqlient
 type __getEnvironmentInput struct {
 	Id string `json:"id"`
@@ -1186,6 +1174,22 @@ type __getVolumeInstancesInput struct {
 
 // GetId returns __getVolumeInstancesInput.Id, and is useful for accessing the field via an interface.
 func (v *__getVolumeInstancesInput) GetId() string { return v.Id }
+
+// __listCustomDomainsInput is used internally by genqlient
+type __listCustomDomainsInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+	ProjectId     string `json:"projectId"`
+}
+
+// GetEnvironmentId returns __listCustomDomainsInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__listCustomDomainsInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __listCustomDomainsInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__listCustomDomainsInput) GetServiceId() string { return v.ServiceId }
+
+// GetProjectId returns __listCustomDomainsInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__listCustomDomainsInput) GetProjectId() string { return v.ProjectId }
 
 // __listDeploymentTriggersInput is used internally by genqlient
 type __listDeploymentTriggersInput struct {
@@ -2244,93 +2248,6 @@ type disconnectServiceServiceDisconnectService struct {
 // GetId returns disconnectServiceServiceDisconnectService.Id, and is useful for accessing the field via an interface.
 func (v *disconnectServiceServiceDisconnectService) GetId() string { return v.Id }
 
-// getCustomDomainCustomDomain includes the requested fields of the GraphQL type CustomDomain.
-type getCustomDomainCustomDomain struct {
-	CustomDomain `json:"-"`
-}
-
-// GetId returns getCustomDomainCustomDomain.Id, and is useful for accessing the field via an interface.
-func (v *getCustomDomainCustomDomain) GetId() string { return v.CustomDomain.Id }
-
-// GetDomain returns getCustomDomainCustomDomain.Domain, and is useful for accessing the field via an interface.
-func (v *getCustomDomainCustomDomain) GetDomain() string { return v.CustomDomain.Domain }
-
-// GetStatus returns getCustomDomainCustomDomain.Status, and is useful for accessing the field via an interface.
-func (v *getCustomDomainCustomDomain) GetStatus() CustomDomainStatus { return v.CustomDomain.Status }
-
-// GetEnvironmentId returns getCustomDomainCustomDomain.EnvironmentId, and is useful for accessing the field via an interface.
-func (v *getCustomDomainCustomDomain) GetEnvironmentId() string { return v.CustomDomain.EnvironmentId }
-
-// GetServiceId returns getCustomDomainCustomDomain.ServiceId, and is useful for accessing the field via an interface.
-func (v *getCustomDomainCustomDomain) GetServiceId() string { return v.CustomDomain.ServiceId }
-
-func (v *getCustomDomainCustomDomain) UnmarshalJSON(b []byte) error {
-
-	if string(b) == "null" {
-		return nil
-	}
-
-	var firstPass struct {
-		*getCustomDomainCustomDomain
-		graphql.NoUnmarshalJSON
-	}
-	firstPass.getCustomDomainCustomDomain = v
-
-	err := json.Unmarshal(b, &firstPass)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(
-		b, &v.CustomDomain)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type __premarshalgetCustomDomainCustomDomain struct {
-	Id string `json:"id"`
-
-	Domain string `json:"domain"`
-
-	Status CustomDomainStatus `json:"status"`
-
-	EnvironmentId string `json:"environmentId"`
-
-	ServiceId string `json:"serviceId"`
-}
-
-func (v *getCustomDomainCustomDomain) MarshalJSON() ([]byte, error) {
-	premarshaled, err := v.__premarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(premarshaled)
-}
-
-func (v *getCustomDomainCustomDomain) __premarshalJSON() (*__premarshalgetCustomDomainCustomDomain, error) {
-	var retval __premarshalgetCustomDomainCustomDomain
-
-	retval.Id = v.CustomDomain.Id
-	retval.Domain = v.CustomDomain.Domain
-	retval.Status = v.CustomDomain.Status
-	retval.EnvironmentId = v.CustomDomain.EnvironmentId
-	retval.ServiceId = v.CustomDomain.ServiceId
-	return &retval, nil
-}
-
-// getCustomDomainResponse is returned by getCustomDomain on success.
-type getCustomDomainResponse struct {
-	// Fetch details for a custom domain
-	CustomDomain getCustomDomainCustomDomain `json:"customDomain"`
-}
-
-// GetCustomDomain returns getCustomDomainResponse.CustomDomain, and is useful for accessing the field via an interface.
-func (v *getCustomDomainResponse) GetCustomDomain() getCustomDomainCustomDomain {
-	return v.CustomDomain
-}
-
 // getEnvironmentEnvironment includes the requested fields of the GraphQL type Environment.
 type getEnvironmentEnvironment struct {
 	Environment `json:"-"`
@@ -2949,6 +2866,111 @@ type getVolumeInstancesResponse struct {
 
 // GetProject returns getVolumeInstancesResponse.Project, and is useful for accessing the field via an interface.
 func (v *getVolumeInstancesResponse) GetProject() getVolumeInstancesProject { return v.Project }
+
+// listCustomDomainsDomainsAllDomains includes the requested fields of the GraphQL type AllDomains.
+type listCustomDomainsDomainsAllDomains struct {
+	CustomDomains []listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain `json:"customDomains"`
+}
+
+// GetCustomDomains returns listCustomDomainsDomainsAllDomains.CustomDomains, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsDomainsAllDomains) GetCustomDomains() []listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain {
+	return v.CustomDomains
+}
+
+// listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain includes the requested fields of the GraphQL type CustomDomain.
+type listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain struct {
+	CustomDomain `json:"-"`
+}
+
+// GetId returns listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain.Id, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetId() string {
+	return v.CustomDomain.Id
+}
+
+// GetDomain returns listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain.Domain, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetDomain() string {
+	return v.CustomDomain.Domain
+}
+
+// GetStatus returns listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain.Status, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetStatus() CustomDomainStatus {
+	return v.CustomDomain.Status
+}
+
+// GetEnvironmentId returns listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetEnvironmentId() string {
+	return v.CustomDomain.EnvironmentId
+}
+
+// GetServiceId returns listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain.ServiceId, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetServiceId() string {
+	return v.CustomDomain.ServiceId
+}
+
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.CustomDomain)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshallistCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain struct {
+	Id string `json:"id"`
+
+	Domain string `json:"domain"`
+
+	Status CustomDomainStatus `json:"status"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+}
+
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) __premarshalJSON() (*__premarshallistCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain, error) {
+	var retval __premarshallistCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain
+
+	retval.Id = v.CustomDomain.Id
+	retval.Domain = v.CustomDomain.Domain
+	retval.Status = v.CustomDomain.Status
+	retval.EnvironmentId = v.CustomDomain.EnvironmentId
+	retval.ServiceId = v.CustomDomain.ServiceId
+	return &retval, nil
+}
+
+// listCustomDomainsResponse is returned by listCustomDomains on success.
+type listCustomDomainsResponse struct {
+	// All domains for a service instance
+	Domains listCustomDomainsDomainsAllDomains `json:"domains"`
+}
+
+// GetDomains returns listCustomDomainsResponse.Domains, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsResponse) GetDomains() listCustomDomainsDomainsAllDomains { return v.Domains }
 
 // listDeploymentTriggersDeploymentTriggersQueryDeploymentTriggersConnection includes the requested fields of the GraphQL type QueryDeploymentTriggersConnection.
 type listDeploymentTriggersDeploymentTriggersQueryDeploymentTriggersConnection struct {
@@ -4311,53 +4333,6 @@ mutation disconnectService ($id: String!) {
 	return &data, err
 }
 
-func getCustomDomain(
-	ctx context.Context,
-	client graphql.Client,
-	id string,
-	projectId string,
-) (*getCustomDomainResponse, error) {
-	req := &graphql.Request{
-		OpName: "getCustomDomain",
-		Query: `
-query getCustomDomain ($id: String!, $projectId: String!) {
-	customDomain(id: $id, projectId: $projectId) {
-		... CustomDomain
-	}
-}
-fragment CustomDomain on CustomDomain {
-	id
-	domain
-	status {
-		dnsRecords {
-			hostlabel
-			requiredValue
-			zone
-		}
-	}
-	environmentId
-	serviceId
-}
-`,
-		Variables: &__getCustomDomainInput{
-			Id:        id,
-			ProjectId: projectId,
-		},
-	}
-	var err error
-
-	var data getCustomDomainResponse
-	resp := &graphql.Response{Data: &data}
-
-	err = client.MakeRequest(
-		ctx,
-		req,
-		resp,
-	)
-
-	return &data, err
-}
-
 func getEnvironment(
 	ctx context.Context,
 	client graphql.Client,
@@ -4716,6 +4691,57 @@ fragment Volume on Volume {
 	var err error
 
 	var data getVolumeInstancesResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func listCustomDomains(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	serviceId string,
+	projectId string,
+) (*listCustomDomainsResponse, error) {
+	req := &graphql.Request{
+		OpName: "listCustomDomains",
+		Query: `
+query listCustomDomains ($environmentId: String!, $serviceId: String!, $projectId: String!) {
+	domains(environmentId: $environmentId, serviceId: $serviceId, projectId: $projectId) {
+		customDomains {
+			... CustomDomain
+		}
+	}
+}
+fragment CustomDomain on CustomDomain {
+	id
+	domain
+	status {
+		dnsRecords {
+			hostlabel
+			requiredValue
+			zone
+		}
+	}
+	environmentId
+	serviceId
+}
+`,
+		Variables: &__listCustomDomainsInput{
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+			ProjectId:     projectId,
+		},
+	}
+	var err error
+
+	var data listCustomDomainsResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
