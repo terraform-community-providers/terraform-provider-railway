@@ -1,3 +1,8 @@
+## 0.5.0
+
+### BREAKING
+* Remove `railway_deployment_trigger` resource
+
 ## 0.4.6
 
 ### Bug fixes

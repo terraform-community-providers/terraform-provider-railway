@@ -169,3 +169,22 @@ mutation disconnectService(
     id
   }
 }
+
+query listDeploymentTriggers(
+  $projectId: String!
+  $environmentId: String!
+  $serviceId: String!
+) {
+  deploymentTriggers(
+    environmentId: $environmentId
+    projectId: $projectId
+    serviceId: $serviceId
+  ) {
+    edges {
+      node {
+        id
+        branch
+      }
+    }
+  }
+}
