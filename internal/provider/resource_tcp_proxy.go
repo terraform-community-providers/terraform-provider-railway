@@ -138,6 +138,13 @@ func (r *TcpProxyResource) Create(ctx context.Context, req resource.CreateReques
 
 	tflog.Trace(ctx, "created a tcp proxy")
 
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after tcp proxy created, got error: %s", err))
+		return
+	}
+
 	proxy := response.TcpProxyCreate.TCPProxy
 
 	data.Id = types.StringValue(proxy.Id)

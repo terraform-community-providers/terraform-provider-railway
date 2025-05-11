@@ -3,6 +3,9 @@
 ### BREAKING
 * Remove `railway_deployment_trigger` resource
 
+### Bug fixes
+* Fixes issue with tcp proxy not being used in service after creating
+
 ## 0.4.6
 
 ### Bug fixes
