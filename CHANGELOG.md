@@ -5,6 +5,7 @@
 
 ### Bug fixes
 * Fixes issue with tcp proxy not being used in service after creating
+* Fixes issue with updating project
 
 ## 0.4.6
 

@@ -280,8 +280,6 @@ type ProjectUpdateInput struct {
 	IsPublic          bool   `json:"isPublic"`
 	Name              string `json:"name"`
 	PrDeploys         bool   `json:"prDeploys"`
-	// Enable/disable copying volume data to PR environment from the base environment
-	PrEnvCopyVolData bool `json:"prEnvCopyVolData"`
 }
 
 // GetBaseEnvironmentId returns ProjectUpdateInput.BaseEnvironmentId, and is useful for accessing the field via an interface.
@@ -301,9 +299,6 @@ func (v *ProjectUpdateInput) GetName() string { return v.Name }
 
 // GetPrDeploys returns ProjectUpdateInput.PrDeploys, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
-
-// GetPrEnvCopyVolData returns ProjectUpdateInput.PrEnvCopyVolData, and is useful for accessing the field via an interface.
-func (v *ProjectUpdateInput) GetPrEnvCopyVolData() bool { return v.PrEnvCopyVolData }
 
 type PublicRuntime string
 
@@ -772,6 +767,7 @@ const (
 	VolumeStateMigrating        VolumeState = "MIGRATING"
 	VolumeStateMigrationPending VolumeState = "MIGRATION_PENDING"
 	VolumeStateReady            VolumeState = "READY"
+	VolumeStateRestoring        VolumeState = "RESTORING"
 	VolumeStateUpdating         VolumeState = "UPDATING"
 )
 
