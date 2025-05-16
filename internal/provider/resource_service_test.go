@@ -238,7 +238,7 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps:                    []resource.TestStep{
+		Steps: []resource.TestStep{
 			// Create and Read testing
 			// {
 			// 	Config: testAccServiceResourceConfigNonDefaultRepo("todo-app"),
@@ -282,27 +282,26 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 			// 	),
 			// },
 			// Update with null values
-			// {
-			// 	Config: testAccServiceResourceConfigDefault("nue-todo-app"),
-			// 	Check: resource.ComposeAggregateTestCheckFunc(
-			// 		resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
-			// 		resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
-			// 		resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
-			// 		resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
-			// 		resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
-			// 		resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
-			// 		resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
-			// 		resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
-			// 		resource.TestCheckResourceAttr("railway_service.test", "region", "us-west1"),
-			// 		resource.TestCheckResourceAttr("railway_service.test", "num_replicas", "1"),
-			// 	),
-			// },
+			{
+				Config: testAccServiceResourceConfigDefault("nue-todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "regions"),
+				),
+			},
 			// ImportState testing
-			// {
-			// 	ResourceName:      "railway_service.test",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
