@@ -3,8 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 
@@ -49,6 +52,21 @@ var volumeAttrTypes = map[string]attr.Type{
 	"size":       types.Float64Type,
 }
 
+type ServiceResourceRegionModel struct {
+	Region      types.String `tfsdk:"region"`
+	NumReplicas types.Int64  `tfsdk:"num_replicas"`
+}
+
+var regionAttrTypes = map[string]attr.Type{
+	"region":       types.StringType,
+	"num_replicas": types.Int64Type,
+}
+
+// For JSON transformation
+type numReplicas struct {
+	NumReplicas int64 `json:"numReplicas"`
+}
+
 type ServiceResourceModel struct {
 	Id                                 types.String `tfsdk:"id"`
 	Name                               types.String `tfsdk:"name"`
@@ -62,8 +80,7 @@ type ServiceResourceModel struct {
 	RootDirectory                      types.String `tfsdk:"root_directory"`
 	ConfigPath                         types.String `tfsdk:"config_path"`
 	Volume                             types.Object `tfsdk:"volume"`
-	Region                             types.String `tfsdk:"region"`
-	NumReplicas                        types.Int64  `tfsdk:"num_replicas"`
+	Regions                            types.List   `tfsdk:"regions"`
 }
 
 func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -205,19 +222,31 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 					},
 				},
 			},
-			"region": schema.StringAttribute{
-				MarkdownDescription: "Region to deploy service in. **Default** `us-west1`.",
+			"regions": schema.ListNestedAttribute{
+				MarkdownDescription: "Regions with replicas to deploy service in.",
 				Optional:            true,
 				Computed:            true,
-				Default:             stringdefault.StaticString("us-west1"),
-			},
-			"num_replicas": schema.Int64Attribute{
-				MarkdownDescription: "Number of replicas to deploy. **Default** `1`.",
-				Optional:            true,
-				Computed:            true,
-				Default:             int64default.StaticInt64(1),
-				Validators: []validator.Int64{
-					int64validator.AtLeast(1),
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"region": schema.StringAttribute{
+							MarkdownDescription: "Region to deploy in. **Default** `us-west1`.",
+							Optional:            true,
+							Computed:            true,
+							Default:             stringdefault.StaticString("us-west1"),
+						},
+						"num_replicas": schema.Int64Attribute{
+							MarkdownDescription: "Number of replicas to deploy. **Default** `1`.",
+							Optional:            true,
+							Computed:            true,
+							Default:             int64default.StaticInt64(1),
+							Validators: []validator.Int64{
+								int64validator.AtLeast(1),
+							},
+						},
+					},
 				},
 			},
 		},
@@ -256,8 +285,10 @@ func (r *ServiceResource) Configure(ctx context.Context, req resource.ConfigureR
 func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data *ServiceResourceModel
 	var volumeData *ServiceResourceVolumeModel
+	var regionsData *[]ServiceResourceRegionModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(data.Regions.ElementsAs(ctx, &regionsData, true)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -283,7 +314,7 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	data.Name = types.StringValue(service.Name)
 	data.ProjectId = types.StringValue(service.ProjectId)
 
-	instanceInput := buildServiceInstanceInput(data)
+	instanceInput := buildServiceInstanceInput(data, regionsData)
 
 	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
 
@@ -337,8 +368,6 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 
-	data.Region = types.StringValue(data.Region.ValueString())
-
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
@@ -385,9 +414,6 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	// TODO: This is a workaround to get the region of the service since the API is always returning null.
-	data.Region = types.StringValue(data.Region.ValueString())
-
 	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
@@ -401,9 +427,11 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data *ServiceResourceModel
 	var volumeData *ServiceResourceVolumeModel
+	var regionsData *[]ServiceResourceRegionModel
 
 	var state *ServiceResourceModel
 	var volumeState *ServiceResourceVolumeModel
+	// var regionsState *[]ServiceResourceRegionModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -438,7 +466,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		data.ProjectId = types.StringValue(service.ProjectId)
 	}
 
-	instanceInput := buildServiceInstanceInput(data)
+	instanceInput := buildServiceInstanceInput(data, regionsData)
 
 	_, err := updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
 
@@ -549,7 +577,12 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service repo or image connection, got error: %s", err))
 	}
 
-	data.Region = types.StringValue(data.Region.ValueString())
+	err = redeployAllInstances(ctx, *r.client, data.Id.ValueString())
+
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy services after update, got error: %s", err))
+		return
+	}
 
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
@@ -609,7 +642,7 @@ func (r *ServiceResource) ImportState(ctx context.Context, req resource.ImportSt
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdateInput {
+func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]ServiceResourceRegionModel) ServiceInstanceUpdateInput {
 	var instanceInput ServiceInstanceUpdateInput
 
 	if !data.CronSchedule.IsNull() {
@@ -624,8 +657,17 @@ func buildServiceInstanceInput(data *ServiceResourceModel) ServiceInstanceUpdate
 		instanceInput.RailwayConfigFile = data.ConfigPath.ValueStringPointer()
 	}
 
-	instanceInput.Region = data.Region.ValueString()
-	instanceInput.NumReplicas = int(data.NumReplicas.ValueInt64())
+	if regionsData != nil {
+		multiRegionConfig := make(map[string]interface{})
+
+		for _, region := range *regionsData {
+			multiRegionConfig[region.Region.ValueString()] = numReplicas{
+				NumReplicas: region.NumReplicas.ValueInt64(),
+			}
+		}
+
+		instanceInput.MultiRegionConfig = &multiRegionConfig
+	}
 
 	if !data.SourceImagePrivateRegistryUsername.IsNull() {
 		if instanceInput.RegistryCredentials == nil {
@@ -670,8 +712,6 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
 	}
 
-	data.NumReplicas = types.Int64Value(int64(response.ServiceInstance.NumReplicas))
-
 	if response.ServiceInstance.Source != nil {
 		if response.ServiceInstance.Source.Image != nil {
 			data.SourceImage = types.StringValue(*response.ServiceInstance.Source.Image)
@@ -695,7 +735,62 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		}
 	}
 
+	if len(response.ServiceInstance.LatestDeployment.Meta) != 0 {
+		regions, err := getRegionsFromLatestDeployment(response.ServiceInstance.LatestDeployment)
+
+		if err != nil {
+			return err
+		}
+
+		data.Regions = types.ListValueMust(types.ObjectType{AttrTypes: regionAttrTypes}, regions)
+	} else if data.Regions.IsUnknown() {
+		data.Regions = types.ListNull(types.ObjectType{AttrTypes: regionAttrTypes})
+	}
+
 	return nil
+}
+
+func getRegionsFromLatestDeployment(latestDeployment getServiceInstanceServiceInstanceLatestDeployment) ([]attr.Value, error) {
+	serviceManifest, ok := latestDeployment.Meta["serviceManifest"].(map[string]interface{})
+
+	if !ok {
+		return nil, fmt.Errorf("serviceManifest is not found")
+	}
+
+	deploy, ok := serviceManifest["deploy"].(map[string]interface{})
+
+	if !ok {
+		return nil, fmt.Errorf("deploy is not found")
+	}
+
+	multiRegionConfig, ok := deploy["multiRegionConfig"].(map[string]interface{})
+
+	if !ok {
+		return nil, fmt.Errorf("multiRegionConfig is not found")
+	}
+
+	regions := make([]attr.Value, 0, len(multiRegionConfig))
+
+	for _, region := range slices.Sorted(maps.Keys(multiRegionConfig)) {
+		numReplicasMap, ok := multiRegionConfig[region].(map[string]interface{})
+
+		if !ok {
+			return nil, fmt.Errorf("numReplicas is not found")
+		}
+
+		numReplicas, exists := numReplicasMap["numReplicas"]
+
+		if !exists {
+			return nil, fmt.Errorf("numReplicas is not found")
+		}
+
+		regions = append(regions, types.ObjectValueMust(regionAttrTypes, map[string]attr.Value{
+			"region":       types.StringValue(region),
+			"num_replicas": types.Int64Value(int64(numReplicas.(float64))),
+		}))
+	}
+
+	return regions, nil
 }
 
 func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
@@ -734,7 +829,6 @@ func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, proje
 }
 
 func updateServiceConnection(ctx context.Context, client graphql.Client, serviceId string, data *ServiceResourceModel, state *ServiceResourceModel) error {
-
 	isSourceChanged := !state.SourceRepo.Equal(data.SourceRepo) || !state.SourceRepoBranch.Equal(data.SourceRepoBranch) || !state.SourceImage.Equal(data.SourceImage)
 	isSourcesChangedToNull := isSourceChanged && data.SourceRepo.IsNull() && data.SourceRepoBranch.IsNull() && data.SourceImage.IsNull()
 
@@ -754,7 +848,7 @@ func updateServiceConnection(ctx context.Context, client graphql.Client, service
 	return nil
 }
 
-// buildServiceConnectInput build proper input which populates only required fields for each case: either Repo + Branch, or SourceImage
+// Build proper input which populates only required fields for each case: either Repo + Branch, or SourceImage
 func buildServiceConnectInput(data *ServiceResourceModel) ServiceConnectInput {
 	if !data.SourceRepo.IsNull() {
 		// it is guaranteed by schema that both of them are specified or both empty
@@ -769,4 +863,24 @@ func buildServiceConnectInput(data *ServiceResourceModel) ServiceConnectInput {
 	}
 
 	return ServiceConnectInput{}
+}
+
+func redeployAllInstances(ctx context.Context, client graphql.Client, serviceId string) error {
+	instances, err := getServiceInstances(ctx, client, serviceId)
+
+	if err != nil {
+		return err
+	}
+
+	for _, instance := range instances.Service.ServiceInstances.Edges {
+		_, err := redeployServiceInstance(ctx, client, instance.Node.EnvironmentId, serviceId)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	tflog.Trace(ctx, "redeployed all service instances")
+
+	return nil
 }

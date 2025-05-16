@@ -1,3 +1,13 @@
+## 0.5.0
+
+### BREAKING
+* Remove `railway_deployment_trigger` resource
+* Remove `region` from `railway_service` in favor of `regions` multi region support
+
+### Bug fixes
+* Fixes issue with tcp proxy not being used in service after creating
+* Fixes issue with updating project
+
 ## 0.4.6
 
 ### Bug fixes
