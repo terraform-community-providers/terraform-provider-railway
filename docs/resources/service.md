@@ -53,7 +53,7 @@ resource "railway_service" "example" {
 Optional:
 
 - `num_replicas` (Number) Number of replicas to deploy. **Default** `1`.
-- `region` (String) Region to deploy in. **Default** `us-west1`.
+- `region` (String) Region to deploy in.
 
 
 <a id="nestedatt--volume"></a>

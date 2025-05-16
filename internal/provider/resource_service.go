@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -232,10 +231,9 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"region": schema.StringAttribute{
-							MarkdownDescription: "Region to deploy in. **Default** `us-west1`.",
+							MarkdownDescription: "Region to deploy in.",
 							Optional:            true,
 							Computed:            true,
-							Default:             stringdefault.StaticString("us-west1"),
 						},
 						"num_replicas": schema.Int64Attribute{
 							MarkdownDescription: "Number of replicas to deploy. **Default** `1`.",
