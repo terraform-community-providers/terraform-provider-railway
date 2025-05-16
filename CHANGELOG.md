@@ -1,3 +1,8 @@
+## 0.5.1
+
+### Bug fixes
+* Fixes issue with updating service regions defaulting to `us-west1`
+
 ## 0.5.0
 
 ### BREAKING
