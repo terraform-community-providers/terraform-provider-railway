@@ -1,3 +1,8 @@
+## 0.5.2
+
+### Enhancements
+* Added validation for checking `cron_schedule` and replica count
+
 ## 0.5.1
 
 ### Bug fixes

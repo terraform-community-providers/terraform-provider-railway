@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -92,7 +93,7 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
-					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 				),
 			},
@@ -116,7 +117,7 @@ func TestAccServiceResourceDefault(t *testing.T) {
 			// 		resource.TestCheckResourceAttr("railway_service.test", "root_directory", "blog"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "config_path", "blog/railway.yaml"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
-			// 		resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "us-west1"),
+			// 		resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 			// 	),
 			// },
@@ -143,7 +144,7 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_service.test", "volume.name", "todo-app-volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.mount_path", "/mnt"),
 					resource.TestCheckResourceAttr("railway_service.test", "volume.size", "50000"),
-					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 				),
 			},
@@ -177,7 +178,7 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
-					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 				),
 			},
@@ -201,7 +202,7 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
-					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 				),
 			},
@@ -219,7 +220,7 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
-					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 				),
 			},
@@ -378,7 +379,7 @@ func TestAccServiceResourceNonDefaultRegionsImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
-					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "us-west1"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 				),
 			},
@@ -504,6 +505,32 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 	})
 }
 
+func TestAccServiceResourceCronScheduleMultipleReplicas(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccServiceResourceConfigCronScheduleMultipleReplicas("todo-app"),
+				ExpectError: regexp.MustCompile("(?s)`cron_schedule` can only be set when total number of replicas.*Found 2 replicas"),
+			},
+		},
+	})
+}
+
+func TestAccServiceResourceCronScheduleMultipleRegions(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccServiceResourceConfigCronScheduleMultipleRegions("todo-app"),
+				ExpectError: regexp.MustCompile("(?s)`cron_schedule` can only be set when total number of replicas.*Found 2 replicas"),
+			},
+		},
+	})
+}
+
 func testAccServiceResourceConfigDefault(name string) string {
 	return fmt.Sprintf(`
 resource "railway_service" "test" {
@@ -594,4 +621,42 @@ resource "railway_service" "test" {
   }
 }
 `, name, volumeName, path)
+}
+
+func testAccServiceResourceConfigCronScheduleMultipleReplicas(name string) string {
+	return fmt.Sprintf(`
+resource "railway_service" "test" {
+  name       = "%s"
+  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
+
+  cron_schedule = "0 0 * * *"
+
+  regions = [
+    {
+      region       = "europe-west4-drams3a"
+      num_replicas = 2
+    }
+  ]
+}
+`, name)
+}
+
+func testAccServiceResourceConfigCronScheduleMultipleRegions(name string) string {
+	return fmt.Sprintf(`
+resource "railway_service" "test" {
+  name       = "%s"
+  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
+
+  cron_schedule = "0 0 * * *"
+
+  regions = [
+    {
+      region = "europe-west4-drams3a"
+    },
+    {
+      region = "us-east4-eqdc4a"
+    }
+  ]
+}
+`, name)
 }

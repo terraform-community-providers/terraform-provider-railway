@@ -115,7 +115,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"cron_schedule": schema.StringAttribute{
-				MarkdownDescription: "Cron schedule of the service.",
+				MarkdownDescription: "Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(9),
@@ -257,6 +257,55 @@ func (r *ServiceResource) ConfigValidators(ctx context.Context) []resource.Confi
 			path.MatchRoot("source_image"),
 			path.MatchRoot("source_repo"),
 		),
+		cronScheduleReplicasValidator{},
+	}
+}
+
+type cronScheduleReplicasValidator struct{}
+
+func (v cronScheduleReplicasValidator) Description(ctx context.Context) string {
+	return "`cron_schedule` can only be set when total number of replicas across all regions is 1"
+}
+
+func (v cronScheduleReplicasValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v cronScheduleReplicasValidator) ValidateResource(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data ServiceResourceModel
+	var regionsData []ServiceResourceRegionModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	resp.Diagnostics.Append(data.Regions.ElementsAs(ctx, &regionsData, false)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if data.CronSchedule.IsNull() || data.CronSchedule.IsUnknown() || data.Regions.IsNull() || data.Regions.IsUnknown() {
+		return
+	}
+
+	// Sum up replicas, treating unknown or null as default of 1 each
+	var sum int64
+
+	for _, region := range regionsData {
+		if region.NumReplicas.IsUnknown() || region.NumReplicas.IsNull() {
+			sum += 1
+		} else {
+			sum += region.NumReplicas.ValueInt64()
+		}
+	}
+
+	if sum != 1 {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("cron_schedule"),
+			"Invalid `cron_schedule` with multiple replicas",
+			fmt.Sprintf(
+				"`cron_schedule` can only be set when total number of replicas across all regions is 1. Found %d replicas.",
+				sum,
+			),
+		)
 	}
 }
 

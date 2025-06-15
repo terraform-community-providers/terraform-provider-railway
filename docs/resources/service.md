@@ -33,7 +33,7 @@ resource "railway_service" "example" {
 ### Optional
 
 - `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
-- `cron_schedule` (String) Cron schedule of the service.
+- `cron_schedule` (String) Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.
 - `regions` (Attributes List) Regions with replicas to deploy service in. (see [below for nested schema](#nestedatt--regions))
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
