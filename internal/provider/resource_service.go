@@ -776,9 +776,12 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 			// up to 1 deployment trigger is allowed for one (service, environment) pair. So, dealing with [0] only
 			if edges := triggersResponse.DeploymentTriggers.Edges; len(edges) > 0 {
 				data.SourceRepoBranch = types.StringValue(edges[0].Node.Branch)
-			} else {
+			} else if data.SourceRepoBranch.IsNull() || data.SourceRepoBranch.IsUnknown() {
+				// Only set to null if there's no existing value
+				// This preserves the branch value during updates when triggers might not be immediately available
 				data.SourceRepoBranch = types.StringNull()
 			}
+			// Otherwise keep the existing value from state/plan
 		}
 	}
 
