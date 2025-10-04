@@ -31,7 +31,7 @@ resource "railway_project" "example" {
 - `description` (String) Description of the project.
 - `has_pr_deploys` (Boolean) Whether the project has PR deploys enabled. **Default** `false`.
 - `private` (Boolean) Privacy of the project. **Default** `true`.
-- `team_id` (String) Identifier of the team the project belongs to.
+- `team_id` (String) Identifier of the team the project belongs to. Required if the railway token has access to multiple workspaces.
 
 ### Read-Only
 

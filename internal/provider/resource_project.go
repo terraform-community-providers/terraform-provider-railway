@@ -94,7 +94,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Default:             booldefault.StaticBool(false),
 			},
 			"team_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the team the project belongs to.",
+				MarkdownDescription: "Identifier of the team the project belongs to. Required if the railway token has access to multiple workspaces.",
 				Computed:            true,
 				Optional:            true,
 				PlanModifiers: []planmodifier.String{
