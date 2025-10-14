@@ -156,7 +156,6 @@ mutation updateVolume(
 }
 
 # @genqlient(for: "VolumeInstanceUpdateInput.state", omitempty: true, pointer: true)
-# @genqlient(for: "VolumeInstanceUpdateInput.type", omitempty: true, pointer: true)
 mutation updateVolumeInstance(
   $id: String!
   $input: VolumeInstanceUpdateInput!

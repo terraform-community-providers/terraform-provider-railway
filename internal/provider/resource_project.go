@@ -49,7 +49,7 @@ type ProjectResourceModel struct {
 	Description        types.String `tfsdk:"description"`
 	Private            types.Bool   `tfsdk:"private"`
 	HasPrDeploys       types.Bool   `tfsdk:"has_pr_deploys"`
-	TeamId             types.String `tfsdk:"team_id"`
+	WorkspaceId        types.String `tfsdk:"workspace_id"`
 	DefaultEnvironment types.Object `tfsdk:"default_environment"`
 }
 
@@ -93,8 +93,8 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:            true,
 				Default:             booldefault.StaticBool(false),
 			},
-			"team_id": schema.StringAttribute{
-				MarkdownDescription: "Identifier of the team the project belongs to. Required if the railway token has access to multiple workspaces.",
+			"workspace_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the workspace the project belongs to. Required if the railway token has access to multiple workspaces.",
 				Computed:            true,
 				Optional:            true,
 				PlanModifiers: []planmodifier.String{
@@ -181,8 +181,8 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		PrDeploys:   data.HasPrDeploys.ValueBool(),
 	}
 
-	if !data.TeamId.IsUnknown() && !data.TeamId.IsNull() {
-		input.TeamId = data.TeamId.ValueStringPointer()
+	if !data.WorkspaceId.IsUnknown() && !data.WorkspaceId.IsNull() {
+		input.WorkspaceId = data.WorkspaceId.ValueStringPointer()
 	}
 
 	resp.Diagnostics.Append(data.DefaultEnvironment.As(ctx, &defaultEnvironmentData, basetypes.ObjectAsOptions{})...)
@@ -210,8 +210,8 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	data.Private = types.BoolValue(!project.IsPublic)
 	data.HasPrDeploys = types.BoolValue(project.PrDeploys)
 
-	if project.Team != nil {
-		data.TeamId = types.StringValue(project.Team.Id)
+	if project.Workspace != nil {
+		data.WorkspaceId = types.StringValue(project.Workspace.Id)
 	}
 
 	noOfEnvironments := len(project.Environments.Edges)
@@ -254,8 +254,8 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	data.Private = types.BoolValue(!project.IsPublic)
 	data.HasPrDeploys = types.BoolValue(project.PrDeploys)
 
-	if project.Team != nil {
-		data.TeamId = types.StringValue(project.Team.Id)
+	if project.Workspace != nil {
+		data.WorkspaceId = types.StringValue(project.Workspace.Id)
 	}
 
 	data.DefaultEnvironment = types.ObjectValueMust(
@@ -316,8 +316,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	data.Private = types.BoolValue(!project.IsPublic)
 	data.HasPrDeploys = types.BoolValue(project.PrDeploys)
 
-	if project.Team != nil {
-		data.TeamId = types.StringValue(project.Team.Id)
+	if project.Workspace != nil {
+		data.WorkspaceId = types.StringValue(project.Workspace.Id)
 	}
 
 	data.DefaultEnvironment = types.ObjectValueMust(
