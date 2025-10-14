@@ -1,3 +1,8 @@
+## 0.6.0
+
+### BREAKING
+* Rename `team_id` to `workspace_id` in `railway_project`
+
 ## 0.5.2
 
 ### Enhancements

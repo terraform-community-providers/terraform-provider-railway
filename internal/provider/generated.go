@@ -109,15 +109,24 @@ func (v *Environment) GetName() string { return v.Name }
 func (v *Environment) GetProjectId() string { return v.ProjectId }
 
 type EnvironmentCreateInput struct {
-	Ephemeral bool   `json:"ephemeral"`
-	Name      string `json:"name"`
-	ProjectId string `json:"projectId"`
+	// If true, the changes will be applied in the background and the mutation will
+	// return immediately. If false, the mutation will wait for the changes to be
+	// applied before returning.
+	ApplyChangesInBackground bool   `json:"applyChangesInBackground"`
+	Ephemeral                bool   `json:"ephemeral"`
+	Name                     string `json:"name"`
+	ProjectId                string `json:"projectId"`
 	// When committing the changes immediately, skip any initial deployments.
 	SkipInitialDeploys bool `json:"skipInitialDeploys"`
 	// Create the environment with all of the services, volumes, configuration, and variables from this source environment.
 	SourceEnvironmentId *string `json:"sourceEnvironmentId,omitempty"`
 	// Stage the initial changes for the environment. If false (default), the changes will be committed immediately.
 	StageInitialChanges bool `json:"stageInitialChanges"`
+}
+
+// GetApplyChangesInBackground returns EnvironmentCreateInput.ApplyChangesInBackground, and is useful for accessing the field via an interface.
+func (v *EnvironmentCreateInput) GetApplyChangesInBackground() bool {
+	return v.ApplyChangesInBackground
 }
 
 // GetEphemeral returns EnvironmentCreateInput.Ephemeral, and is useful for accessing the field via an interface.
@@ -145,7 +154,7 @@ type Project struct {
 	Description  string                                           `json:"description"`
 	IsPublic     bool                                             `json:"isPublic"`
 	PrDeploys    bool                                             `json:"prDeploys"`
-	Team         *ProjectTeam                                     `json:"team"`
+	Workspace    *ProjectWorkspace                                `json:"workspace"`
 	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
 
@@ -164,8 +173,8 @@ func (v *Project) GetIsPublic() bool { return v.IsPublic }
 // GetPrDeploys returns Project.PrDeploys, and is useful for accessing the field via an interface.
 func (v *Project) GetPrDeploys() bool { return v.PrDeploys }
 
-// GetTeam returns Project.Team, and is useful for accessing the field via an interface.
-func (v *Project) GetTeam() *ProjectTeam { return v.Team }
+// GetWorkspace returns Project.Workspace, and is useful for accessing the field via an interface.
+func (v *Project) GetWorkspace() *ProjectWorkspace { return v.Workspace }
 
 // GetEnvironments returns Project.Environments, and is useful for accessing the field via an interface.
 func (v *Project) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
@@ -175,13 +184,13 @@ func (v *Project) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnec
 type ProjectCreateInput struct {
 	DefaultEnvironmentName string             `json:"defaultEnvironmentName"`
 	Description            string             `json:"description"`
+	IsMonorepo             bool               `json:"isMonorepo"`
 	IsPublic               bool               `json:"isPublic"`
 	Name                   string             `json:"name"`
-	Plugins                []string           `json:"plugins"`
 	PrDeploys              bool               `json:"prDeploys"`
 	Repo                   *ProjectCreateRepo `json:"repo"`
 	Runtime                *PublicRuntime     `json:"runtime"`
-	TeamId                 *string            `json:"teamId"`
+	WorkspaceId            *string            `json:"workspaceId"`
 }
 
 // GetDefaultEnvironmentName returns ProjectCreateInput.DefaultEnvironmentName, and is useful for accessing the field via an interface.
@@ -190,14 +199,14 @@ func (v *ProjectCreateInput) GetDefaultEnvironmentName() string { return v.Defau
 // GetDescription returns ProjectCreateInput.Description, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetDescription() string { return v.Description }
 
+// GetIsMonorepo returns ProjectCreateInput.IsMonorepo, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetIsMonorepo() bool { return v.IsMonorepo }
+
 // GetIsPublic returns ProjectCreateInput.IsPublic, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetIsPublic() bool { return v.IsPublic }
 
 // GetName returns ProjectCreateInput.Name, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetName() string { return v.Name }
-
-// GetPlugins returns ProjectCreateInput.Plugins, and is useful for accessing the field via an interface.
-func (v *ProjectCreateInput) GetPlugins() []string { return v.Plugins }
 
 // GetPrDeploys returns ProjectCreateInput.PrDeploys, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetPrDeploys() bool { return v.PrDeploys }
@@ -208,8 +217,8 @@ func (v *ProjectCreateInput) GetRepo() *ProjectCreateRepo { return v.Repo }
 // GetRuntime returns ProjectCreateInput.Runtime, and is useful for accessing the field via an interface.
 func (v *ProjectCreateInput) GetRuntime() *PublicRuntime { return v.Runtime }
 
-// GetTeamId returns ProjectCreateInput.TeamId, and is useful for accessing the field via an interface.
-func (v *ProjectCreateInput) GetTeamId() *string { return v.TeamId }
+// GetWorkspaceId returns ProjectCreateInput.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *ProjectCreateInput) GetWorkspaceId() *string { return v.WorkspaceId }
 
 type ProjectCreateRepo struct {
 	Branch       string `json:"branch"`
@@ -264,14 +273,6 @@ func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironment
 	return v.CreatedAt
 }
 
-// ProjectTeam includes the requested fields of the GraphQL type Team.
-type ProjectTeam struct {
-	Id string `json:"id"`
-}
-
-// GetId returns ProjectTeam.Id, and is useful for accessing the field via an interface.
-func (v *ProjectTeam) GetId() string { return v.Id }
-
 type ProjectUpdateInput struct {
 	BaseEnvironmentId *string `json:"baseEnvironmentId,omitempty"`
 	// Enable/disable pull request environments for PRs created by bots
@@ -299,6 +300,14 @@ func (v *ProjectUpdateInput) GetName() string { return v.Name }
 
 // GetPrDeploys returns ProjectUpdateInput.PrDeploys, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetPrDeploys() bool { return v.PrDeploys }
+
+// ProjectWorkspace includes the requested fields of the GraphQL type Workspace.
+type ProjectWorkspace struct {
+	Id string `json:"id"`
+}
+
+// GetId returns ProjectWorkspace.Id, and is useful for accessing the field via an interface.
+func (v *ProjectWorkspace) GetId() string { return v.Id }
 
 type PublicRuntime string
 
@@ -472,11 +481,13 @@ type ServiceInstanceUpdateInput struct {
 	BuildCommand            *string                   `json:"buildCommand,omitempty"`
 	Builder                 *Builder                  `json:"builder,omitempty"`
 	CronSchedule            *string                   `json:"cronSchedule"`
+	DrainingSeconds         int                       `json:"drainingSeconds"`
 	HealthcheckPath         *string                   `json:"healthcheckPath,omitempty"`
 	HealthcheckTimeout      *int                      `json:"healthcheckTimeout,omitempty"`
 	MultiRegionConfig       *map[string]interface{}   `json:"multiRegionConfig,omitempty"`
 	NixpacksPlan            *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
 	NumReplicas             *int                      `json:"numReplicas,omitempty"`
+	OverlapSeconds          int                       `json:"overlapSeconds"`
 	PreDeployCommand        *[]string                 `json:"preDeployCommand,omitempty"`
 	RailwayConfigFile       *string                   `json:"railwayConfigFile,omitempty"`
 	Region                  *string                   `json:"region,omitempty"`
@@ -499,6 +510,9 @@ func (v *ServiceInstanceUpdateInput) GetBuilder() *Builder { return v.Builder }
 // GetCronSchedule returns ServiceInstanceUpdateInput.CronSchedule, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetCronSchedule() *string { return v.CronSchedule }
 
+// GetDrainingSeconds returns ServiceInstanceUpdateInput.DrainingSeconds, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetDrainingSeconds() int { return v.DrainingSeconds }
+
 // GetHealthcheckPath returns ServiceInstanceUpdateInput.HealthcheckPath, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetHealthcheckPath() *string { return v.HealthcheckPath }
 
@@ -515,6 +529,9 @@ func (v *ServiceInstanceUpdateInput) GetNixpacksPlan() *map[string]interface{} {
 
 // GetNumReplicas returns ServiceInstanceUpdateInput.NumReplicas, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetNumReplicas() *int { return v.NumReplicas }
+
+// GetOverlapSeconds returns ServiceInstanceUpdateInput.OverlapSeconds, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetOverlapSeconds() int { return v.OverlapSeconds }
 
 // GetPreDeployCommand returns ServiceInstanceUpdateInput.PreDeployCommand, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetPreDeployCommand() *[]string { return v.PreDeployCommand }
@@ -624,9 +641,11 @@ type VariableCollectionUpsertInput struct {
 	EnvironmentId string `json:"environmentId"`
 	ProjectId     string `json:"projectId"`
 	// When set to true, removes all existing variables before upserting the new collection.
-	Replace   bool                   `json:"replace"`
-	ServiceId *string                `json:"serviceId"`
-	Variables map[string]interface{} `json:"variables"`
+	Replace   bool    `json:"replace"`
+	ServiceId *string `json:"serviceId"`
+	// Skip deploys for affected services
+	SkipDeploys bool                   `json:"skipDeploys"`
+	Variables   map[string]interface{} `json:"variables"`
 }
 
 // GetEnvironmentId returns VariableCollectionUpsertInput.EnvironmentId, and is useful for accessing the field via an interface.
@@ -640,6 +659,9 @@ func (v *VariableCollectionUpsertInput) GetReplace() bool { return v.Replace }
 
 // GetServiceId returns VariableCollectionUpsertInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *VariableCollectionUpsertInput) GetServiceId() *string { return v.ServiceId }
+
+// GetSkipDeploys returns VariableCollectionUpsertInput.SkipDeploys, and is useful for accessing the field via an interface.
+func (v *VariableCollectionUpsertInput) GetSkipDeploys() bool { return v.SkipDeploys }
 
 // GetVariables returns VariableCollectionUpsertInput.Variables, and is useful for accessing the field via an interface.
 func (v *VariableCollectionUpsertInput) GetVariables() map[string]interface{} { return v.Variables }
@@ -668,7 +690,9 @@ type VariableUpsertInput struct {
 	Name          string  `json:"name"`
 	ProjectId     string  `json:"projectId"`
 	ServiceId     *string `json:"serviceId"`
-	Value         string  `json:"value"`
+	// Skip deploys for affected services
+	SkipDeploys bool   `json:"skipDeploys"`
+	Value       string `json:"value"`
 }
 
 // GetEnvironmentId returns VariableUpsertInput.EnvironmentId, and is useful for accessing the field via an interface.
@@ -682,6 +706,9 @@ func (v *VariableUpsertInput) GetProjectId() string { return v.ProjectId }
 
 // GetServiceId returns VariableUpsertInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *VariableUpsertInput) GetServiceId() *string { return v.ServiceId }
+
+// GetSkipDeploys returns VariableUpsertInput.SkipDeploys, and is useful for accessing the field via an interface.
+func (v *VariableUpsertInput) GetSkipDeploys() bool { return v.SkipDeploys }
 
 // GetValue returns VariableUpsertInput.Value, and is useful for accessing the field via an interface.
 func (v *VariableUpsertInput) GetValue() string { return v.Value }
@@ -712,6 +739,8 @@ type VolumeCreateInput struct {
 	MountPath string `json:"mountPath"`
 	// The project to create the volume in
 	ProjectId string `json:"projectId"`
+	// The region to create the volume instances in. If not provided, the default region will be used.
+	Region string `json:"region"`
 	// The service to attach the volume to. If not provided, the volume will be disconnected.
 	ServiceId *string `json:"serviceId"`
 }
@@ -725,15 +754,11 @@ func (v *VolumeCreateInput) GetMountPath() string { return v.MountPath }
 // GetProjectId returns VolumeCreateInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *VolumeCreateInput) GetProjectId() string { return v.ProjectId }
 
+// GetRegion returns VolumeCreateInput.Region, and is useful for accessing the field via an interface.
+func (v *VolumeCreateInput) GetRegion() string { return v.Region }
+
 // GetServiceId returns VolumeCreateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *VolumeCreateInput) GetServiceId() *string { return v.ServiceId }
-
-type VolumeInstanceType string
-
-const (
-	VolumeInstanceTypeCloud VolumeInstanceType = "CLOUD"
-	VolumeInstanceTypeMetal VolumeInstanceType = "METAL"
-)
 
 type VolumeInstanceUpdateInput struct {
 	// The mount path of the volume instance. If not provided, the mount path will not be updated.
@@ -742,8 +767,6 @@ type VolumeInstanceUpdateInput struct {
 	ServiceId string `json:"serviceId"`
 	// The state of the volume instance. If not provided, the state will not be updated.
 	State *VolumeState `json:"state,omitempty"`
-	// The type of the volume instance. If not provided, the type will not be updated.
-	Type *VolumeInstanceType `json:"type,omitempty"`
 }
 
 // GetMountPath returns VolumeInstanceUpdateInput.MountPath, and is useful for accessing the field via an interface.
@@ -754,9 +777,6 @@ func (v *VolumeInstanceUpdateInput) GetServiceId() string { return v.ServiceId }
 
 // GetState returns VolumeInstanceUpdateInput.State, and is useful for accessing the field via an interface.
 func (v *VolumeInstanceUpdateInput) GetState() *VolumeState { return v.State }
-
-// GetType returns VolumeInstanceUpdateInput.Type, and is useful for accessing the field via an interface.
-func (v *VolumeInstanceUpdateInput) GetType() *VolumeInstanceType { return v.Type }
 
 type VolumeState string
 
@@ -1484,8 +1504,10 @@ func (v *createProjectProjectCreateProject) GetIsPublic() bool { return v.Projec
 // GetPrDeploys returns createProjectProjectCreateProject.PrDeploys, and is useful for accessing the field via an interface.
 func (v *createProjectProjectCreateProject) GetPrDeploys() bool { return v.Project.PrDeploys }
 
-// GetTeam returns createProjectProjectCreateProject.Team, and is useful for accessing the field via an interface.
-func (v *createProjectProjectCreateProject) GetTeam() *ProjectTeam { return v.Project.Team }
+// GetWorkspace returns createProjectProjectCreateProject.Workspace, and is useful for accessing the field via an interface.
+func (v *createProjectProjectCreateProject) GetWorkspace() *ProjectWorkspace {
+	return v.Project.Workspace
+}
 
 // GetEnvironments returns createProjectProjectCreateProject.Environments, and is useful for accessing the field via an interface.
 func (v *createProjectProjectCreateProject) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
@@ -1528,7 +1550,7 @@ type __premarshalcreateProjectProjectCreateProject struct {
 
 	PrDeploys bool `json:"prDeploys"`
 
-	Team *ProjectTeam `json:"team"`
+	Workspace *ProjectWorkspace `json:"workspace"`
 
 	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
@@ -1549,7 +1571,7 @@ func (v *createProjectProjectCreateProject) __premarshalJSON() (*__premarshalcre
 	retval.Description = v.Project.Description
 	retval.IsPublic = v.Project.IsPublic
 	retval.PrDeploys = v.Project.PrDeploys
-	retval.Team = v.Project.Team
+	retval.Workspace = v.Project.Workspace
 	retval.Environments = v.Project.Environments
 	return &retval, nil
 }
@@ -2196,8 +2218,8 @@ func (v *getProjectProject) GetIsPublic() bool { return v.Project.IsPublic }
 // GetPrDeploys returns getProjectProject.PrDeploys, and is useful for accessing the field via an interface.
 func (v *getProjectProject) GetPrDeploys() bool { return v.Project.PrDeploys }
 
-// GetTeam returns getProjectProject.Team, and is useful for accessing the field via an interface.
-func (v *getProjectProject) GetTeam() *ProjectTeam { return v.Project.Team }
+// GetWorkspace returns getProjectProject.Workspace, and is useful for accessing the field via an interface.
+func (v *getProjectProject) GetWorkspace() *ProjectWorkspace { return v.Project.Workspace }
 
 // GetEnvironments returns getProjectProject.Environments, and is useful for accessing the field via an interface.
 func (v *getProjectProject) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
@@ -2240,7 +2262,7 @@ type __premarshalgetProjectProject struct {
 
 	PrDeploys bool `json:"prDeploys"`
 
-	Team *ProjectTeam `json:"team"`
+	Workspace *ProjectWorkspace `json:"workspace"`
 
 	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
@@ -2261,7 +2283,7 @@ func (v *getProjectProject) __premarshalJSON() (*__premarshalgetProjectProject, 
 	retval.Description = v.Project.Description
 	retval.IsPublic = v.Project.IsPublic
 	retval.PrDeploys = v.Project.PrDeploys
-	retval.Team = v.Project.Team
+	retval.Workspace = v.Project.Workspace
 	retval.Environments = v.Project.Environments
 	return &retval, nil
 }
@@ -2974,8 +2996,10 @@ func (v *updateProjectProjectUpdateProject) GetIsPublic() bool { return v.Projec
 // GetPrDeploys returns updateProjectProjectUpdateProject.PrDeploys, and is useful for accessing the field via an interface.
 func (v *updateProjectProjectUpdateProject) GetPrDeploys() bool { return v.Project.PrDeploys }
 
-// GetTeam returns updateProjectProjectUpdateProject.Team, and is useful for accessing the field via an interface.
-func (v *updateProjectProjectUpdateProject) GetTeam() *ProjectTeam { return v.Project.Team }
+// GetWorkspace returns updateProjectProjectUpdateProject.Workspace, and is useful for accessing the field via an interface.
+func (v *updateProjectProjectUpdateProject) GetWorkspace() *ProjectWorkspace {
+	return v.Project.Workspace
+}
 
 // GetEnvironments returns updateProjectProjectUpdateProject.Environments, and is useful for accessing the field via an interface.
 func (v *updateProjectProjectUpdateProject) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
@@ -3018,7 +3042,7 @@ type __premarshalupdateProjectProjectUpdateProject struct {
 
 	PrDeploys bool `json:"prDeploys"`
 
-	Team *ProjectTeam `json:"team"`
+	Workspace *ProjectWorkspace `json:"workspace"`
 
 	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
 }
@@ -3039,7 +3063,7 @@ func (v *updateProjectProjectUpdateProject) __premarshalJSON() (*__premarshalupd
 	retval.Description = v.Project.Description
 	retval.IsPublic = v.Project.IsPublic
 	retval.PrDeploys = v.Project.PrDeploys
-	retval.Team = v.Project.Team
+	retval.Workspace = v.Project.Workspace
 	retval.Environments = v.Project.Environments
 	return &retval, nil
 }
@@ -3396,7 +3420,7 @@ fragment Project on Project {
 	description
 	isPublic
 	prDeploys
-	team {
+	workspace {
 		id
 	}
 	environments {
@@ -3960,7 +3984,7 @@ fragment Project on Project {
 	description
 	isPublic
 	prDeploys
-	team {
+	workspace {
 		id
 	}
 	environments {
@@ -4461,7 +4485,7 @@ fragment Project on Project {
 	description
 	isPublic
 	prDeploys
-	team {
+	workspace {
 		id
 	}
 	environments {
