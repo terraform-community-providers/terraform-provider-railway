@@ -70,6 +70,7 @@ type ServiceResourceModel struct {
 	Id                                 types.String `tfsdk:"id"`
 	Name                               types.String `tfsdk:"name"`
 	ProjectId                          types.String `tfsdk:"project_id"`
+	EnvironmentId                      types.String `tfsdk:"environment_id"`
 	CronSchedule                       types.String `tfsdk:"cron_schedule"`
 	SourceImage                        types.String `tfsdk:"source_image"`
 	SourceImagePrivateRegistryUsername types.String `tfsdk:"source_image_registry_username"`
@@ -109,6 +110,18 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
+				},
+			},
+			"environment_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the environment the service belongs to. If not specified, uses the default environment.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
@@ -342,8 +355,9 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	input := ServiceCreateInput{
-		Name:      data.Name.ValueString(),
-		ProjectId: data.ProjectId.ValueString(),
+		Name:          data.Name.ValueString(),
+		ProjectId:     data.ProjectId.ValueString(),
+		EnvironmentId: data.EnvironmentId.ValueStringPointer(),
 	}
 
 	response, err := createService(ctx, *r.client, input)
@@ -360,6 +374,13 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	data.Id = types.StringValue(service.Id)
 	data.Name = types.StringValue(service.Name)
 	data.ProjectId = types.StringValue(service.ProjectId)
+
+	envId, err := resolveEnvironmentId(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueStringPointer())
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to resolve environment: %s", err))
+		return
+	}
+	data.EnvironmentId = types.StringValue(envId)
 
 	instanceInput := buildServiceInstanceInput(data, regionsData)
 
@@ -380,9 +401,10 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 
 		volumeResponse, err := createVolume(ctx, *r.client, VolumeCreateInput{
-			MountPath: volumeData.MountPath.ValueString(),
-			ProjectId: data.ProjectId.ValueString(),
-			ServiceId: data.Id.ValueStringPointer(),
+			MountPath:     volumeData.MountPath.ValueString(),
+			ProjectId:     data.ProjectId.ValueString(),
+			ServiceId:     data.Id.ValueStringPointer(),
+			EnvironmentId: data.EnvironmentId.ValueStringPointer(),
 		})
 
 		if err != nil {
@@ -454,6 +476,13 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 	data.Name = types.StringValue(service.Name)
 	data.ProjectId = types.StringValue(service.ProjectId)
 
+	envId, err := resolveEnvironmentId(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueStringPointer())
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to resolve environment: %s", err))
+		return
+	}
+	data.EnvironmentId = types.StringValue(envId)
+
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
@@ -492,6 +521,13 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	envId, err := resolveEnvironmentId(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueStringPointer())
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to resolve environment: %s", err))
+		return
+	}
+	data.EnvironmentId = types.StringValue(envId)
+
 	if data.Name.ValueString() != state.Name.ValueString() {
 		input := ServiceUpdateInput{
 			Name: data.Name.ValueString(),
@@ -515,7 +551,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	instanceInput := buildServiceInstanceInput(data, regionsData)
 
-	_, err := updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
+	_, err = updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service settings, got error: %s", err))
@@ -551,9 +587,10 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 
 		volumeResponse, err := createVolume(ctx, *r.client, VolumeCreateInput{
-			MountPath: volumeData.MountPath.ValueString(),
-			ProjectId: data.ProjectId.ValueString(),
-			ServiceId: data.Id.ValueStringPointer(),
+			MountPath:     volumeData.MountPath.ValueString(),
+			ProjectId:     data.ProjectId.ValueString(),
+			ServiceId:     data.Id.ValueStringPointer(),
+			EnvironmentId: data.EnvironmentId.ValueStringPointer(),
 		})
 
 		if err != nil {
@@ -624,12 +661,14 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service repo or image connection, got error: %s", err))
 	}
 
-	err = redeployAllInstances(ctx, *r.client, data.Id.ValueString())
+	_, err = redeployServiceInstance(ctx, *r.client, data.EnvironmentId.ValueString(), data.Id.ValueString())
 
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy services after update, got error: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy service after update, got error: %s", err))
 		return
 	}
+
+	tflog.Trace(ctx, "redeployed service instance")
 
 	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
@@ -734,14 +773,9 @@ func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]Servic
 }
 
 func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
-	// Read the service again to get the updated source attributes
-	_, environment, err := defaultEnvironmentForProject(ctx, client, projectId)
+	environmentId := data.EnvironmentId.ValueString()
 
-	if err != nil {
-		return err
-	}
-
-	response, err := getServiceInstance(ctx, client, environment.Id, serviceId)
+	response, err := getServiceInstance(ctx, client, environmentId, serviceId)
 
 	if err != nil {
 		return err
@@ -767,7 +801,7 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		if response.ServiceInstance.Source.Repo != nil {
 			data.SourceRepo = types.StringValue(*response.ServiceInstance.Source.Repo)
 
-			triggersResponse, err := listDeploymentTriggers(ctx, client, projectId, environment.Id, serviceId)
+			triggersResponse, err := listDeploymentTriggers(ctx, client, projectId, environmentId, serviceId)
 
 			if err != nil {
 				return err
@@ -846,12 +880,7 @@ func getRegionsFromLatestDeployment(latestDeployment getServiceInstanceServiceIn
 func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
 	data.Volume = types.ObjectNull(volumeAttrTypes)
 
-	// Read the service again to get the updated source attributes
-	_, environment, err := defaultEnvironmentForProject(ctx, client, projectId)
-
-	if err != nil {
-		return err
-	}
+	environmentId := data.EnvironmentId.ValueString()
 
 	response, err := getVolumeInstances(ctx, client, projectId)
 
@@ -861,7 +890,7 @@ func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, proje
 
 	for _, volume := range response.Project.Volumes.Edges {
 		for _, volumeInstance := range volume.Node.VolumeInstances.Edges {
-			if volumeInstance.Node.ServiceId == serviceId && volumeInstance.Node.EnvironmentId == environment.Id {
+			if volumeInstance.Node.ServiceId == serviceId && volumeInstance.Node.EnvironmentId == environmentId {
 				data.Volume = types.ObjectValueMust(
 					volumeAttrTypes,
 					map[string]attr.Value{
@@ -933,4 +962,23 @@ func redeployAllInstances(ctx context.Context, client graphql.Client, serviceId 
 	tflog.Trace(ctx, "redeployed all service instances")
 
 	return nil
+}
+
+func resolveEnvironmentId(ctx context.Context, client graphql.Client, projectId string, environmentId *string) (string, error) {
+	if environmentId != nil && *environmentId != "" {
+		env, err := getEnvironment(ctx, client, *environmentId)
+		if err != nil {
+			return "", fmt.Errorf("unable to get environment: %w", err)
+		}
+		if env.Environment.ProjectId != projectId {
+			return "", fmt.Errorf("environment %s does not belong to project %s", *environmentId, projectId)
+		}
+		return *environmentId, nil
+	}
+
+	_, environment, err := defaultEnvironmentForProject(ctx, client, projectId)
+	if err != nil {
+		return "", err
+	}
+	return environment.Id, nil
 }
