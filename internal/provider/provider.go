@@ -87,7 +87,7 @@ func (p *RailwayProvider) Configure(ctx context.Context, req provider.ConfigureR
 		},
 	}
 
-	client := graphql.NewClient("https://backboard.railway.app/graphql/v2", &httpClient)
+	client := graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
 
 	resp.DataSourceData = &client
 	resp.ResourceData = &client
