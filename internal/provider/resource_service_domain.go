@@ -167,7 +167,7 @@ func (r *ServiceDomainResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	err = getAndBuildServiceDomain(ctx, *r.client, service.Service.ProjectId, domain.EnvironmentId, domain.ServiceId, domainName, data)
+	err = getAndBuildServiceDomain(ctx, *r.client, service.Service.ProjectId, domain.EnvironmentId, domain.ServiceId, domain.Id, data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service domain, got error: %s", err))
@@ -186,7 +186,7 @@ func (r *ServiceDomainResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	err := getAndBuildServiceDomain(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Domain.ValueString(), data)
+	err := getAndBuildServiceDomain(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service domain, got error: %s", err))
@@ -235,7 +235,7 @@ func (r *ServiceDomainResource) Update(ctx context.Context, req resource.UpdateR
 
 	tflog.Trace(ctx, "updated a service domain")
 
-	err = getAndBuildServiceDomain(ctx, *r.client, state.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), domainName, data)
+	err = getAndBuildServiceDomain(ctx, *r.client, state.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), state.Id.ValueString(), data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service domain, got error: %s", err))
@@ -297,7 +297,7 @@ func (r *ServiceDomainResource) ImportState(ctx context.Context, req resource.Im
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project_id"), projectId)...)
 }
 
-func findServiceDomain(ctx context.Context, client graphql.Client, projectId string, environmentId string, serviceId string, domain string) (*ServiceDomain, error) {
+func findServiceDomain(ctx context.Context, client graphql.Client, projectId string, environmentId string, serviceId string, domainId string) (*ServiceDomain, error) {
 	response, err := listServiceDomains(ctx, client, environmentId, serviceId, projectId)
 
 	if err != nil {
@@ -305,7 +305,7 @@ func findServiceDomain(ctx context.Context, client graphql.Client, projectId str
 	}
 
 	for _, serviceDomain := range response.Domains.ServiceDomains {
-		if serviceDomain.ServiceDomain.Domain == domain {
+		if serviceDomain.ServiceDomain.Id == domainId {
 			return &serviceDomain.ServiceDomain, nil
 		}
 	}
@@ -313,8 +313,8 @@ func findServiceDomain(ctx context.Context, client graphql.Client, projectId str
 	return nil, fmt.Errorf("service domain doesn't exist")
 }
 
-func getAndBuildServiceDomain(ctx context.Context, client graphql.Client, projectId string, environmentId string, serviceId string, domain string, data *ServiceDomainResourceModel) error {
-	serviceDomain, err := findServiceDomain(ctx, client, projectId, environmentId, serviceId, domain)
+func getAndBuildServiceDomain(ctx context.Context, client graphql.Client, projectId string, environmentId string, serviceId string, domainId string, data *ServiceDomainResourceModel) error {
+	serviceDomain, err := findServiceDomain(ctx, client, projectId, environmentId, serviceId, domainId)
 
 	if err != nil {
 		return err
