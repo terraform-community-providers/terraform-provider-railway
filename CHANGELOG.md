@@ -1,3 +1,8 @@
+## 0.6.1
+
+### Bug fixes
+* Fixes issue with volume creation
+
 ## 0.6.0
 
 ### BREAKING

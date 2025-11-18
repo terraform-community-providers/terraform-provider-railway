@@ -740,7 +740,7 @@ type VolumeCreateInput struct {
 	// The project to create the volume in
 	ProjectId string `json:"projectId"`
 	// The region to create the volume instances in. If not provided, the default region will be used.
-	Region string `json:"region"`
+	Region *string `json:"region,omitempty"`
 	// The service to attach the volume to. If not provided, the volume will be disconnected.
 	ServiceId *string `json:"serviceId"`
 }
@@ -755,7 +755,7 @@ func (v *VolumeCreateInput) GetMountPath() string { return v.MountPath }
 func (v *VolumeCreateInput) GetProjectId() string { return v.ProjectId }
 
 // GetRegion returns VolumeCreateInput.Region, and is useful for accessing the field via an interface.
-func (v *VolumeCreateInput) GetRegion() string { return v.Region }
+func (v *VolumeCreateInput) GetRegion() *string { return v.Region }
 
 // GetServiceId returns VolumeCreateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *VolumeCreateInput) GetServiceId() *string { return v.ServiceId }

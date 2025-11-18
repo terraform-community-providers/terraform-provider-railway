@@ -138,6 +138,7 @@ query getVolumeInstances($id: String!) {
 
 # @genqlient(for: "VolumeCreateInput.serviceId", pointer: true)
 # @genqlient(for: "VolumeCreateInput.environmentId", omitempty: true, pointer: true)
+# @genqlient(for: "VolumeCreateInput.region", omitempty: true, pointer: true)
 mutation createVolume(
   $input: VolumeCreateInput!
 ) {
