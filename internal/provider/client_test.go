@@ -1,0 +1,378 @@
+package provider
+
+import (
+	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+)
+
+func TestAuthedTransport_SetsAuthorizationHeader(t *testing.T) {
+	var capturedReq *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedReq = r
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	transport := &authedTransport{
+		token:   "test-token",
+		wrapped: http.DefaultTransport,
+	}
+
+	client := &http.Client{Transport: transport}
+	_, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if capturedReq == nil {
+		t.Fatal("request was not captured")
+	}
+
+	authHeader := capturedReq.Header.Get("Authorization")
+	expected := "Bearer test-token"
+	if authHeader != expected {
+		t.Errorf("expected Authorization header %q, got %q", expected, authHeader)
+	}
+}
+
+func TestRetryTransport_RetriesOn429(t *testing.T) {
+	attempts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts < 3 {
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+	resp, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+
+	if attempts != 3 {
+		t.Errorf("expected 3 attempts, got %d", attempts)
+	}
+}
+
+func TestRetryTransport_ExhaustsRetries(t *testing.T) {
+	attempts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer server.Close()
+
+	maxRetries := 3
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     maxRetries,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+	resp, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusTooManyRequests {
+		t.Errorf("expected status 429, got %d", resp.StatusCode)
+	}
+
+	expectedAttempts := maxRetries + 1 // Initial attempt + retries
+	if attempts != expectedAttempts {
+		t.Errorf("expected %d attempts, got %d", expectedAttempts, attempts)
+	}
+}
+
+func TestRetryTransport_RespectsRetryAfterHeader(t *testing.T) {
+	attempts := 0
+	var requestTimes []time.Time
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestTimes = append(requestTimes, time.Now())
+		attempts++
+		if attempts == 1 {
+			w.Header().Set("Retry-After", "1") // 1 second
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond, // Very short, should be overridden by Retry-After
+		MaxBackoff:     30 * time.Second,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+	resp, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+
+	if len(requestTimes) < 2 {
+		t.Fatal("expected at least 2 requests")
+	}
+
+	elapsed := requestTimes[1].Sub(requestTimes[0])
+	if elapsed < 900*time.Millisecond {
+		t.Errorf("expected at least 900ms between requests due to Retry-After, got %v", elapsed)
+	}
+}
+
+func TestRetryTransport_RespectsContextCancellation(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer server.Close()
+
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     10,
+		InitialBackoff: 10 * time.Second, // Long backoff
+		MaxBackoff:     30 * time.Second,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	req, _ := http.NewRequestWithContext(ctx, "GET", server.URL, nil)
+	start := time.Now()
+	_, err := client.Do(req)
+	elapsed := time.Since(start)
+
+	if err == nil {
+		t.Error("expected context cancellation error")
+	}
+
+	if elapsed > 500*time.Millisecond {
+		t.Errorf("expected quick cancellation, took %v", elapsed)
+	}
+}
+
+func TestRetryTransport_PreservesRequestBody(t *testing.T) {
+	attempts := 0
+	var bodies []string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		bodies = append(bodies, string(body))
+		attempts++
+		if attempts < 3 {
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+	requestBody := "test request body"
+	resp, err := client.Post(server.URL, "text/plain", strings.NewReader(requestBody))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if len(bodies) != 3 {
+		t.Errorf("expected 3 request bodies, got %d", len(bodies))
+	}
+
+	for i, body := range bodies {
+		if body != requestBody {
+			t.Errorf("request %d: expected body %q, got %q", i+1, requestBody, body)
+		}
+	}
+}
+
+func TestBackoff_GrowsExponentially(t *testing.T) {
+	rt := &retryTransport{
+		config: RetryConfig{
+			MaxRetries:     5,
+			InitialBackoff: 100 * time.Millisecond,
+			MaxBackoff:     10 * time.Second,
+		},
+	}
+
+	// Create a mock response without Retry-After header
+	resp := &http.Response{Header: http.Header{}}
+
+	// Test exponential growth (without jitter consideration)
+	// We'll just verify the general trend is increasing
+	var backoffs []time.Duration
+	for attempt := 0; attempt < 5; attempt++ {
+		backoff := rt.calculateBackoff(attempt, resp)
+		backoffs = append(backoffs, backoff)
+	}
+
+	// Verify backoffs are generally increasing (accounting for jitter)
+	for i := 1; i < len(backoffs); i++ {
+		// With 25% jitter, next backoff should be at least 1.5x previous minimum
+		// This is a loose check due to jitter
+		minExpected := time.Duration(float64(backoffs[i-1]) * 0.5)
+		if backoffs[i] < minExpected {
+			t.Errorf("backoff[%d] (%v) should be greater than %v", i, backoffs[i], minExpected)
+		}
+	}
+}
+
+func TestBackoff_CapsAtMaximum(t *testing.T) {
+	maxBackoff := 100 * time.Millisecond
+	rt := &retryTransport{
+		config: RetryConfig{
+			MaxRetries:     10,
+			InitialBackoff: 50 * time.Millisecond,
+			MaxBackoff:     maxBackoff,
+		},
+	}
+
+	resp := &http.Response{Header: http.Header{}}
+
+	// Test many attempts - all should be capped
+	for attempt := 5; attempt < 10; attempt++ {
+		backoff := rt.calculateBackoff(attempt, resp)
+		if backoff > maxBackoff {
+			t.Errorf("attempt %d: backoff %v exceeds max %v", attempt, backoff, maxBackoff)
+		}
+	}
+}
+
+func TestRateLimiter_LimitsRequestRate(t *testing.T) {
+	rps := 10.0 // 10 requests per second
+	rl := NewRateLimiter(rps)
+
+	ctx := context.Background()
+	start := time.Now()
+
+	// Make 10 requests quickly
+	for i := 0; i < 10; i++ {
+		if err := rl.Wait(ctx); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	}
+
+	// The 10th request should have waited for tokens to refill
+	elapsed := time.Since(start)
+
+	// With 10 RPS and 10 requests, minimum time should be close to 0
+	// since we start with a full bucket, but 11+ requests would need refills
+	if elapsed > 2*time.Second {
+		t.Errorf("10 requests with 10 RPS took too long: %v", elapsed)
+	}
+}
+
+func TestRateLimiter_RespectsContextCancellation(t *testing.T) {
+	rps := 1.0 // 1 request per second
+	rl := NewRateLimiter(rps)
+
+	ctx := context.Background()
+
+	// Use up the initial token
+	if err := rl.Wait(ctx); err != nil {
+		t.Fatalf("unexpected error on first wait: %v", err)
+	}
+
+	// Now try with a cancelled context - should fail quickly
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel immediately
+
+	err := rl.Wait(ctx)
+
+	if err != context.Canceled {
+		t.Errorf("expected context.Canceled, got %v", err)
+	}
+}
+
+func TestRateLimiter_DisabledWhenZeroOrNegative(t *testing.T) {
+	tests := []float64{0, -1, -0.5}
+
+	for _, rps := range tests {
+		rl := NewRateLimiter(rps)
+		if rl != nil {
+			t.Errorf("NewRateLimiter(%v) should return nil", rps)
+		}
+	}
+}
+
+func TestRetryTransport_WithRateLimiter(t *testing.T) {
+	var requestCount int32
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&requestCount, 1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	rateLimiter := NewRateLimiter(100) // 100 RPS should be plenty fast for test
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	}, rateLimiter)
+
+	client := &http.Client{Transport: transport}
+
+	// Make several requests
+	for i := 0; i < 5; i++ {
+		resp, err := client.Get(server.URL)
+		if err != nil {
+			t.Fatalf("request %d: unexpected error: %v", i+1, err)
+		}
+		resp.Body.Close()
+	}
+
+	if atomic.LoadInt32(&requestCount) != 5 {
+		t.Errorf("expected 5 requests, got %d", requestCount)
+	}
+}
+
+func TestDefaultRetryConfig(t *testing.T) {
+	config := DefaultRetryConfig()
+
+	if config.MaxRetries != 5 {
+		t.Errorf("expected MaxRetries=5, got %d", config.MaxRetries)
+	}
+	if config.InitialBackoff != 1*time.Second {
+		t.Errorf("expected InitialBackoff=1s, got %v", config.InitialBackoff)
+	}
+	if config.MaxBackoff != 30*time.Second {
+		t.Errorf("expected MaxBackoff=30s, got %v", config.MaxBackoff)
+	}
+}

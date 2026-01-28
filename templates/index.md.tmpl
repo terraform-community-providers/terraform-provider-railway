@@ -17,6 +17,45 @@ There are several ways to provide the required token:
 * **Set the `token` argument in the provider configuration**. You can set the `token` argument in the provider configuration. Use an input variable for the token.
 * **Set the `RAILWAY_TOKEN` environment variable**. The provider can read the `RAILWAY_TOKEN` environment variable and the token stored there to authenticate.
 
+## Rate Limiting
+
+The provider includes built-in retry logic to handle Railway API rate limits (HTTP 429 responses). When rate limited, the provider will automatically retry requests with exponential backoff.
+
+### Default Behavior
+
+By default, the provider will:
+- Retry rate-limited requests up to 5 times
+- Use exponential backoff starting at 1 second
+- Cap backoff at 30 seconds
+- Add jitter (±25%) to prevent thundering herd
+- Respect `Retry-After` headers from the API
+
+### Configuration Options
+
+You can customize the retry behavior:
+
+```hcl
+provider "railway" {
+  # Retry configuration
+  max_retries        = 5      # Maximum retry attempts (default: 5)
+  initial_backoff_ms = 1000   # Initial backoff in ms (default: 1000)
+  max_backoff_ms     = 30000  # Maximum backoff in ms (default: 30000)
+}
+```
+
+### Proactive Rate Limiting
+
+For large deployments, you can enable proactive rate limiting to avoid hitting 429 errors:
+
+```hcl
+provider "railway" {
+  # Limit to 2 requests per second
+  rate_limit_rps = 2.0
+}
+```
+
+This is disabled by default (`rate_limit_rps = 0`) for backward compatibility.
+
 ## Example Usage
 
 {{ tffile "examples/provider/provider.tf" }}
