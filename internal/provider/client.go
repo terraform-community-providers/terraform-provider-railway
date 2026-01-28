@@ -115,6 +115,19 @@ func NewRetryTransport(wrapped http.RoundTripper, config RetryConfig, rateLimite
 	}
 }
 
+// isRetryableStatusCode checks if the HTTP status code should trigger a retry
+func isRetryableStatusCode(statusCode int) bool {
+	switch statusCode {
+	case http.StatusTooManyRequests,      // 429
+		http.StatusBadGateway,             // 502
+		http.StatusServiceUnavailable,     // 503
+		http.StatusGatewayTimeout:         // 504
+		return true
+	default:
+		return false
+	}
+}
+
 func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
@@ -156,8 +169,8 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 
-		// If not a 429, return immediately
-		if resp.StatusCode != http.StatusTooManyRequests {
+		// If not a retryable status code, return immediately
+		if !isRetryableStatusCode(resp.StatusCode) {
 			return resp, nil
 		}
 
@@ -169,11 +182,12 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		// Calculate backoff duration
 		backoff := t.calculateBackoff(attempt, resp)
 
-		tflog.Warn(ctx, "Rate limited by Railway API, retrying",
+		tflog.Warn(ctx, "Retryable HTTP error from Railway API, retrying",
 			map[string]interface{}{
-				"attempt":     attempt + 1,
-				"max_retries": t.config.MaxRetries,
-				"backoff_ms":  backoff.Milliseconds(),
+				"attempt":      attempt + 1,
+				"max_retries":  t.config.MaxRetries,
+				"backoff_ms":   backoff.Milliseconds(),
+				"status_code":  resp.StatusCode,
 			})
 
 		// Close the response body before retrying
@@ -247,6 +261,19 @@ var graphQLRateLimitPatterns = []string{
 	"whoa there",
 }
 
+// graphQLRetryablePatterns contains error message patterns that indicate retryable errors (gateway timeouts, etc.)
+var graphQLRetryablePatterns = []string{
+	"504 gateway timeout",
+	"502 bad gateway",
+	"503 service unavailable",
+	"gateway timeout",
+	"bad gateway",
+	"service unavailable",
+	"connection reset",
+	"connection refused",
+	"timeout",
+}
+
 // IsGraphQLRateLimitError checks if an error is a GraphQL-level rate limit error
 func IsGraphQLRateLimitError(err error) bool {
 	if err == nil {
@@ -259,6 +286,25 @@ func IsGraphQLRateLimitError(err error) bool {
 		}
 	}
 	return false
+}
+
+// IsGraphQLRetryableError checks if an error is a retryable GraphQL error (gateway timeouts, etc.)
+func IsGraphQLRetryableError(err error) bool {
+	if err == nil {
+		return false
+	}
+	errMsg := strings.ToLower(err.Error())
+	for _, pattern := range graphQLRetryablePatterns {
+		if strings.Contains(errMsg, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsRetryableGraphQLError checks if an error should trigger a retry (rate limit OR gateway timeout, etc.)
+func IsRetryableGraphQLError(err error) bool {
+	return IsGraphQLRateLimitError(err) || IsGraphQLRetryableError(err)
 }
 
 // RetryableClient wraps a graphql.Client with retry logic for GraphQL-level rate limits
@@ -292,8 +338,8 @@ func (c *RetryableClient) MakeRequest(ctx context.Context, req *graphql.Request,
 			return nil
 		}
 
-		// Check if this is a rate limit error
-		if !IsGraphQLRateLimitError(err) {
+		// Check if this is a retryable error (rate limit or gateway timeout, etc.)
+		if !IsRetryableGraphQLError(err) {
 			return err
 		}
 
@@ -307,7 +353,7 @@ func (c *RetryableClient) MakeRequest(ctx context.Context, req *graphql.Request,
 		// Calculate backoff
 		backoff := c.calculateBackoff(attempt)
 
-		tflog.Warn(ctx, "GraphQL rate limit detected, retrying",
+		tflog.Warn(ctx, "Retryable GraphQL error detected, retrying",
 			map[string]interface{}{
 				"attempt":     attempt + 1,
 				"max_retries": c.config.MaxRetries,
@@ -324,7 +370,7 @@ func (c *RetryableClient) MakeRequest(ctx context.Context, req *graphql.Request,
 		}
 	}
 
-	return fmt.Errorf("max retries exceeded for GraphQL rate limit: %w", lastErr)
+	return fmt.Errorf("max retries exceeded for GraphQL error: %w", lastErr)
 }
 
 // calculateBackoff determines the backoff duration for a retry attempt

@@ -709,3 +709,325 @@ func TestIsGraphQLRateLimitError_RealWorldErrors(t *testing.T) {
 		t.Error("should detect real-world volume creation rate limit error")
 	}
 }
+
+// Tests for 504 Gateway Timeout and other retryable errors
+
+func TestRetryTransport_RetriesOn504(t *testing.T) {
+	attempts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts < 3 {
+			w.WriteHeader(http.StatusGatewayTimeout) // 504
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+	resp, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+
+	if attempts != 3 {
+		t.Errorf("expected 3 attempts, got %d", attempts)
+	}
+}
+
+func TestRetryTransport_RetriesOn502(t *testing.T) {
+	attempts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts < 2 {
+			w.WriteHeader(http.StatusBadGateway) // 502
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+	resp, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+
+	if attempts != 2 {
+		t.Errorf("expected 2 attempts, got %d", attempts)
+	}
+}
+
+func TestRetryTransport_RetriesOn503(t *testing.T) {
+	attempts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts < 2 {
+			w.WriteHeader(http.StatusServiceUnavailable) // 503
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	transport := NewRetryTransport(http.DefaultTransport, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	}, nil)
+
+	client := &http.Client{Transport: transport}
+	resp, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+
+	if attempts != 2 {
+		t.Errorf("expected 2 attempts, got %d", attempts)
+	}
+}
+
+func TestIsRetryableStatusCode(t *testing.T) {
+	tests := []struct {
+		statusCode int
+		expected   bool
+	}{
+		{http.StatusOK, false},
+		{http.StatusCreated, false},
+		{http.StatusBadRequest, false},
+		{http.StatusUnauthorized, false},
+		{http.StatusForbidden, false},
+		{http.StatusNotFound, false},
+		{http.StatusInternalServerError, false},
+		{http.StatusTooManyRequests, true},    // 429
+		{http.StatusBadGateway, true},         // 502
+		{http.StatusServiceUnavailable, true}, // 503
+		{http.StatusGatewayTimeout, true},     // 504
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("status_%d", tt.statusCode), func(t *testing.T) {
+			result := isRetryableStatusCode(tt.statusCode)
+			if result != tt.expected {
+				t.Errorf("isRetryableStatusCode(%d) = %v, expected %v", tt.statusCode, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestIsGraphQLRetryableError_DetectsGatewayTimeoutPatterns(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{
+			name:     "504 gateway timeout",
+			err:      errors.New("returned error 504 Gateway Timeout: error code: 504"),
+			expected: true,
+		},
+		{
+			name:     "gateway timeout without code",
+			err:      errors.New("Gateway Timeout occurred"),
+			expected: true,
+		},
+		{
+			name:     "502 bad gateway",
+			err:      errors.New("returned error 502 Bad Gateway"),
+			expected: true,
+		},
+		{
+			name:     "503 service unavailable",
+			err:      errors.New("503 Service Unavailable"),
+			expected: true,
+		},
+		{
+			name:     "connection timeout",
+			err:      errors.New("connection timeout while connecting to server"),
+			expected: true,
+		},
+		{
+			name:     "connection reset",
+			err:      errors.New("connection reset by peer"),
+			expected: true,
+		},
+		{
+			name:     "connection refused",
+			err:      errors.New("dial tcp: connection refused"),
+			expected: true,
+		},
+		{
+			name:     "regular error - not retryable",
+			err:      errors.New("Service not found"),
+			expected: false,
+		},
+		{
+			name:     "validation error",
+			err:      errors.New("Invalid input: name is required"),
+			expected: false,
+		},
+		{
+			name:     "nil error",
+			err:      nil,
+			expected: false,
+		},
+		{
+			name:     "case insensitive - uppercase",
+			err:      errors.New("GATEWAY TIMEOUT"),
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsGraphQLRetryableError(tt.err)
+			if result != tt.expected {
+				t.Errorf("IsGraphQLRetryableError(%v) = %v, expected %v", tt.err, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestIsRetryableGraphQLError_CombinesRateLimitAndRetryable(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{
+			name:     "rate limit error",
+			err:      errors.New("rate limit exceeded"),
+			expected: true,
+		},
+		{
+			name:     "gateway timeout error",
+			err:      errors.New("504 gateway timeout"),
+			expected: true,
+		},
+		{
+			name:     "whoa there rate limit",
+			err:      errors.New("Whoa there! Slow down"),
+			expected: true,
+		},
+		{
+			name:     "connection timeout",
+			err:      errors.New("timeout waiting for response"),
+			expected: true,
+		},
+		{
+			name:     "regular error",
+			err:      errors.New("Not found"),
+			expected: false,
+		},
+		{
+			name:     "nil error",
+			err:      nil,
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsRetryableGraphQLError(tt.err)
+			if result != tt.expected {
+				t.Errorf("IsRetryableGraphQLError(%v) = %v, expected %v", tt.err, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestRetryableClient_RetriesOnGatewayTimeout(t *testing.T) {
+	mock := &mockGraphQLClient{
+		responses: []error{
+			errors.New("returned error 504 Gateway Timeout: error code: 504"),
+			errors.New("Gateway Timeout"),
+			nil, // Success on third attempt
+		},
+	}
+
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	})
+
+	err := client.MakeRequest(context.Background(), &graphql.Request{}, &graphql.Response{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if mock.callCount != 3 {
+		t.Errorf("expected 3 calls, got %d", mock.callCount)
+	}
+}
+
+func TestRetryableClient_RetriesOnMixedRetryableErrors(t *testing.T) {
+	// Test that it retries on a mix of rate limit and gateway timeout errors
+	mock := &mockGraphQLClient{
+		responses: []error{
+			errors.New("rate limit exceeded"),
+			errors.New("504 Gateway Timeout"),
+			errors.New("Whoa there! Try again in a sec"),
+			nil, // Success on fourth attempt
+		},
+	}
+
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	})
+
+	err := client.MakeRequest(context.Background(), &graphql.Request{}, &graphql.Response{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if mock.callCount != 4 {
+		t.Errorf("expected 4 calls, got %d", mock.callCount)
+	}
+}
+
+func TestGraphQLRetryablePatterns_AllPatternsValid(t *testing.T) {
+	// Ensure all patterns are lowercase for case-insensitive matching
+	for _, pattern := range graphQLRetryablePatterns {
+		if pattern != strings.ToLower(pattern) {
+			t.Errorf("pattern %q should be lowercase", pattern)
+		}
+	}
+}
+
+func TestIsGraphQLRetryableError_RealWorldErrors(t *testing.T) {
+	// Test with actual error message from the issue
+	realError := fmt.Errorf("Unable to create volume, got error: returned error 504 Gateway Timeout:\nerror code: 504")
+	if !IsGraphQLRetryableError(realError) {
+		t.Error("should detect real-world 504 Gateway Timeout error")
+	}
+}
