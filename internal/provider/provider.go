@@ -80,14 +80,22 @@ func (p *RailwayProvider) Configure(ctx context.Context, req provider.ConfigureR
 		return
 	}
 
-	httpClient := http.Client{
-		Transport: &authedTransport{
+	// Build transport chain: retry -> auth -> default
+	transport := NewRetryTransport(
+		&authedTransport{
 			token:   token,
 			wrapped: http.DefaultTransport,
 		},
+	)
+
+	httpClient := http.Client{
+		Transport: transport,
 	}
 
-	client := graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
+	baseClient := graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
+
+	// Wrap with retry logic for GraphQL-level errors
+	var client graphql.Client = NewRetryableClient(baseClient)
 
 	resp.DataSourceData = &client
 	resp.ResourceData = &client
