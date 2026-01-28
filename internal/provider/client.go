@@ -2,14 +2,17 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"math"
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -230,4 +233,119 @@ func (r *bodyReader) Read(p []byte) (n int, err error) {
 	n = copy(p, r.data[r.pos:])
 	r.pos += n
 	return n, nil
+}
+
+// GraphQL-level rate limit detection and retry
+
+// graphQLRateLimitPatterns contains error message patterns that indicate rate limiting
+var graphQLRateLimitPatterns = []string{
+	"too quickly",
+	"try again in a sec",
+	"rate limit",
+	"rate-limit",
+	"throttl",
+	"whoa there",
+}
+
+// IsGraphQLRateLimitError checks if an error is a GraphQL-level rate limit error
+func IsGraphQLRateLimitError(err error) bool {
+	if err == nil {
+		return false
+	}
+	errMsg := strings.ToLower(err.Error())
+	for _, pattern := range graphQLRateLimitPatterns {
+		if strings.Contains(errMsg, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
+// RetryableClient wraps a graphql.Client with retry logic for GraphQL-level rate limits
+type RetryableClient struct {
+	client graphql.Client
+	config RetryConfig
+}
+
+// NewRetryableClient creates a new RetryableClient
+func NewRetryableClient(client graphql.Client, config RetryConfig) *RetryableClient {
+	return &RetryableClient{
+		client: client,
+		config: config,
+	}
+}
+
+// MakeRequest implements graphql.Client interface with retry logic
+func (c *RetryableClient) MakeRequest(ctx context.Context, req *graphql.Request, resp *graphql.Response) error {
+	var lastErr error
+
+	for attempt := 0; attempt <= c.config.MaxRetries; attempt++ {
+		err := c.client.MakeRequest(ctx, req, resp)
+
+		// Check for GraphQL errors in response even if err is nil
+		if err == nil && resp != nil && len(resp.Errors) > 0 {
+			// Convert GraphQL errors to an error for checking
+			err = fmt.Errorf("%v", resp.Errors)
+		}
+
+		if err == nil {
+			return nil
+		}
+
+		// Check if this is a rate limit error
+		if !IsGraphQLRateLimitError(err) {
+			return err
+		}
+
+		lastErr = err
+
+		// Don't retry if this was the last attempt
+		if attempt == c.config.MaxRetries {
+			break
+		}
+
+		// Calculate backoff
+		backoff := c.calculateBackoff(attempt)
+
+		tflog.Warn(ctx, "GraphQL rate limit detected, retrying",
+			map[string]interface{}{
+				"attempt":     attempt + 1,
+				"max_retries": c.config.MaxRetries,
+				"backoff_ms":  backoff.Milliseconds(),
+				"error":       err.Error(),
+			})
+
+		// Wait for backoff or context cancellation
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(backoff):
+			// Continue to next attempt
+		}
+	}
+
+	return fmt.Errorf("max retries exceeded for GraphQL rate limit: %w", lastErr)
+}
+
+// calculateBackoff determines the backoff duration for a retry attempt
+func (c *RetryableClient) calculateBackoff(attempt int) time.Duration {
+	// Exponential backoff: initialBackoff * 2^attempt
+	backoff := float64(c.config.InitialBackoff) * math.Pow(2, float64(attempt))
+
+	// Add jitter (±25%)
+	jitter := 0.75 + rand.Float64()*0.5 // 0.75 to 1.25
+	backoff *= jitter
+
+	// Cap at max backoff
+	if backoff > float64(c.config.MaxBackoff) {
+		backoff = float64(c.config.MaxBackoff)
+	}
+
+	return time.Duration(backoff)
+}
+
+// GetUnderlyingClient returns the underlying graphql.Client for cases where
+// direct access is needed (e.g., for generated code compatibility)
+func (c *RetryableClient) GetUnderlyingClient() graphql.Client {
+	return c.client
 }

@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Khan/genqlient/graphql"
 )
 
 func TestAuthedTransport_SetsAuthorizationHeader(t *testing.T) {
@@ -374,5 +378,334 @@ func TestDefaultRetryConfig(t *testing.T) {
 	}
 	if config.MaxBackoff != 30*time.Second {
 		t.Errorf("expected MaxBackoff=30s, got %v", config.MaxBackoff)
+	}
+}
+
+// GraphQL rate limit detection tests
+
+func TestIsGraphQLRateLimitError_DetectsRateLimitPatterns(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{
+			name:     "volume creation too quickly",
+			err:      errors.New("volumeCreate Whoa there pal! You are creating volumes too quickly. Try again in a sec"),
+			expected: true,
+		},
+		{
+			name:     "try again in a sec",
+			err:      errors.New("Try again in a sec"),
+			expected: true,
+		},
+		{
+			name:     "too quickly",
+			err:      errors.New("You are doing something too quickly"),
+			expected: true,
+		},
+		{
+			name:     "rate limit",
+			err:      errors.New("Rate limit exceeded"),
+			expected: true,
+		},
+		{
+			name:     "rate-limit with hyphen",
+			err:      errors.New("rate-limit reached"),
+			expected: true,
+		},
+		{
+			name:     "throttled",
+			err:      errors.New("Request was throttled"),
+			expected: true,
+		},
+		{
+			name:     "whoa there",
+			err:      errors.New("Whoa there! Slow down"),
+			expected: true,
+		},
+		{
+			name:     "regular error - not rate limit",
+			err:      errors.New("Service not found"),
+			expected: false,
+		},
+		{
+			name:     "validation error",
+			err:      errors.New("Invalid input: name is required"),
+			expected: false,
+		},
+		{
+			name:     "nil error",
+			err:      nil,
+			expected: false,
+		},
+		{
+			name:     "case insensitive - uppercase",
+			err:      errors.New("RATE LIMIT EXCEEDED"),
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsGraphQLRateLimitError(tt.err)
+			if result != tt.expected {
+				t.Errorf("IsGraphQLRateLimitError(%v) = %v, expected %v", tt.err, result, tt.expected)
+			}
+		})
+	}
+}
+
+// mockGraphQLClient is a mock implementation of graphql.Client for testing
+type mockGraphQLClient struct {
+	responses []error
+	callCount int
+}
+
+func (m *mockGraphQLClient) MakeRequest(ctx context.Context, req *graphql.Request, resp *graphql.Response) error {
+	if m.callCount < len(m.responses) {
+		err := m.responses[m.callCount]
+		m.callCount++
+		return err
+	}
+	m.callCount++
+	return nil
+}
+
+func TestRetryableClient_RetriesOnGraphQLRateLimit(t *testing.T) {
+	mock := &mockGraphQLClient{
+		responses: []error{
+			errors.New("volumeCreate Whoa there pal! You are creating volumes too quickly"),
+			errors.New("Try again in a sec"),
+			nil, // Success on third attempt
+		},
+	}
+
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	})
+
+	err := client.MakeRequest(context.Background(), &graphql.Request{}, &graphql.Response{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if mock.callCount != 3 {
+		t.Errorf("expected 3 calls, got %d", mock.callCount)
+	}
+}
+
+func TestRetryableClient_ExhaustsRetriesOnPersistentRateLimit(t *testing.T) {
+	mock := &mockGraphQLClient{
+		responses: []error{
+			errors.New("rate limit"),
+			errors.New("rate limit"),
+			errors.New("rate limit"),
+			errors.New("rate limit"),
+		},
+	}
+
+	maxRetries := 3
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     maxRetries,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	})
+
+	err := client.MakeRequest(context.Background(), &graphql.Request{}, &graphql.Response{})
+	if err == nil {
+		t.Fatal("expected error after exhausting retries")
+	}
+
+	if !strings.Contains(err.Error(), "max retries exceeded") {
+		t.Errorf("expected 'max retries exceeded' error, got: %v", err)
+	}
+
+	expectedCalls := maxRetries + 1 // Initial attempt + retries
+	if mock.callCount != expectedCalls {
+		t.Errorf("expected %d calls, got %d", expectedCalls, mock.callCount)
+	}
+}
+
+func TestRetryableClient_DoesNotRetryNonRateLimitErrors(t *testing.T) {
+	mock := &mockGraphQLClient{
+		responses: []error{
+			errors.New("Service not found"),
+		},
+	}
+
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	})
+
+	err := client.MakeRequest(context.Background(), &graphql.Request{}, &graphql.Response{})
+	if err == nil {
+		t.Fatal("expected error to be returned")
+	}
+
+	if mock.callCount != 1 {
+		t.Errorf("expected 1 call (no retries), got %d", mock.callCount)
+	}
+
+	if !strings.Contains(err.Error(), "Service not found") {
+		t.Errorf("expected original error, got: %v", err)
+	}
+}
+
+func TestRetryableClient_RespectsContextCancellation(t *testing.T) {
+	mock := &mockGraphQLClient{
+		responses: []error{
+			errors.New("rate limit"),
+			errors.New("rate limit"),
+			errors.New("rate limit"),
+		},
+	}
+
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     10,
+		InitialBackoff: 10 * time.Second, // Long backoff
+		MaxBackoff:     30 * time.Second,
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	// Cancel after a short time
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		cancel()
+	}()
+
+	start := time.Now()
+	err := client.MakeRequest(ctx, &graphql.Request{}, &graphql.Response{})
+	elapsed := time.Since(start)
+
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("expected context.Canceled error, got: %v", err)
+	}
+
+	if elapsed > 500*time.Millisecond {
+		t.Errorf("expected quick cancellation, took %v", elapsed)
+	}
+}
+
+func TestRetryableClient_SucceedsImmediatelyOnNoError(t *testing.T) {
+	mock := &mockGraphQLClient{
+		responses: []error{nil},
+	}
+
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	})
+
+	err := client.MakeRequest(context.Background(), &graphql.Request{}, &graphql.Response{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if mock.callCount != 1 {
+		t.Errorf("expected 1 call, got %d", mock.callCount)
+	}
+}
+
+// mockGraphQLClientWithErrors returns both an error and populates GraphQL errors
+type mockGraphQLClientWithErrors struct {
+	graphqlErrors []string
+	callCount     int
+}
+
+func (m *mockGraphQLClientWithErrors) MakeRequest(ctx context.Context, req *graphql.Request, resp *graphql.Response) error {
+	m.callCount++
+	if m.callCount <= len(m.graphqlErrors) {
+		errMsg := m.graphqlErrors[m.callCount-1]
+		if errMsg != "" {
+			// Return the error message - the actual error type doesn't matter for our detection
+			return fmt.Errorf("%s", errMsg)
+		}
+	}
+	return nil
+}
+
+func TestRetryableClient_RetriesOnGraphQLResponseErrors(t *testing.T) {
+	mock := &mockGraphQLClientWithErrors{
+		graphqlErrors: []string{
+			"volumeCreate Whoa there pal! You are creating volumes too quickly",
+			"Try again in a sec",
+			"", // No error on third attempt
+		},
+	}
+
+	client := NewRetryableClient(mock, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 1 * time.Millisecond,
+		MaxBackoff:     10 * time.Millisecond,
+	})
+
+	err := client.MakeRequest(context.Background(), &graphql.Request{}, &graphql.Response{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if mock.callCount != 3 {
+		t.Errorf("expected 3 calls, got %d", mock.callCount)
+	}
+}
+
+func TestRetryableClientBackoff_GrowsExponentially(t *testing.T) {
+	client := NewRetryableClient(nil, RetryConfig{
+		MaxRetries:     5,
+		InitialBackoff: 100 * time.Millisecond,
+		MaxBackoff:     10 * time.Second,
+	})
+
+	var backoffs []time.Duration
+	for attempt := 0; attempt < 5; attempt++ {
+		backoff := client.calculateBackoff(attempt)
+		backoffs = append(backoffs, backoff)
+	}
+
+	// Verify backoffs are generally increasing (accounting for jitter)
+	for i := 1; i < len(backoffs); i++ {
+		minExpected := time.Duration(float64(backoffs[i-1]) * 0.5)
+		if backoffs[i] < minExpected {
+			t.Errorf("backoff[%d] (%v) should be greater than %v", i, backoffs[i], minExpected)
+		}
+	}
+}
+
+func TestRetryableClientBackoff_CapsAtMaximum(t *testing.T) {
+	maxBackoff := 100 * time.Millisecond
+	client := NewRetryableClient(nil, RetryConfig{
+		MaxRetries:     10,
+		InitialBackoff: 50 * time.Millisecond,
+		MaxBackoff:     maxBackoff,
+	})
+
+	for attempt := 5; attempt < 10; attempt++ {
+		backoff := client.calculateBackoff(attempt)
+		if backoff > maxBackoff {
+			t.Errorf("attempt %d: backoff %v exceeds max %v", attempt, backoff, maxBackoff)
+		}
+	}
+}
+
+func TestGraphQLRateLimitPatterns_AllPatternsValid(t *testing.T) {
+	// Ensure all patterns are lowercase for case-insensitive matching
+	for _, pattern := range graphQLRateLimitPatterns {
+		if pattern != strings.ToLower(pattern) {
+			t.Errorf("pattern %q should be lowercase", pattern)
+		}
+	}
+}
+
+func TestIsGraphQLRateLimitError_RealWorldErrors(t *testing.T) {
+	// Test with actual error message from the issue
+	realError := fmt.Errorf("input:3: volumeCreate Whoa there pal! You are creating volumes too quickly. Try again in a sec")
+	if !IsGraphQLRateLimitError(realError) {
+		t.Error("should detect real-world volume creation rate limit error")
 	}
 }

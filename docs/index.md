@@ -19,7 +19,11 @@ There are several ways to provide the required token:
 
 ## Rate Limiting
 
-The provider includes built-in retry logic to handle Railway API rate limits (HTTP 429 responses). When rate limited, the provider will automatically retry requests with exponential backoff.
+The provider includes built-in retry logic to handle Railway API rate limits. This includes both:
+- **HTTP 429 responses** - Standard HTTP rate limiting
+- **GraphQL-level rate limits** - Error messages like "creating volumes too quickly"
+
+When rate limited, the provider will automatically retry requests with exponential backoff.
 
 ### Default Behavior
 
@@ -29,6 +33,7 @@ By default, the provider will:
 - Cap backoff at 30 seconds
 - Add jitter (±25%) to prevent thundering herd
 - Respect `Retry-After` headers from the API
+- Detect GraphQL rate limit errors (e.g., "too quickly", "try again in a sec")
 
 ### Configuration Options
 

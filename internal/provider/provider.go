@@ -134,7 +134,10 @@ func (p *RailwayProvider) Configure(ctx context.Context, req provider.ConfigureR
 		Transport: transport,
 	}
 
-	client := graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
+	baseClient := graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
+
+	// Wrap with retry logic for GraphQL-level rate limits
+	var client graphql.Client = NewRetryableClient(baseClient, retryConfig)
 
 	resp.DataSourceData = &client
 	resp.ResourceData = &client
