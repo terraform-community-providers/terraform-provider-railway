@@ -1,0 +1,12 @@
+query getRenderedVariables(
+  $projectId: String!
+  $environmentId: String!
+  $serviceId: String!
+) {
+  variables(
+    environmentId: $environmentId
+    projectId: $projectId
+    serviceId: $serviceId
+    unrendered: false
+  )
+}

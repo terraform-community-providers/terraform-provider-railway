@@ -112,8 +112,8 @@ func (d *ServiceVariablesDataSource) Read(ctx context.Context, req datasource.Re
 
 	projectId := service.Service.ProjectId
 
-	// Fetch all variables for the service
-	response, err := getVariables(ctx, *d.client, projectId, environmentId, serviceId)
+	// Fetch all variables for the service (rendered = resolved references)
+	response, err := getRenderedVariables(ctx, *d.client, projectId, environmentId, serviceId)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variables, got error: %s", err))
