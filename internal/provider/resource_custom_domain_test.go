@@ -18,6 +18,7 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
+					resource.TestCheckNoResourceAttr("railway_custom_domain.test", "target_port"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
@@ -41,6 +42,7 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
+					resource.TestCheckNoResourceAttr("railway_custom_domain.test", "target_port"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
@@ -50,6 +52,105 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_host_label"),
 					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_record_value"),
 				),
+			},
+			// Update and Read testing
+			{
+				Config: testAccCustomDomainResourceConfigNonDefault("terraform.example.com"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "target_port", "3000"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "dns_record_value"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_host_label"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_record_value"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_custom_domain.test",
+				ImportState:       true,
+				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging:terraform.example.com",
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCustomDomainResourceNonDefault(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: testAccCustomDomainResourceConfigNonDefault("terraform.example.com"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "target_port", "3000"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "dns_record_value"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_host_label"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_record_value"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_custom_domain.test",
+				ImportState:       true,
+				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging:terraform.example.com",
+				ImportStateVerify: true,
+			},
+			// Update with same values
+			{
+				Config: testAccCustomDomainResourceConfigNonDefault("terraform.example.com"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "target_port", "3000"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "dns_record_value"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_host_label"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_record_value"),
+				),
+			},
+			// Update with default values
+			{
+				Config: testAccCustomDomainResourceConfigDefault("terraform.example.com"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_custom_domain.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "domain", "terraform.example.com"),
+					resource.TestCheckNoResourceAttr("railway_custom_domain.test", "target_port"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
+					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "dns_record_value"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_host_label"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_record_value"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_custom_domain.test",
+				ImportState:       true,
+				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging:terraform.example.com",
+				ImportStateVerify: true,
 			},
 			// Delete testing automatically occurs in TestCase
 		},
@@ -62,6 +163,18 @@ resource "railway_custom_domain" "test" {
   domain = "%s"
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
   service_id = "39da7e07-fa3a-42fd-b695-d229319f2993"
+}
+`, name)
+}
+
+func testAccCustomDomainResourceConfigNonDefault(name string) string {
+	return fmt.Sprintf(`
+resource "railway_custom_domain" "test" {
+  domain = "%s"
+  environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
+  service_id = "39da7e07-fa3a-42fd-b695-d229319f2993"
+
+  target_port = 3000
 }
 `, name)
 }
