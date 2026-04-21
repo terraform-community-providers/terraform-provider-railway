@@ -14,30 +14,64 @@ type AccessRule {
 }
 
 enum ActiveFeatureFlag {
-  BUCKETS
-  HTTP_SERVICE_METRICS
-  IPv4_PRIVATE_NETWORKS
-  MONOREPO_SUPPORT
+  AUDIT_LOGS
+  BUCKET_FILE_BROWSER
+  DEBUG_SMART_DIAGNOSIS
+  IN_DASHBOARD_SUPPORT
+  IPV6_EGRESS
+  MAGIC_CONFIG
+  POSTGRES_PGBOUNCER
   PRIORITY_BOARDING
-  RAW_SQL_QUERIES
-  UNIFIED_TEMPLATE_EDITOR
+  SMART_DIAGNOSIS
+  UNLIMITED_SMART_DIAGNOSIS
 }
 
 enum ActivePlatformFlag {
+  AGENT_USAGE_BILLING
   ALLOW_REPLICA_METRICS
-  BUCKETS
+  ARCHIVER_V2_ROLLOUT
+  BUILDER_V3_ROLLOUT_EXISTING_SERVICES
+  BUILDER_V3_ROLLOUT_EXISTING_SERVICES_PRO
+  BUILDER_V3_ROLLOUT_NEW_SERVICES
+  BUILDER_V3_ROLLOUT_NEW_SERVICES_PRO
+  COMPARE_CLICKHOUSE_METRICS
+  CTRD_IMAGE_STORE_ROLLOUT
   DEMO_PERCENTAGE_ROLLOUT
+  DISABLE_OAUTH_ACCESS_TOKENS
   ENABLE_RAW_SQL_QUERIES
-  MONOREPO_SUPPORT
+  FOCUSED_PR_ENVIRONMENTS
+  GITHUB_PERMISSION_NOTIFICATION_ROLLOUT
+  INLINE_NOTIFICATION_PROCESSING
+  IN_DASHBOARD_SUPPORT
+  KAFKA_DEPLOYMENT_STATUS_CHANGES
+  NEW_STRIPE_WEBHOOK_VERSION_ROLLOUT
+  OAUTH_DCR_KILLSWITCH
+  OAUTH_DEVICE_FLOW_KILLSWITCH
+  RADAR_AUTO_EVALUATE
+  SERVICEINSTANCE_DATALOADER_FOR_STATIC_URL
+  SPLIT_USAGE_QUERIES
+  STRIPE_METERS_NEW_ACCOUNTS
+  STRIPE_METERS_SHADOW_ENABLED
+  UNIFIED_SNAPSHOT_AND_BUILD
+  UNIFIED_SNAPSHOT_AND_BUILD_HOBBY
   UPDATED_VM_QUERIES
+  USE_CLICKHOUSE_METRICS
   USE_GH_WEBHOOKS_FOR_CHANGE_DETECTION
   VM_TIME_RANGE_QUERY
 }
 
+enum ActiveProjectFeatureFlag {
+  PLACEHOLDER
+}
+
 enum ActiveServiceFeatureFlag {
   COPY_VOLUME_TO_ENVIRONMENT
+  ENABLE_DOCKER_EXTENSION
   PLACEHOLDER
+  SKIPPED_BUILDS
+  USE_BUILDER_V3_FOR_CLI_DEPLOYS
   USE_GH_WEBHOOKS_FOR_CHANGE_DETECTION
+  USE_VM_RUNTIME
 }
 
 type AdoptionInfo implements Node {
@@ -94,6 +128,12 @@ type ApiToken implements Node {
   workspaceId: String
 }
 
+"""Information about the current API token and its accessible workspaces."""
+type ApiTokenContext {
+  """Workspaces this subject can operate on via this token or session."""
+  workspaces: [ApiTokenWorkspace!]!
+}
+
 input ApiTokenCreateInput {
   name: String!
   workspaceId: String
@@ -104,6 +144,11 @@ type ApiTokenRateLimit {
   resetsAt: String!
 }
 
+type ApiTokenWorkspace {
+  id: String!
+  name: String!
+}
+
 type AppliedByMember {
   avatar: String
   email: String!
@@ -112,11 +157,39 @@ type AppliedByMember {
   username: String
 }
 
-type BanReasonHistory implements Node {
-  actor: User
-  banReason: String
+type AuditLog implements Node {
+  context: JSON
   createdAt: DateTime!
+  environment: Environment
+  environmentId: String
+  eventType: String!
   id: ID!
+  payload: JSON
+  project: Project
+  projectId: String
+  workspaceId: String
+}
+
+type AuditLogEventTypeInfo {
+  description: String!
+  eventType: String!
+}
+
+input AuditLogFilterInput {
+  """Filter events created on or before this date"""
+  endDate: DateTime
+
+  """Filter events for a single environment"""
+  environmentId: String
+
+  """List of event types to filter by"""
+  eventTypes: [String!]
+
+  """Filter events for a single project"""
+  projectId: String
+
+  """Filter events created on or after this date"""
+  startDate: DateTime
 }
 
 input BaseEnvironmentOverrideInput {
@@ -134,6 +207,49 @@ type BillingPeriod {
   start: DateTime!
 }
 
+type Bucket implements Node {
+  createdAt: DateTime!
+  id: ID!
+  name: String!
+  project: Project!
+  projectId: String!
+  updatedAt: DateTime!
+}
+
+input BucketCreateInput {
+  """
+  [unimplemented] The environment to deploy the bucket instances into. If
+  `null`, the bucket will not be deployed to any environment. `undefined` will
+  deploy to all environments.
+  """
+  environmentId: String
+
+  """The name of the bucket"""
+  name: String
+
+  """The project to create the bucket in"""
+  projectId: String!
+}
+
+type BucketInstanceDetails {
+  objectCount: BigInt!
+  sizeBytes: BigInt!
+}
+
+type BucketS3CompatibleCredentials {
+  accessKeyId: String!
+  bucketName: String!
+  createdAt: DateTime!
+  endpoint: String!
+  region: String!
+  secretAccessKey: String!
+  urlStyle: String!
+}
+
+input BucketUpdateInput {
+  name: String!
+}
+
 enum Builder {
   HEROKU
   NIXPACKS
@@ -143,9 +259,26 @@ enum Builder {
 
 scalar CanvasConfig
 
+type CanvasViewMergePreview {
+  mutations: [JSON!]!
+  state: JSON!
+}
+
 enum CDNProvider {
   DETECTED_CDN_PROVIDER_CLOUDFLARE
   DETECTED_CDN_PROVIDER_UNSPECIFIED
+  UNRECOGNIZED
+}
+
+"""The type of error that occurred during certificate issuance"""
+enum CertificateErrorType {
+  CERTIFICATE_ERROR_TYPE_AUTHORIZATION_FAILED
+  CERTIFICATE_ERROR_TYPE_DNS_VALIDATION
+  CERTIFICATE_ERROR_TYPE_INTERNAL
+  CERTIFICATE_ERROR_TYPE_KEY_GENERATION
+  CERTIFICATE_ERROR_TYPE_ORDER_CREATION
+  CERTIFICATE_ERROR_TYPE_RATE_LIMIT
+  CERTIFICATE_ERROR_TYPE_UNSPECIFIED
   UNRECOGNIZED
 }
 
@@ -166,6 +299,34 @@ enum CertificateStatus {
   UNRECOGNIZED
 }
 
+enum CertificateStatusDetailed {
+  CERTIFICATE_STATUS_TYPE_DETAILED_CLEANING_UP
+  CERTIFICATE_STATUS_TYPE_DETAILED_COMPLETE
+  CERTIFICATE_STATUS_TYPE_DETAILED_CREATING_ORDER
+  CERTIFICATE_STATUS_TYPE_DETAILED_DOWNLOADING_CERTIFICATE
+  CERTIFICATE_STATUS_TYPE_DETAILED_FAILED
+  CERTIFICATE_STATUS_TYPE_DETAILED_FETCHING_AUTHORIZATIONS
+  CERTIFICATE_STATUS_TYPE_DETAILED_FINALIZING_ORDER
+  CERTIFICATE_STATUS_TYPE_DETAILED_GENERATING_KEYS
+  CERTIFICATE_STATUS_TYPE_DETAILED_INITIATING_CHALLENGES
+  CERTIFICATE_STATUS_TYPE_DETAILED_POLLING_AUTHORIZATIONS
+  CERTIFICATE_STATUS_TYPE_DETAILED_PRESENTING_CHALLENGES
+  CERTIFICATE_STATUS_TYPE_DETAILED_UNSPECIFIED
+  UNRECOGNIZED
+}
+
+input CliEventTrackInput {
+  arch: String!
+  cliVersion: String!
+  command: String!
+  durationMs: Int!
+  errorMessage: String
+  isCi: Boolean!
+  os: String!
+  subCommand: String
+  success: Boolean!
+}
+
 type CnameCheck {
   link: String
   message: String!
@@ -180,6 +341,16 @@ enum CnameCheckStatus {
   WAITING
 }
 
+type ComplianceAgreementsInfo {
+  """
+  Whether the workspace has a signed Business Associate Agreement (HIPAA)
+  """
+  hasBAA: Boolean!
+
+  """Whether the workspace has a Data Processing Agreement (GDPR)"""
+  hasDPA: Boolean!
+}
+
 type Container implements Node {
   createdAt: DateTime!
   deletedAt: DateTime
@@ -189,6 +360,15 @@ type Container implements Node {
   migratedAt: DateTime
   plugin: Plugin!
   pluginId: String!
+}
+
+input CreateNotificationRuleInput {
+  channelConfigs: [NotificationChannelConfig!]!
+  ephemeralEnvironments: Boolean
+  eventTypes: [String!]!
+  projectId: String
+  severities: [NotificationSeverity!]
+  workspaceId: String!
 }
 
 type Credit implements Node {
@@ -211,6 +391,7 @@ enum CreditType {
 }
 
 type CustomDomain implements Domain {
+  cdnMode: String
   cnameCheck: CnameCheck! @deprecated(reason: "Use the `status` field instead.")
   createdAt: DateTime
   deletedAt: DateTime
@@ -221,6 +402,7 @@ type CustomDomain implements Domain {
   projectId: String
   serviceId: String!
   status: CustomDomainStatus!
+  syncStatus: CustomDomainSyncStatus!
   targetPort: Int
   updatedAt: DateTime
 }
@@ -235,9 +417,31 @@ input CustomDomainCreateInput {
 
 type CustomDomainStatus {
   cdnProvider: CDNProvider
+
+  """Human-readable error message when certificate issuance fails"""
+  certificateErrorMessage: String
+
+  """Structured error type for programmatic handling"""
+  certificateErrorType: CertificateErrorType
+
+  """Whether the certificate issuance can be retried"""
+  certificateRetryable: Boolean
   certificateStatus: CertificateStatus!
+  certificateStatusDetailed: CertificateStatusDetailed
   certificates: [CertificatePublicData!]
   dnsRecords: [DNSRecords!]!
+  verificationDnsHost: String
+  verificationToken: String
+  verified: Boolean!
+}
+
+enum CustomDomainSyncStatus {
+  ACTIVE
+  CREATING
+  DELETED
+  DELETING
+  UNSPECIFIED
+  UPDATING
 }
 
 type Customer implements Node {
@@ -268,6 +472,7 @@ type Customer implements Node {
   isWithdrawingToCredits: Boolean!
   planLimitOverride: PlanLimitOverride
   remainingUsageCreditBalance: Float!
+  spendCommitment: SpendCommitment
   state: SubscriptionState!
   stripeCustomerId: String!
   subscriptions: [CustomerSubscription!]!
@@ -311,8 +516,10 @@ type CustomerInvoice {
   periodStart: String!
   reissuedInvoiceFrom: String
   reissuedInvoiceOf: String
+  spendCommitmentPrepayment: Boolean
   status: String
   subscriptionId: String
+  subscriptionStatus: String
   total: Int!
 }
 
@@ -355,6 +562,7 @@ type Deployment implements Node {
 
   """Check if a deployment's instances have all stopped"""
   deploymentStopped: Boolean!
+  diagnosis: DeploymentDiagnosis
   environment: Environment!
   environmentId: String!
   id: ID!
@@ -385,6 +593,8 @@ type DeploymentDeploymentInstance {
   status: DeploymentInstanceStatus!
 }
 
+scalar DeploymentDiagnosis
+
 type DeploymentEvent implements Node {
   completedAt: DateTime
   createdAt: DateTime!
@@ -399,6 +609,7 @@ type DeploymentEventPayload {
 
 enum DeploymentEventStep {
   BUILD_IMAGE
+  CONFIGURE_NETWORK
   CREATE_CONTAINER
   DRAIN_INSTANCES
   HEALTHCHECK
@@ -552,6 +763,7 @@ enum DNSRecordType {
   DNS_RECORD_TYPE_A
   DNS_RECORD_TYPE_CNAME
   DNS_RECORD_TYPE_NS
+  DNS_RECORD_TYPE_TXT
   DNS_RECORD_TYPE_UNSPECIFIED
   UNRECOGNIZED
 }
@@ -562,6 +774,7 @@ type DockerComposeImport {
 }
 
 interface Domain {
+  cdnMode: String
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
@@ -581,7 +794,17 @@ type DomainAvailable {
 
 type DomainWithStatus {
   cdnProvider: CDNProvider
+
+  """Human-readable error message when certificate issuance fails"""
+  certificateErrorMessage: String
+
+  """Structured error type for programmatic handling"""
+  certificateErrorType: CertificateErrorType
+
+  """Whether the certificate issuance can be retried"""
+  certificateRetryable: Boolean
   certificateStatus: CertificateStatus!
+  certificateStatusDetailed: CertificateStatusDetailed
   certificates: [CertificatePublicData!]
   dnsRecords: [DNSRecords!]!
   domain: Domain
@@ -604,6 +827,8 @@ input EgressGatewayServiceTargetInput {
 }
 
 type Environment implements Node {
+  canAccess: Boolean!
+  config(decryptVariables: Boolean): EnvironmentConfig!
   createdAt: DateTime!
   deletedAt: DateTime
   deploymentTriggers(after: String, before: String, first: Int, last: Int): EnvironmentDeploymentTriggersConnection!
@@ -621,6 +846,12 @@ type Environment implements Node {
   volumeInstances(after: String, before: String, first: Int, last: Int): EnvironmentVolumeInstancesConnection!
 }
 
+"""
+
+EnvironmentConfig is a custom scalar type that represents the serializedConfig for an environment.
+JSON Schema: https://backboard.railway.com/schema/environment.schema.json
+
+"""
 scalar EnvironmentConfig
 
 input EnvironmentCreateInput {
@@ -671,10 +902,12 @@ type EnvironmentDeploymentTriggersConnectionEdge {
 type EnvironmentMeta {
   baseBranch: String
   branch: String
+  latestSuccessfulGitHubDeploymentId: Int
   prCommentId: Int
   prNumber: Int
   prRepo: String
   prTitle: String
+  skippedResourceIds: SkippedResourceIds
 }
 
 type EnvironmentPatch implements Node {
@@ -686,6 +919,7 @@ type EnvironmentPatch implements Node {
   id: ID!
   lastAppliedError: String
   message: String
+  patch(decryptVariables: Boolean): EnvironmentConfig!
   status: EnvironmentPatchStatus!
   updatedAt: DateTime!
 }
@@ -760,12 +994,21 @@ type Event implements Node {
   object: String!
   payload: JSON
   project: Project!
-  projectId: String!
+  projectId: String
+  severity: EventSeverity!
 }
 
 input EventFilterInput {
   action: EventStringListFilter
   object: EventStringListFilter
+  serviceId: EventStringListFilter
+}
+
+enum EventSeverity {
+  CRITICAL
+  INFO
+  NOTICE
+  WARNING
 }
 
 input EventStringListFilter {
@@ -786,16 +1029,24 @@ type ExternalWorkspace {
   avatar: String
   banReason: String
   createdAt: DateTime!
+  currentSessionHasAccess: Boolean
   customerId: String
   customerState: SubscriptionState!
   discordRole: String
-  hasBAA: Boolean!
+  has2FAEnforcement: Boolean!
+  hasAutomaticDiagnosis: Boolean!
+  hasBAA: Boolean! @deprecated(reason: "Deprecated in favour of the SpendCommitment schema.")
+  hasGuardrailsAccess: Boolean!
+  hasRBAC: Boolean! @deprecated(reason: "Deprecated in favour of the SpendCommitment schema.")
+  hasSAML: Boolean!
   id: String!
   isTrialing: Boolean
   name: String!
   plan: Plan!
   preferredRegion: String
   projects: [Project!]!
+  redactedDueTo2FAPending: Boolean!
+  subscriptionPlanLimit: SubscriptionPlanLimit
   supportTierOverride: String
   teamId: String
 }
@@ -837,6 +1088,23 @@ type GitHubBranch {
   name: String!
 }
 
+type GitHubCheck {
+  name: String!
+  status: String!
+}
+
+type GitHubPRInfo {
+  additions: Int!
+  author: String!
+  body: String!
+  changedFiles: Int!
+  checks: [GitHubCheck!]!
+  deletions: Int!
+  mergeable: Boolean
+  state: String!
+  title: String!
+}
+
 type GitHubRepo {
   defaultBranch: String!
   description: String
@@ -850,6 +1118,7 @@ type GitHubRepo {
 
 input GitHubRepoDeployInput {
   branch: String
+  environmentId: String
   projectId: String!
   repo: String!
 }
@@ -869,6 +1138,13 @@ type GitHubRepoWithoutInstallation {
   name: String!
 }
 
+"""An SSH public key from GitHub."""
+type GitHubSshKey {
+  id: Int!
+  key: String!
+  title: String!
+}
+
 type HerokuApp {
   id: String!
   name: String!
@@ -879,6 +1155,32 @@ input HerokuImportVariablesInput {
   herokuAppId: String!
   projectId: String!
   serviceId: String!
+}
+
+"""The result of an HTTP duration metrics query."""
+type HttpDurationMetricsResult {
+  """The samples of HTTP duration metrics."""
+  samples: [HttpDurationMetricsSample!]!
+}
+
+"""A single sample of HTTP duration metrics."""
+type HttpDurationMetricsSample {
+  """50th percentile (median) request duration in milliseconds."""
+  p50: Float!
+
+  """90th percentile request duration in milliseconds."""
+  p90: Float!
+
+  """95th percentile request duration in milliseconds."""
+  p95: Float!
+
+  """99th percentile request duration in milliseconds."""
+  p99: Float!
+
+  """
+  The timestamp of the sample. Represented as number of seconds since the Unix epoch.
+  """
+  ts: Int!
 }
 
 """The result of a http logs query."""
@@ -942,6 +1244,32 @@ type HttpLog {
 
   """How long the upstream request took to respond"""
   upstreamRqDuration: Int!
+}
+
+"""HTTP metrics grouped by status code."""
+type HttpMetricsByStatusResult {
+  """The samples of HTTP metrics for this status code."""
+  samples: [HttpMetricsSample!]!
+
+  """The HTTP status code."""
+  statusCode: Int!
+}
+
+"""The result of an HTTP metrics query."""
+type HttpMetricsResult {
+  """The samples of HTTP metrics."""
+  samples: [HttpMetricsSample!]!
+}
+
+"""A single sample of an HTTP metric."""
+type HttpMetricsSample {
+  """
+  The timestamp of the sample. Represented as number of seconds since the Unix epoch.
+  """
+  ts: Int!
+
+  """The value of the sample (count of requests)."""
+  value: Float!
 }
 
 type Incident {
@@ -1068,6 +1396,7 @@ type LogTags {
 type Maintenance {
   id: String!
   message: String!
+  start: DateTime!
   status: MaintenanceStatus!
   url: String!
 }
@@ -1180,6 +1509,23 @@ type Mutation {
   """Sets the base environment override for a deployment trigger."""
   baseEnvironmentOverride(id: String!, input: BaseEnvironmentOverrideInput!): Boolean!
 
+  """Create a bucket in a project"""
+  bucketCreate(input: BucketCreateInput!): Bucket!
+
+  """Reset the credentials for a bucket in an environment"""
+  bucketCredentialsReset(bucketId: String!, environmentId: String!, projectId: String!): BucketS3CompatibleCredentials!
+
+  """Updates a bucket."""
+  bucketUpdate(id: String!, input: BucketUpdateInput!): Bucket!
+
+  """
+  Merge a canvas layout from one environment into another. Re-computes the merge from current state and applies mutations.
+  """
+  canvasViewMerge(sourceEnvironmentId: String!, targetEnvironmentId: String!): Boolean!
+
+  """Track events from the Railway CLI"""
+  cliEventTrack(input: CliEventTrackInput!): Boolean!
+
   """Creates a new custom domain."""
   customDomainCreate(input: CustomDomainCreateInput!): CustomDomain!
 
@@ -1254,11 +1600,34 @@ type Mutation {
   """Commit the provided patch to the environment."""
   environmentPatchCommit(commitMessage: String, environmentId: String!, patch: EnvironmentConfig): String!
 
+  """Commits the staged changes for a single environment."""
+  environmentPatchCommitStaged(
+    commitMessage: String
+    environmentId: String!
+
+    """Skip deploys for services affected by this patch."""
+    skipDeploys: Boolean
+  ): String!
+
   """Renames an environment."""
   environmentRename(id: String!, input: EnvironmentRenameInput!): Environment!
 
+  """Sets the staged patch for a single environment."""
+  environmentStageChanges(
+    environmentId: String!
+    input: EnvironmentConfig!
+
+    """Merge the input patch into the existing staged patch."""
+    merge: Boolean
+  ): EnvironmentPatch!
+
   """Deploys all connected triggers for an environment."""
   environmentTriggersDeploy(input: EnvironmentTriggersDeployInput!): Boolean!
+
+  """
+  Unskip a service in a PR environment, deploying it and its transitive dependencies.
+  """
+  environmentUnskipService(environmentId: String!, serviceId: String!): Boolean!
 
   """Agree to the fair use policy for the currently authenticated user"""
   fairUseAgree(agree: Boolean!): Boolean!
@@ -1310,6 +1679,18 @@ type Mutation {
   """Verify if a login session is valid"""
   loginSessionVerify(code: String!): Boolean!
 
+  """Marks notification deliveries as read"""
+  notificationDeliveriesMarkAsRead(deliveryIds: [String!]!): Boolean!
+
+  """Create a new notification rule"""
+  notificationRuleCreate(input: CreateNotificationRuleInput!): NotificationRule!
+
+  """Delete a notification rule"""
+  notificationRuleDelete(id: String!): Boolean!
+
+  """Update a notification rule"""
+  notificationRuleUpdate(id: String!, input: UpdateNotificationRuleInput!): NotificationRule!
+
   """Create an observability dashboard"""
   observabilityDashboardCreate(input: ObservabilityDashboardCreateInput!): Boolean!
 
@@ -1343,16 +1724,6 @@ type Mutation {
   """Updates an existing plugin."""
   pluginUpdate(id: String!, input: PluginUpdateInput!): Plugin! @deprecated(reason: "Plugins are deprecated")
 
-  """
-  Create/Updates preferences overrides for a specific resource belonging to a user
-  """
-  preferenceOverridesCreateUpdate(input: PreferenceOverridesCreateUpdateData!): Boolean!
-
-  """
-  Destroy preferences overrides for a specific resource belonging to a user
-  """
-  preferenceOverridesDestroyForResource(input: PreferenceOverridesDestroyData!): Boolean!
-
   """Update the email preferences for a user"""
   preferencesUpdate(input: PreferencesUpdateData!): Preferences!
 
@@ -1380,6 +1751,12 @@ type Mutation {
   """Deletes a project."""
   projectDelete(id: String!): Boolean!
 
+  """Add a feature flag for a project"""
+  projectFeatureFlagAdd(input: ProjectFeatureFlagToggleInput!): Boolean!
+
+  """Remove a feature flag for a project"""
+  projectFeatureFlagRemove(input: ProjectFeatureFlagToggleInput!): Boolean!
+
   """Accept a project invitation using the invite code"""
   projectInvitationAccept(code: String!): ProjectPermission!
 
@@ -1397,6 +1774,11 @@ type Mutation {
 
   """Leave project as currently authenticated user"""
   projectLeave(id: String!): Boolean!
+
+  """
+  Add a workspace member to a project with a specific role. The user must already be a member of the project's workspace.
+  """
+  projectMemberAdd(input: ProjectMemberAddInput!): ProjectMember!
 
   """Remove user from a project"""
   projectMemberRemove(input: ProjectMemberRemoveInput!): [ProjectMember!]!
@@ -1524,6 +1906,12 @@ type Mutation {
   """Configure a shared variable."""
   sharedVariableConfigure(input: SharedVariableConfigureInput!): Variable!
 
+  """Creates a new SSH public key for the authenticated user."""
+  sshPublicKeyCreate(input: SshPublicKeyCreateInput!): SshPublicKey!
+
+  """Deletes an SSH public key."""
+  sshPublicKeyDelete(id: String!): Boolean!
+
   """Creates a new TCP proxy for a service instance."""
   tcpProxyCreate(input: TCPProxyCreateInput!): TCPProxy! @deprecated(reason: "Use staged changes and apply them. Creating a TCP proxy with this endpoint requires you to redeploy the service for it to be active.")
 
@@ -1557,10 +1945,13 @@ type Mutation {
   templateUnpublish(id: String!): Boolean!
 
   """Create a new trusted domain for this workspace"""
-  trustedDomainCreate(input: WorkspaceTrustedDomainCreateInput!): Boolean!
+  trustedDomainCreate(input: WorkspaceTrustedDomainCreateInput!): TrustedDomain!
 
   """Delete a trusted domain"""
   trustedDomainDelete(id: String!): Boolean!
+
+  """Retrigger verification for a failed trusted domain"""
+  trustedDomainRetriggerVerification(id: String!): TrustedDomain
 
   """Setup 2FA authorization for authenticated user."""
   twoFactorInfoCreate(input: TwoFactorInfoCreateInput!): RecoveryCodes!
@@ -1621,6 +2012,11 @@ type Mutation {
 
   """Create backup of a volume instance"""
   volumeInstanceBackupCreate(
+    """
+    Optional name/label for the backup. Defaults to 'Manual' if not provided.
+    """
+    name: String
+
     """The id of the volume instance to create a backup of"""
     volumeInstanceId: String!
   ): WorkflowId!
@@ -1678,14 +2074,10 @@ type Mutation {
   """Update a persistent volume in a project"""
   volumeUpdate(input: VolumeUpdateInput!, volumeId: String!): Volume!
 
-  """Create a webhook on a project"""
-  webhookCreate(input: WebhookCreateInput!): ProjectWebhook!
-
-  """Delete a webhook from a project"""
-  webhookDelete(id: String!): Boolean!
-
-  """Update a webhook on a project"""
-  webhookUpdate(id: String!, input: WebhookUpdateInput!): ProjectWebhook!
+  """
+  Test a webhook URL by sending a sample payload. Returns the HTTP status code.
+  """
+  webhookTest(payload: String!, url: String!): Int!
 
   """Delete a workspace and all data associated with it"""
   workspaceDelete(id: String!): Boolean!
@@ -1702,6 +2094,12 @@ type Mutation {
   """Changes a user workspace permissions."""
   workspacePermissionChange(input: WorkspacePermissionChangeInput!): Boolean!
 
+  """Enable or disable a workspace policy. Enterprise workspaces only."""
+  workspacePolicyItemUpdate(enabled: Boolean, input: WorkspacePolicyItemUpdateInput, policy: WorkspacePolicyName, workspaceId: String!): Boolean!
+
+  """Enable or disable 2FA enforcement for a workspace"""
+  workspaceTwoFactorEnforcementUpdate(enabled: Boolean!, workspaceId: String!): Boolean!
+
   """Update a workspace by id"""
   workspaceUpdate(id: String!, input: WorkspaceUpdateInput!): Boolean!
 
@@ -1717,6 +2115,108 @@ type Mutation {
 
 interface Node {
   id: ID!
+}
+
+type NotificationChannel implements Node {
+  config: NotificationChannelConfig!
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime!
+  workspaceId: String!
+}
+
+scalar NotificationChannelConfig
+
+type NotificationDelivery implements Node {
+  createdAt: DateTime!
+  id: ID!
+  notificationInstance: NotificationInstance!
+  readAt: DateTime
+  status: NotificationDeliveryStatus!
+  type: NotificationDeliveryType!
+  updatedAt: DateTime!
+  userId: String
+}
+
+type NotificationDeliveryCreated {
+  delivery: NotificationDelivery!
+  type: String!
+}
+
+input NotificationDeliveryFilterInput {
+  environmentId: String
+  onlyUnread: Boolean
+  projectId: String
+  status: NotificationStatus
+  type: NotificationDeliveryType
+  workspaceId: String
+}
+
+type NotificationDeliveryResolved {
+  deliveryIds: [String!]!
+  type: String!
+}
+
+enum NotificationDeliveryStatus {
+  FAILED
+  PENDING
+  SENT
+}
+
+enum NotificationDeliveryType {
+  EMAIL
+  INAPP
+  WEBHOOK
+}
+
+union NotificationDeliveryUpdate = NotificationDeliveryCreated | NotificationDeliveryResolved
+
+type NotificationInstance implements Node {
+  createdAt: DateTime!
+  environmentId: String
+  event: Event!
+  eventId: String!
+  eventType: String
+  id: ID!
+  payload: NotificationPayload!
+  projectId: String
+  resolvedAt: DateTime
+  resourceId: String
+  resourceType: String
+  serviceId: String
+  severity: NotificationSeverity!
+  status: NotificationStatus!
+  updatedAt: DateTime!
+  volumeId: String
+  workspaceId: String!
+}
+
+scalar NotificationPayload
+
+type NotificationRule implements Node {
+  channels: [NotificationChannel!]!
+  createdAt: DateTime!
+  environmentId: String
+  ephemeralEnvironments: Boolean
+  eventTypes: [String!]!
+  id: ID!
+  projectId: String
+  serviceId: String
+  severities: [NotificationSeverity!]!
+  updatedAt: DateTime!
+  workspaceId: String!
+}
+
+enum NotificationSeverity {
+  CRITICAL
+  INFO
+  NOTICE
+  WARNING
+}
+
+enum NotificationStatus {
+  ACTIVE
+  RESOLVED
 }
 
 type ObservabilityDashboard implements Node {
@@ -1800,18 +2300,25 @@ input ObservabilityDashboardUpdateInput {
   id: String!
 }
 
-input OverrideInput {
-  enabled: Boolean!
-  name: String!
-  resource: String!
-  resourceId: String!
-}
-
 type PageInfo {
   endCursor: String
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
+}
+
+type PartnerProfile {
+  category: String!
+  description: String!
+  slug: String!
+  type: PartnerProfileType!
+  website: String!
+}
+
+enum PartnerProfileType {
+  BASIC_PARTNER
+  LIMITED_PARTNER
+  TEMPLATE_MAINTAINER
 }
 
 type Passkey implements Node {
@@ -1852,12 +2359,35 @@ type PlanLimitOverride implements Node {
 }
 
 enum PlatformFeatureFlag {
+  AGENT_USAGE_BILLING
   ALLOW_REPLICA_METRICS
-  BUCKETS
+  ARCHIVER_V2_ROLLOUT
+  BUILDER_V3_ROLLOUT_EXISTING_SERVICES
+  BUILDER_V3_ROLLOUT_EXISTING_SERVICES_PRO
+  BUILDER_V3_ROLLOUT_NEW_SERVICES
+  BUILDER_V3_ROLLOUT_NEW_SERVICES_PRO
+  COMPARE_CLICKHOUSE_METRICS
+  CTRD_IMAGE_STORE_ROLLOUT
   DEMO_PERCENTAGE_ROLLOUT
+  DISABLE_OAUTH_ACCESS_TOKENS
   ENABLE_RAW_SQL_QUERIES
-  MONOREPO_SUPPORT
+  FOCUSED_PR_ENVIRONMENTS
+  GITHUB_PERMISSION_NOTIFICATION_ROLLOUT
+  INLINE_NOTIFICATION_PROCESSING
+  IN_DASHBOARD_SUPPORT
+  KAFKA_DEPLOYMENT_STATUS_CHANGES
+  NEW_STRIPE_WEBHOOK_VERSION_ROLLOUT
+  OAUTH_DCR_KILLSWITCH
+  OAUTH_DEVICE_FLOW_KILLSWITCH
+  RADAR_AUTO_EVALUATE
+  SERVICEINSTANCE_DATALOADER_FOR_STATIC_URL
+  SPLIT_USAGE_QUERIES
+  STRIPE_METERS_NEW_ACCOUNTS
+  STRIPE_METERS_SHADOW_ENABLED
+  UNIFIED_SNAPSHOT_AND_BUILD
+  UNIFIED_SNAPSHOT_AND_BUILD_HOBBY
   UPDATED_VM_QUERIES
+  USE_CLICKHOUSE_METRICS
   USE_GH_WEBHOOKS_FOR_CHANGE_DETECTION
   VM_TIME_RANGE_QUERY
 }
@@ -1945,23 +2475,6 @@ type PluginVariablesConnectionEdge {
   node: Variable!
 }
 
-type PreferenceOverride implements Node {
-  enabled: Boolean!
-  id: ID!
-  name: String!
-  resource: String!
-  resourceId: String!
-}
-
-input PreferenceOverridesCreateUpdateData {
-  overrides: [OverrideInput!]!
-}
-
-input PreferenceOverridesDestroyData {
-  resource: String!
-  resourceId: String!
-}
-
 type Preferences implements Node {
   buildFailedEmail: Boolean!
   changelogEmail: Boolean!
@@ -1970,8 +2483,8 @@ type Preferences implements Node {
   ephemeralEnvironmentEmail: Boolean!
   id: ID!
   marketingEmail: Boolean!
-  preferenceOverrides: [PreferenceOverride!]
   subprocessorUpdatesEmail: Boolean!
+  templateQueueEmail: Boolean!
   usageEmail: Boolean!
 }
 
@@ -1983,6 +2496,7 @@ input PreferencesUpdateData {
   ephemeralEnvironmentEmail: Boolean
   marketingEmail: Boolean
   subprocessorUpdatesEmail: Boolean
+  templateQueueEmail: Boolean
   token: String
   usageEmail: Boolean
 }
@@ -2010,9 +2524,11 @@ type PrivateNetworkEndpoint {
   createdAt: DateTime
   deletedAt: DateTime
   dnsName: String!
+  newDnsName: String
   privateIps: [String!]!
   publicId: String!
   serviceInstanceId: String!
+  syncStatus: PrivateNetworkEndpointSyncStatus!
   tags: [String!]!
 }
 
@@ -2024,17 +2540,29 @@ input PrivateNetworkEndpointCreateOrGetInput {
   tags: [String!]!
 }
 
+enum PrivateNetworkEndpointSyncStatus {
+  ACTIVE
+  CREATING
+  DELETED
+  DELETING
+  UNSPECIFIED
+  UPDATING
+}
+
 type Project implements Node {
   baseEnvironment: Environment
   baseEnvironmentId: String
   botPrEnvironments: Boolean!
+  buckets(after: String, before: String, first: Int, last: Int): ProjectBucketsConnection!
   createdAt: DateTime!
   deletedAt: DateTime
-  deploymentTriggers(after: String, before: String, first: Int, last: Int): ProjectDeploymentTriggersConnection!
-  deployments(after: String, before: String, first: Int, last: Int): ProjectDeploymentsConnection!
+  deploymentTriggers(after: String, before: String, first: Int, last: Int): ProjectDeploymentTriggersConnection! @deprecated(reason: "Use environment.deploymentTriggers for properly scoped access control")
+  deployments(after: String, before: String, first: Int, last: Int): ProjectDeploymentsConnection! @deprecated(reason: "Use environment.deployments for properly scoped access control")
   description: String
-  environments(after: String, before: String, first: Int, last: Int): ProjectEnvironmentsConnection!
+  environments(after: String, before: String, first: Int, isEphemeral: Boolean, last: Int, sort: SortOrder): ProjectEnvironmentsConnection!
   expiredAt: DateTime
+  featureFlags: [ActiveProjectFeatureFlag!]!
+  focusedPrEnvironments: Boolean!
   groups(after: String, before: String, first: Int, last: Int): ProjectGroupsConnection!
   id: ID!
   isPublic: Boolean!
@@ -2051,9 +2579,32 @@ type Project implements Node {
   teamId: String @deprecated(reason: "Use workspaceId")
   updatedAt: DateTime!
   volumes(after: String, before: String, first: Int, last: Int): ProjectVolumesConnection!
-  webhooks(after: String, before: String, first: Int, last: Int): ProjectWebhooksConnection!
   workspace: Workspace
   workspaceId: String
+}
+
+type ProjectBucketsConnection {
+  edges: [ProjectBucketsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectBucketsConnectionEdge {
+  cursor: String!
+  node: Bucket!
+}
+
+type ProjectComplianceInfo {
+  """Permissions for each project member"""
+  memberPermissions: [ProjectMemberPermissionsInfo!]!
+  projectId: String!
+  projectName: String!
+
+  """Backup schedules for database services"""
+  serviceBackups: [ServiceBackupInfo!]!
+
+  """2FA status for each project member"""
+  twoFactorMembers: [ProjectMemberTwoFactorInfo!]!
+  workspaceId: String!
 }
 
 input ProjectCreateInput {
@@ -2103,6 +2654,11 @@ type ProjectEnvironmentsConnectionEdge {
   node: Environment!
 }
 
+input ProjectFeatureFlagToggleInput {
+  flag: ActiveProjectFeatureFlag!
+  projectId: String!
+}
+
 type ProjectGroupsConnection {
   edges: [ProjectGroupsConnectionEdge!]!
   pageInfo: PageInfo!
@@ -2144,9 +2700,30 @@ type ProjectMember {
   role: ProjectRole!
 }
 
+input ProjectMemberAddInput {
+  projectId: String!
+  role: ProjectRole!
+  userId: String!
+}
+
+type ProjectMemberPermissionsInfo {
+  email: String!
+  name: String
+  role: ProjectRole!
+}
+
 input ProjectMemberRemoveInput {
   projectId: String!
   userId: String!
+}
+
+type ProjectMemberTwoFactorInfo {
+  email: String!
+
+  """List of enabled 2FA methods (AUTHENTICATOR, PASSKEY)"""
+  enabledMethods: [TwoFactorMethodCompliance!]!
+  name: String
+  twoFactorAuthEnabled: Boolean!
 }
 
 input ProjectMemberUpdateInput {
@@ -2248,6 +2825,11 @@ input ProjectUpdateInput {
   """Enable/disable pull request environments for PRs created by bots"""
   botPrEnvironments: Boolean
   description: String
+
+  """
+  Enable focused PR environments that only deploy services affected by changed files
+  """
+  focusedPrEnvironments: Boolean
   isPublic: Boolean
   name: String
   prDeploys: Boolean
@@ -2273,22 +2855,20 @@ type ProjectVolumesConnectionEdge {
   node: Volume!
 }
 
-type ProjectWebhook implements Node {
-  filters: [String!]
-  id: ID!
-  lastStatus: Int
+type ProjectWorkspaceMember {
+  email: String!
+
+  """List of enabled 2FA methods (AUTHENTICATOR, PASSKEY)"""
+  enabledMethods: [TwoFactorMethodProjectWorkspace!]!
+  name: String
+  twoFactorAuthEnabled: Boolean!
+}
+
+type ProjectWorkspaceMembersResponse {
+  members: [ProjectWorkspaceMember!]!
   projectId: String!
-  url: String!
-}
-
-type ProjectWebhooksConnection {
-  edges: [ProjectWebhooksConnectionEdge!]!
-  pageInfo: PageInfo!
-}
-
-type ProjectWebhooksConnectionEdge {
-  cursor: String!
-  node: ProjectWebhook!
+  projectName: String!
+  workspaceId: String!
 }
 
 type ProviderAuth implements Node {
@@ -2329,8 +2909,32 @@ type Query {
   """Returns the platform feature flags enabled for the current user"""
   allPlatformFeatureFlags: [PlatformFeatureFlagStatus!]!
 
+  """Introspect the current API token and its accessible workspaces."""
+  apiToken: ApiTokenContext!
+
   """Gets all API tokens for the authenticated user."""
   apiTokens(after: String, before: String, first: Int, last: Int): QueryApiTokensConnection!
+
+  """Get an audit log by ID"""
+  auditLog(
+    """The ID of the audit log entry"""
+    id: String!
+
+    """The ID of the workspace"""
+    workspaceId: String!
+  ): AuditLog!
+
+  """Get a list of all audit log event types and their description"""
+  auditLogEventTypeInfo: [AuditLogEventTypeInfo!]!
+
+  """Gets audit logs for a workspace."""
+  auditLogs(after: String, before: String, filter: AuditLogFilterInput, first: Int, last: Int, sort: SortOrder, workspaceId: String!): QueryAuditLogsConnection!
+
+  """Get the S3-compatible credentials for a bucket"""
+  bucketInstanceDetails(bucketId: String!, environmentId: String!): BucketInstanceDetails
+
+  """Get the S3-compatible credentials for a bucket"""
+  bucketS3Credentials(bucketId: String!, environmentId: String!, projectId: String!): [BucketS3CompatibleCredentials!]!
 
   """Fetch logs for a build"""
   buildLogs(
@@ -2345,8 +2949,19 @@ type Query {
     startDate: DateTime
   ): [Log!]!
 
+  """
+  Preview a canvas layout merge from one environment to another. Returns the
+  merged state and the mutations needed to reach it.
+  """
+  canvasViewMergePreview(sourceEnvironmentId: String!, targetEnvironmentId: String!): CanvasViewMergePreview!
+
   """Gets the image URL for a Notion image block"""
   changelogBlockImage(id: String!): String!
+
+  """
+  Get compliance agreements for a workspace including HIPAA BAA and GDPR DPA status.
+  """
+  complianceAgreements(workspaceId: String!): ComplianceAgreementsInfo!
 
   """Fetch details for a custom domain"""
   customDomain(id: String!, projectId: String!): CustomDomain!
@@ -2463,8 +3078,14 @@ type Query {
   """Checks if user has access to GitHub repository"""
   gitHubRepoAccessAvailable(fullRepoName: String!): GitHubAccess!
 
+  """Gets SSH public keys from the authenticated user's GitHub account."""
+  gitHubSshKeys: [GitHubSshKey!]!
+
   """Check if a repo name is available"""
   githubIsRepoNameAvailable(fullRepoName: String!): Boolean!
+
+  """Get info for a GitHub pull request"""
+  githubPRInfo(prNumber: Int!, serviceId: String!): GitHubPRInfo
 
   """Checks if user has access to GitHub repository"""
   githubRepo(fullRepoName: String!): GitHubRepoWithoutInstallation!
@@ -2482,6 +3103,34 @@ type Query {
 
   """Get the Herokus apps for the current user"""
   herokuApps: [HerokuApp!]!
+
+  """
+  Get HTTP request duration metrics for a service (avg, p50, p90, p95, p99)
+  """
+  httpDurationMetrics(
+    """The end of the period to get metrics for."""
+    endDate: DateTime!
+    environmentId: String!
+
+    """Filter by HTTP method (e.g., GET, POST)"""
+    method: String
+
+    """Filter by request path"""
+    path: String
+    serviceId: String!
+
+    """The start of the period to get metrics for."""
+    startDate: DateTime!
+
+    """Filter by HTTP status code (e.g., 200, 404, 500)"""
+    statusCode: Int
+
+    """
+    The frequency of data points in the response. If the `stepSeconds` is 60,
+    then the response will contain one data point per minute.
+    """
+    stepSeconds: Int
+  ): HttpDurationMetricsResult!
 
   """Fetch HTTP logs for a deployment"""
   httpLogs(
@@ -2509,6 +3158,55 @@ type Query {
     limit: Int
     startDate: String
   ): [HttpLog!]!
+
+  """Get HTTP request metrics for a service"""
+  httpMetrics(
+    """The end of the period to get metrics for."""
+    endDate: DateTime!
+    environmentId: String!
+
+    """Filter by HTTP method (e.g., GET, POST)"""
+    method: String
+
+    """Filter by request path"""
+    path: String
+    serviceId: String!
+
+    """The start of the period to get metrics for."""
+    startDate: DateTime!
+
+    """Filter by HTTP status code (e.g., 200, 404, 500)"""
+    statusCode: Int
+
+    """
+    The frequency of data points in the response. If the `stepSeconds` is 60,
+    then the response will contain one data point per minute.
+    """
+    stepSeconds: Int
+  ): HttpMetricsResult!
+
+  """Get HTTP request metrics for a service, grouped by status code"""
+  httpMetricsGroupedByStatus(
+    """The end of the period to get metrics for."""
+    endDate: DateTime!
+    environmentId: String!
+
+    """Filter by HTTP method (e.g., GET, POST)"""
+    method: String
+
+    """Filter by request path"""
+    path: String
+    serviceId: String!
+
+    """The start of the period to get metrics for."""
+    startDate: DateTime!
+
+    """
+    The frequency of data points in the response. If the `stepSeconds` is 60,
+    then the response will contain one data point per minute.
+    """
+    stepSeconds: Int
+  ): [HttpMetricsByStatusResult!]!
 
   """Get an integration auth by provider providerId"""
   integrationAuth(provider: String!, providerId: String!): IntegrationAuth!
@@ -2561,8 +3259,12 @@ type Query {
     volumeInstanceExternalId: String
     workspaceId: String
   ): [MetricsResult!]!
-  node(id: ID!): Node
-  nodes(ids: [ID!]!): [Node]!
+
+  """Gets notification deliveries for the authenticated user"""
+  notificationDeliveries(after: String, before: String, filter: NotificationDeliveryFilterInput, first: Int, last: Int): QueryNotificationDeliveriesConnection!
+
+  """Get all notification rules for a workspace and project"""
+  notificationRules(projectId: String, workspaceId: String!): [NotificationRule!]!
 
   """Get all observability dashboards for an environment"""
   observabilityDashboards(after: String, before: String, environmentId: String!, first: Int, last: Int): QueryObservabilityDashboardsConnection!
@@ -2605,6 +3307,13 @@ type Query {
   """Get a project by ID"""
   project(id: String!): Project!
 
+  """
+  Get comprehensive compliance information for a project including 2FA status,
+  member permissions, backup schedules, and compliance agreements. Requires
+  workspace API token with admin access.
+  """
+  projectCompliance(projectId: String!): ProjectComplianceInfo!
+
   """Get a project invitation by code"""
   projectInvitation(code: String!): PublicProjectInvitation!
 
@@ -2625,6 +3334,9 @@ type Query {
 
   """Get all project tokens for a project"""
   projectTokens(after: String, before: String, first: Int, last: Int, projectId: String!): QueryProjectTokensConnection!
+
+  """Get workspace members for a project with 2FA details"""
+  projectWorkspaceMembers(projectId: String!): ProjectWorkspaceMembersResponse!
 
   """Gets all projects for a user or workspace."""
   projects(after: String, before: String, first: Int, includeDeleted: Boolean, last: Int, userId: String, workspaceId: String): QueryProjectsConnection!
@@ -2666,6 +3378,9 @@ type Query {
   """Gets all sessions for authenticated user."""
   sessions(after: String, before: String, first: Int, last: Int): QuerySessionsConnection!
 
+  """Gets all SSH public keys for the authenticated user."""
+  sshPublicKeys(after: String, before: String, first: Int, last: Int): QuerySshPublicKeysConnection!
+
   """All TCP proxies for a service instance"""
   tcpProxies(environmentId: String!, serviceId: String!): [TCPProxy!]!
 
@@ -2677,6 +3392,9 @@ type Query {
 
   """Get a template by code or ID or GitHub owner and repo."""
   template(code: String, id: String, owner: String, repo: String): Template!
+
+  """Get the metrics for a template."""
+  templateMetrics(id: String!): TemplateMetrics!
 
   """Get the source template for a project."""
   templateSourceForProject(projectId: String!): Template
@@ -2768,9 +3486,6 @@ type Query {
     volumeInstanceId: String!
   ): [VolumeInstanceBackupSchedule!]!
 
-  """Get all webhooks for a project"""
-  webhooks(after: String, before: String, first: Int, last: Int, projectId: String!): QueryWebhooksConnection!
-
   """Gets the status of a workflow"""
   workflowStatus(workflowId: String!): WorkflowResult!
 
@@ -2779,6 +3494,12 @@ type Query {
 
   """Find a workspace by invite code"""
   workspaceByCode(code: String!): Workspace!
+
+  """Gets all identity providers of a workspace"""
+  workspaceIdentityProviders(after: String, before: String, first: Int, last: Int, workspaceId: String!): QueryWorkspaceIdentityProvidersConnection!
+
+  """Get the policies for a workspace"""
+  workspacePolicy(workspaceId: String!): WorkspacePolicy
 
   """Get all templates for a workspace."""
   workspaceTemplates(after: String, before: String, first: Int, last: Int, workspaceId: String!): QueryWorkspaceTemplatesConnection!
@@ -2792,6 +3513,16 @@ type QueryApiTokensConnection {
 type QueryApiTokensConnectionEdge {
   cursor: String!
   node: ApiToken!
+}
+
+type QueryAuditLogsConnection {
+  edges: [QueryAuditLogsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryAuditLogsConnectionEdge {
+  cursor: String!
+  node: AuditLog!
 }
 
 type QueryDeploymentEventsConnection {
@@ -2884,6 +3615,16 @@ type QueryIntegrationsConnectionEdge {
   node: Integration!
 }
 
+type QueryNotificationDeliveriesConnection {
+  edges: [QueryNotificationDeliveriesConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryNotificationDeliveriesConnectionEdge {
+  cursor: String!
+  node: NotificationDelivery!
+}
+
 type QueryObservabilityDashboardsConnection {
   edges: [QueryObservabilityDashboardsConnectionEdge!]!
   pageInfo: PageInfo!
@@ -2934,6 +3675,16 @@ type QuerySessionsConnectionEdge {
   node: Session!
 }
 
+type QuerySshPublicKeysConnection {
+  edges: [QuerySshPublicKeysConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QuerySshPublicKeysConnectionEdge {
+  cursor: String!
+  node: SshPublicKey!
+}
+
 type QueryTeamTemplatesConnection {
   edges: [QueryTeamTemplatesConnectionEdge!]!
   pageInfo: PageInfo!
@@ -2974,14 +3725,14 @@ type QueryUserTemplatesConnectionEdge {
   node: Template!
 }
 
-type QueryWebhooksConnection {
-  edges: [QueryWebhooksConnectionEdge!]!
+type QueryWorkspaceIdentityProvidersConnection {
+  edges: [QueryWorkspaceIdentityProvidersConnectionEdge!]!
   pageInfo: PageInfo!
 }
 
-type QueryWebhooksConnectionEdge {
+type QueryWorkspaceIdentityProvidersConnectionEdge {
   cursor: String!
-  node: ProjectWebhook!
+  node: WorkspaceIdentityProvider!
 }
 
 type QueryWorkspaceTemplatesConnection {
@@ -3034,24 +3785,6 @@ type ReferralUser {
   status: ReferralStatus!
 }
 
-type RefundRequest implements Node {
-  amount: Int!
-  decision: RefundRequestDecisionEnum
-  id: ID!
-  invoiceId: String!
-  plainThreadId: String
-  reason: String!
-  userId: String
-  workspace: Workspace!
-}
-
-"""Possible decisions for a RefundRequest"""
-enum RefundRequestDecisionEnum {
-  AUTO_REFUNDED
-  AUTO_REJECTED
-  MANUALLY_REFUNDED
-}
-
 type Region {
   """Region country"""
   country: String!
@@ -3099,14 +3832,6 @@ input RegistryCredentialsInput {
   username: String!
 }
 
-type ReissuedInvoice implements Node {
-  id: ID!
-  originalInvoiceId: String!
-  reissuedInvoiceId: String
-  workspace: Workspace!
-  workspaceId: String!
-}
-
 enum ReplicateVolumeInstanceSnapshotStatus {
   COMPLETED
   FAILED
@@ -3147,23 +3872,43 @@ enum RestartPolicyType {
   ON_FAILURE
 }
 
+"""
+
+SerializedTemplateConfig is a custom scalar type that represents the serializedConfig for a template.
+JSON Schema: https://backboard.railway.com/schema/template.schema.json
+
+"""
 scalar SerializedTemplateConfig
 
 type Service implements Node {
   createdAt: DateTime!
   deletedAt: DateTime
-  deployments(after: String, before: String, first: Int, last: Int): ServiceDeploymentsConnection!
+  deployments(after: String, before: String, first: Int, last: Int): ServiceDeploymentsConnection! @deprecated(reason: "Use environment.deployments for properly scoped access control")
   featureFlags: [ActiveServiceFeatureFlag!]!
+
+  """
+  Whether this service has hidden registry credentials from a template. When
+  true, the credentials are stored in the template and used during deployment.
+  """
+  hasHiddenRegistryCredentialsFromTemplate: Boolean!
   icon: String
   id: ID!
   name: String!
   project: Project!
   projectId: String!
   repoTriggers(after: String, before: String, first: Int, last: Int): ServiceRepoTriggersConnection!
-  serviceInstances(after: String, before: String, first: Int, last: Int): ServiceServiceInstancesConnection!
+  serviceInstances(after: String, before: String, first: Int, last: Int): ServiceServiceInstancesConnection! @deprecated(reason: "Use environment.serviceInstances for properly scoped access control")
+  templateId: String
   templateServiceId: String
   templateThreadSlug: String
   updatedAt: DateTime!
+}
+
+type ServiceBackupInfo {
+  """List of enabled backup schedule kinds (DAILY, WEEKLY, MONTHLY)"""
+  schedules: [VolumeInstanceBackupScheduleKind!]!
+  serviceId: String!
+  serviceName: String!
 }
 
 input ServiceConnectInput {
@@ -3191,6 +3936,13 @@ input ServiceCreateInput {
   projectId: String!
   registryCredentials: RegistryCredentialsInput
   source: ServiceSourceInput
+
+  """Template ID. Required when templateServiceId is provided."""
+  templateId: String
+
+  """
+  Template service ID within the template's serializedConfig. Required when templateId is provided.
+  """
   templateServiceId: String
   variables: EnvironmentVariables
 }
@@ -3206,15 +3958,19 @@ type ServiceDeploymentsConnectionEdge {
 }
 
 type ServiceDomain implements Domain {
+  cdnMode: String
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
   edgeId: String
   environmentId: String!
   id: ID!
+  newDomainName: String
+  newHostLabel: String
   projectId: String
   serviceId: String!
   suffix: String
+  syncStatus: ServiceDomainSyncStatus!
   targetPort: Int
   updatedAt: DateTime
 }
@@ -3225,10 +3981,19 @@ input ServiceDomainCreateInput {
   targetPort: Int
 }
 
+enum ServiceDomainSyncStatus {
+  ACTIVE
+  CREATING
+  DELETED
+  DELETING
+  UNSPECIFIED
+  UPDATING
+}
+
 input ServiceDomainUpdateInput {
   domain: String!
   environmentId: String!
-  serviceDomainId: String
+  serviceDomainId: String!
   serviceId: String!
   targetPort: Int
 }
@@ -3239,18 +4004,26 @@ input ServiceFeatureFlagToggleInput {
 }
 
 type ServiceInstance implements Node {
+  """
+  All currently active (deployed and running) deployments for this service instance
+  """
+  activeDeployments: [Deployment!]!
   buildCommand: String
   builder: Builder!
   createdAt: DateTime!
   cronSchedule: String
   deletedAt: DateTime
+  dockerfilePath: String
   domains: AllDomains!
   drainingSeconds: Int
   environmentId: String!
   healthcheckPath: String
   healthcheckTimeout: Int
   id: ID!
+  ipv6EgressEnabled: Boolean
   isUpdatable: Boolean!
+
+  """The most recent deployment for this service instance"""
   latestDeployment: Deployment
   nextCronRunAt: DateTime
   nixpacksPlan: JSON
@@ -3263,6 +4036,7 @@ type ServiceInstance implements Node {
   restartPolicyMaxRetries: Int!
   restartPolicyType: RestartPolicyType!
   rootDirectory: String
+  service: Service!
   serviceId: String!
   serviceName: String!
   sleepApplication: Boolean
@@ -3290,9 +4064,11 @@ input ServiceInstanceUpdateInput {
   buildCommand: String
   builder: Builder
   cronSchedule: String
+  dockerfilePath: String
   drainingSeconds: Int
   healthcheckPath: String
   healthcheckTimeout: Int
+  ipv6EgressEnabled: Boolean
   multiRegionConfig: JSON
   nixpacksPlan: JSON
   numReplicas: Int
@@ -3383,6 +4159,35 @@ type SimilarTemplate {
   workspaceId: String
 }
 
+scalar SkippedResourceIds
+
+enum SortOrder {
+  asc
+  desc
+}
+
+type SpendCommitment implements Node {
+  features: [SpendCommitmentFeatureId!]!
+  id: ID!
+  minSpendAmountCents: Int!
+}
+
+scalar SpendCommitmentFeatureId
+
+type SshPublicKey implements Node {
+  createdAt: DateTime!
+  fingerprint: String!
+  id: ID!
+  name: String!
+  publicKey: String!
+  updatedAt: DateTime!
+}
+
+input SshPublicKeyCreateInput {
+  name: String!
+  publicKey: String!
+}
+
 type Subscription {
   """Stream logs for a build"""
   buildLogs(
@@ -3462,6 +4267,11 @@ type Subscription {
     filter: String
   ): [HttpLog!]!
 
+  """
+  Subscribe to notification delivery updates (created and resolved) for the authenticated user
+  """
+  notificationDeliveryUpdated: NotificationDeliveryUpdate!
+
   """Stream logs for a plugin"""
   pluginLogs(
     environmentId: String!
@@ -3480,10 +4290,12 @@ type Subscription {
 
 type SubscriptionDiscount {
   couponId: String!
+  couponName: String!
 }
 
 type SubscriptionItem {
   itemId: String!
+  priceDollars: Float
   priceId: String!
   productId: String!
   quantity: BigInt
@@ -3512,6 +4324,18 @@ enum SubscriptionState {
   UNPAID
 }
 
+"""
+
+Support Health Metrics for Template Support Bonus Calculation..
+Contains metrics calculated from community support thread performance:
+- solved: Percentage (0-100) of solved threads
+- csat: Percentage (0-100) of threads with positive customer satisfaction
+- aggregateHealth: Average of solved and csat when both available, otherwise just solved percentage
+Templates with aggregateHealth >= 80 qualify for support bonus (additional 10% kickback).
+
+"""
+scalar SupportHealthMetrics
+
 enum SupportTierOverride {
   BUSINESS_CLASS
   BUSINESS_CLASS_TRIAL
@@ -3526,6 +4350,7 @@ type TCPProxy {
   id: ID!
   proxyPort: Int!
   serviceId: String!
+  syncStatus: TCPProxySyncStatus!
   updatedAt: DateTime
 }
 
@@ -3533,6 +4358,15 @@ input TCPProxyCreateInput {
   applicationPort: Int!
   environmentId: String!
   serviceId: String!
+}
+
+enum TCPProxySyncStatus {
+  ACTIVE
+  CREATING
+  DELETED
+  DELETING
+  UNSPECIFIED
+  UPDATING
 }
 
 type Team implements Node {
@@ -3618,6 +4452,7 @@ type Template implements Node {
   services(after: String, before: String, first: Int, last: Int): TemplateServicesConnection!
   similarTemplates: [SimilarTemplate!]!
   status: TemplateStatus!
+  supportHealthMetrics: SupportHealthMetrics
   tags: [String!]
   teamId: String @deprecated(reason: "Use workspaceId")
   totalPayout: Float!
@@ -3694,6 +4529,18 @@ type TemplateGuide {
 
 scalar TemplateMetadata
 
+type TemplateMetrics {
+  activeDeployments: Int!
+  deploymentsLast90Days: Int!
+  earningsLast30Days: Float!
+  earningsLast90Days: Float!
+  eligibleForSupportBonus: Boolean!
+  supportHealth: Float!
+  templateHealth: Float!
+  totalDeployments: Int!
+  totalEarnings: Float!
+}
+
 input TemplatePublishInput {
   category: String!
   demoProjectId: String
@@ -3745,14 +4592,23 @@ type TrustedDomain {
   domainName: String!
   id: ID!
   role: String!
+  status: TrustedDomainStatus!
   verificationData: TrustedDomainVerificationData!
   verificationType: String!
   workspaceId: String!
 }
 
+enum TrustedDomainStatus {
+  FAILED
+  PENDING
+  VERIFIED
+}
+
 type TrustedDomainVerificationData {
+  dnsHost: String
   domainMatch: Domain
   domainStatus: CustomDomainStatus
+  token: String
 }
 
 type TwoFactorInfo {
@@ -3774,33 +4630,29 @@ input TwoFactorInfoValidateInput {
   twoFactorLinkingKey: String
 }
 
+enum TwoFactorMethodCompliance {
+  AUTHENTICATOR
+  PASSKEY
+}
+
+enum TwoFactorMethodProjectWorkspace {
+  AUTHENTICATOR
+  PASSKEY
+}
+
+input UpdateNotificationRuleInput {
+  channelConfigs: [NotificationChannelConfig!]
+  ephemeralEnvironments: Boolean
+  eventTypes: [String!]
+  severities: [NotificationSeverity!]
+}
+
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
-type UsageAnomaly implements Node {
-  actedOn: DateTime
-  action: UsageAnomalyAction
-  actorId: String
-  flaggedAt: DateTime!
-  flaggedFor: UsageAnomalyFlagReason!
-  id: ID!
-}
-
-"""Possible actions for a UsageAnomaly."""
-enum UsageAnomalyAction {
-  ALLOWED
-  AUTOBANNED
-  BANNED
-}
-
-"""Possible flag reasons for a UsageAnomaly."""
-enum UsageAnomalyFlagReason {
-  HIGH_CPU_USAGE
-  HIGH_DISK_USAGE
-  HIGH_NETWORK_USAGE
-}
-
 type UsageLimit implements Node {
+  agentHardLimitCents: Int
+  agentSoftLimitCents: Int
   customerId: String!
   hardLimit: Int
   id: ID!
@@ -3827,7 +4679,10 @@ type User implements Node {
   email: String!
   featureFlags: [ActiveFeatureFlag!]!
   flags: [UserFlag!]!
+  githubProviderId: String
+  githubUsername: String
   has2FA: Boolean!
+  hasPasskeys: Boolean!
   id: ID!
   isAdmin: Boolean!
   isConductor: Boolean!
@@ -3860,20 +4715,6 @@ input UserFlagsRemoveInput {
 input UserFlagsSetInput {
   flags: [UserFlag!]!
   userId: String
-}
-
-type UserGithubRepo implements Node {
-  createdAt: DateTime!
-  defaultBranch: String!
-  description: String
-  fullName: String!
-  id: ID!
-  installationId: String!
-  isPrivate: Boolean!
-  lastPushedAt: DateTime!
-  name: String!
-  ownerAvatarUrl: String
-  updatedAt: DateTime!
 }
 
 type UserKickbackEarnings {
@@ -4012,7 +4853,7 @@ type Volume implements Node {
   name: String!
   project: Project!
   projectId: String!
-  volumeInstances(after: String, before: String, first: Int, last: Int): VolumeVolumeInstancesConnection!
+  volumeInstances(after: String, before: String, first: Int, last: Int): VolumeVolumeInstancesConnection! @deprecated(reason: "Use environment.volumeInstances for properly scoped access control")
 }
 
 input VolumeCreateInput {
@@ -4066,6 +4907,7 @@ type VolumeInstanceBackup {
   referencedMB: Int
   scheduleId: String
   usedMB: Int
+  volumeInstanceSizeMB: Int
 }
 
 type VolumeInstanceBackupSchedule implements Node {
@@ -4170,55 +5012,11 @@ type VolumeVolumeInstancesConnectionEdge {
   node: VolumeInstance!
 }
 
-input WebhookCreateInput {
-  filters: [String!]
-  projectId: String!
-  url: String!
-}
-
-input WebhookUpdateInput {
-  filters: [String!]
-  url: String!
-}
-
-type Withdrawal implements Node {
-  amount: Float!
-  createdAt: DateTime!
-  customerId: String!
-  id: ID!
-  status: WithdrawalStatusType!
-  updatedAt: DateTime!
-  withdrawalAccount: WithdrawalAccount!
-  withdrawalAccountId: String!
-}
-
-type WithdrawalAccount implements Node {
-  customerId: String!
-  id: ID!
-  platform: WithdrawalPlatformTypes!
-  platformDetails: String!
-  stripeConnectInfo: WithdrawalAccountStripeConnectInfo
-}
-
-type WithdrawalAccountStripeConnectInfo {
-  bankLast4: String
-  cardLast4: String
-  hasOnboarded: Boolean!
-  needsAttention: Boolean!
-}
-
 enum WithdrawalPlatformTypes {
   BMAC
   GITHUB
   PAYPAL
   STRIPE_CONNECT
-}
-
-enum WithdrawalStatusType {
-  CANCELLED
-  COMPLETED
-  FAILED
-  PENDING
 }
 
 type WorkflowId {
@@ -4247,18 +5045,79 @@ type Workspace implements Node {
   createdAt: DateTime!
   customer: Customer!
   discordRole: String
+
+  """Whether 2FA enforcement is enabled for this workspace."""
+  has2FAEnforcement: Boolean!
+
+  """Whether automatic deployment diagnosis is enabled for this workspace."""
+  hasAutomaticDiagnosis: Boolean!
+
+  """Whether this workspace has access to guardrails policies."""
+  hasGuardrailsAccess: Boolean!
+  hasSAML: Boolean!
   id: ID!
+  identityProviders(after: String, before: String, first: Int, last: Int): WorkspaceIdentityProvidersConnection!
   members: [WorkspaceMember!]!
   name: String!
+  partnerProfile: PartnerProfile
   plan: Plan!
   preferredRegion: String
   projects(after: String, before: String, first: Int, last: Int): WorkspaceProjectsConnection!
+
+  """
+  Whether the current user's access is redacted due to pending 2FA requirement.
+  Returns true if the user is a workspace member, workspace has 2FA enforcement
+  enabled, and the current user needs to enable 2FA.
+  """
+  redactedDueTo2FAPending: Boolean!
   referredUsers: [ReferralUser!]!
   slackChannelId: String
   subscriptionModel: SubscriptionModel! @deprecated(reason: "Use plan field instead")
+  subscriptionPlanLimit: SubscriptionPlanLimit
   supportTierOverride: SupportTierOverride
   team: Team @deprecated(reason: "Teams are being removed from the system, don't use it")
   updatedAt: DateTime!
+
+  """
+  Get a list of user emails in the workspace who do not have verified 2FA
+  enabled. Returns an empty array if all users have 2FA enabled.
+  """
+  usersWithout2FA: [String!]!
+}
+
+type WorkspaceIdentityProvider implements Node {
+  connection: WorkspaceIdPConnection!
+  createdAt: DateTime!
+  enforcementEnabledAt: DateTime
+  id: ID!
+  updatedAt: DateTime!
+  workspace: Workspace!
+  workspaceId: String!
+}
+
+type WorkspaceIdentityProvidersConnection {
+  edges: [WorkspaceIdentityProvidersConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type WorkspaceIdentityProvidersConnectionEdge {
+  cursor: String!
+  node: WorkspaceIdentityProvider!
+}
+
+type WorkspaceIdPConnection {
+  createdAt: DateTime
+  provider: String
+  status: WorkspaceIdPConnectionStatus!
+  updatedAt: DateTime
+}
+
+enum WorkspaceIdPConnectionStatus {
+  ACTIVE
+  DRAFT
+  INACTIVE
+  PENDING
+  VALIDATING
 }
 
 input WorkspaceInviteCodeCreateInput {
@@ -4274,12 +5133,31 @@ type WorkspaceMember {
   id: String!
   name: String
   role: TeamRole!
+
+  """Only retrieved if requested by an admin"""
+  twoFactorAuthEnabled: Boolean
 }
 
 input WorkspacePermissionChangeInput {
   role: TeamRole!
   userId: String!
   workspaceId: String!
+}
+
+type WorkspacePolicy implements Node {
+  id: ID!
+  restrictPublicTcpProxies: Boolean!
+  restrictRailwayDomainGeneration: Boolean!
+}
+
+input WorkspacePolicyItemUpdateInput {
+  enabled: Boolean!
+  policy: WorkspacePolicyName!
+}
+
+enum WorkspacePolicyName {
+  RESTRICT_PUBLIC_TCP_PROXIES
+  RESTRICT_RAILWAY_DOMAIN_GENERATION
 }
 
 type WorkspaceProjectsConnection {

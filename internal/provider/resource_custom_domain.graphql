@@ -7,6 +7,8 @@ fragment CustomDomain on CustomDomain {
       requiredValue
       zone
     }
+    verificationDnsHost
+    verificationToken
   }
   environmentId
   serviceId
