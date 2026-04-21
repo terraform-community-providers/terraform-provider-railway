@@ -29,14 +29,16 @@ type CustomDomainResource struct {
 }
 
 type CustomDomainResourceModel struct {
-	Id             types.String `tfsdk:"id"`
-	Domain         types.String `tfsdk:"domain"`
-	EnvironmentId  types.String `tfsdk:"environment_id"`
-	ServiceId      types.String `tfsdk:"service_id"`
-	ProjectId      types.String `tfsdk:"project_id"`
-	HostLabel      types.String `tfsdk:"host_label"`
-	Zone           types.String `tfsdk:"zone"`
-	DNSRecordValue types.String `tfsdk:"dns_record_value"`
+	Id                      types.String `tfsdk:"id"`
+	Domain                  types.String `tfsdk:"domain"`
+	EnvironmentId           types.String `tfsdk:"environment_id"`
+	ServiceId               types.String `tfsdk:"service_id"`
+	ProjectId               types.String `tfsdk:"project_id"`
+	HostLabel               types.String `tfsdk:"host_label"`
+	Zone                    types.String `tfsdk:"zone"`
+	DNSRecordValue          types.String `tfsdk:"dns_record_value"`
+	VerificationHostLabel   types.String `tfsdk:"verification_host_label"`
+	VerificationRecordValue types.String `tfsdk:"verification_record_value"`
 }
 
 func (r *CustomDomainResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -95,6 +97,14 @@ func (r *CustomDomainResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"dns_record_value": schema.StringAttribute{
 				MarkdownDescription: "DNS record value of the custom domain.",
+				Computed:            true,
+			},
+			"verification_host_label": schema.StringAttribute{
+				MarkdownDescription: "DNS host label for custom domain verification",
+				Computed:            true,
+			},
+			"verification_record_value": schema.StringAttribute{
+				MarkdownDescription: "DNS record value for custom domain verification",
 				Computed:            true,
 			},
 		},
@@ -163,6 +173,8 @@ func (r *CustomDomainResource) Create(ctx context.Context, req resource.CreateRe
 	data.HostLabel = types.StringValue(domain.Status.DnsRecords[0].Hostlabel)
 	data.Zone = types.StringValue(domain.Status.DnsRecords[0].Zone)
 	data.DNSRecordValue = types.StringValue(domain.Status.DnsRecords[0].RequiredValue)
+	data.VerificationHostLabel = types.StringValue(domain.Status.VerificationDnsHost)
+	data.VerificationRecordValue = types.StringValue(domain.Status.VerificationToken)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -204,6 +216,8 @@ func (r *CustomDomainResource) Read(ctx context.Context, req resource.ReadReques
 	data.HostLabel = types.StringValue(domain.Status.DnsRecords[0].Hostlabel)
 	data.Zone = types.StringValue(domain.Status.DnsRecords[0].Zone)
 	data.DNSRecordValue = types.StringValue(domain.Status.DnsRecords[0].RequiredValue)
+	data.VerificationHostLabel = types.StringValue(domain.Status.VerificationDnsHost)
+	data.VerificationRecordValue = types.StringValue(domain.Status.VerificationToken)
 
 	service, err := getService(ctx, *r.client, domain.ServiceId)
 

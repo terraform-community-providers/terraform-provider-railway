@@ -24,6 +24,8 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
 					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "dns_record_value"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_host_label"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_record_value"),
 				),
 			},
 			// ImportState testing
@@ -45,6 +47,8 @@ func TestAccCustomDomainResourceDefault(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "host_label", "terraform"),
 					resource.TestCheckResourceAttr("railway_custom_domain.test", "zone", "example.com"),
 					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "dns_record_value"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_host_label"),
+					resource.TestCheckResourceAttrSet("railway_custom_domain.test", "verification_record_value"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

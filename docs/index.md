@@ -10,7 +10,7 @@ This provider is used to interact with the many resources supported by [Railway]
 
 This provider requires a Railway API token in order to manage resources.
 
-To manage the full selection of resources, provide a user token from an account with appropriate permissions.
+To manage the full selection of resources, provide a **account/workspace token**.
 
 There are several ways to provide the required token:
 
