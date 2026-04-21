@@ -68,13 +68,21 @@ func (v *CustomDomainCreateInput) GetTargetPort() *int { return v.TargetPort }
 
 // CustomDomainStatus includes the requested fields of the GraphQL type CustomDomainStatus.
 type CustomDomainStatus struct {
-	DnsRecords []CustomDomainStatusDnsRecordsDNSRecords `json:"dnsRecords"`
+	DnsRecords          []CustomDomainStatusDnsRecordsDNSRecords `json:"dnsRecords"`
+	VerificationDnsHost string                                   `json:"verificationDnsHost"`
+	VerificationToken   string                                   `json:"verificationToken"`
 }
 
 // GetDnsRecords returns CustomDomainStatus.DnsRecords, and is useful for accessing the field via an interface.
 func (v *CustomDomainStatus) GetDnsRecords() []CustomDomainStatusDnsRecordsDNSRecords {
 	return v.DnsRecords
 }
+
+// GetVerificationDnsHost returns CustomDomainStatus.VerificationDnsHost, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatus) GetVerificationDnsHost() string { return v.VerificationDnsHost }
+
+// GetVerificationToken returns CustomDomainStatus.VerificationToken, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatus) GetVerificationToken() string { return v.VerificationToken }
 
 // CustomDomainStatusDnsRecordsDNSRecords includes the requested fields of the GraphQL type DNSRecords.
 type CustomDomainStatusDnsRecordsDNSRecords struct {
@@ -278,9 +286,11 @@ type ProjectUpdateInput struct {
 	// Enable/disable pull request environments for PRs created by bots
 	BotPrEnvironments bool   `json:"botPrEnvironments"`
 	Description       string `json:"description"`
-	IsPublic          bool   `json:"isPublic"`
-	Name              string `json:"name"`
-	PrDeploys         bool   `json:"prDeploys"`
+	// Enable focused PR environments that only deploy services affected by changed files
+	FocusedPrEnvironments bool   `json:"focusedPrEnvironments"`
+	IsPublic              bool   `json:"isPublic"`
+	Name                  string `json:"name"`
+	PrDeploys             bool   `json:"prDeploys"`
 }
 
 // GetBaseEnvironmentId returns ProjectUpdateInput.BaseEnvironmentId, and is useful for accessing the field via an interface.
@@ -291,6 +301,9 @@ func (v *ProjectUpdateInput) GetBotPrEnvironments() bool { return v.BotPrEnviron
 
 // GetDescription returns ProjectUpdateInput.Description, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetDescription() string { return v.Description }
+
+// GetFocusedPrEnvironments returns ProjectUpdateInput.FocusedPrEnvironments, and is useful for accessing the field via an interface.
+func (v *ProjectUpdateInput) GetFocusedPrEnvironments() bool { return v.FocusedPrEnvironments }
 
 // GetIsPublic returns ProjectUpdateInput.IsPublic, and is useful for accessing the field via an interface.
 func (v *ProjectUpdateInput) GetIsPublic() bool { return v.IsPublic }
@@ -382,8 +395,11 @@ type ServiceCreateInput struct {
 	ProjectId           string                    `json:"projectId"`
 	RegistryCredentials *RegistryCredentialsInput `json:"registryCredentials,omitempty"`
 	Source              *ServiceSourceInput       `json:"source,omitempty"`
-	TemplateServiceId   *string                   `json:"templateServiceId,omitempty"`
-	Variables           map[string]interface{}    `json:"variables"`
+	// Template ID. Required when templateServiceId is provided.
+	TemplateId *string `json:"templateId,omitempty"`
+	// Template service ID within the template's serializedConfig. Required when templateId is provided.
+	TemplateServiceId *string                `json:"templateServiceId,omitempty"`
+	Variables         map[string]interface{} `json:"variables"`
 }
 
 // GetBranch returns ServiceCreateInput.Branch, and is useful for accessing the field via an interface.
@@ -408,6 +424,9 @@ func (v *ServiceCreateInput) GetRegistryCredentials() *RegistryCredentialsInput 
 
 // GetSource returns ServiceCreateInput.Source, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetSource() *ServiceSourceInput { return v.Source }
+
+// GetTemplateId returns ServiceCreateInput.TemplateId, and is useful for accessing the field via an interface.
+func (v *ServiceCreateInput) GetTemplateId() *string { return v.TemplateId }
 
 // GetTemplateServiceId returns ServiceCreateInput.TemplateServiceId, and is useful for accessing the field via an interface.
 func (v *ServiceCreateInput) GetTemplateServiceId() *string { return v.TemplateServiceId }
@@ -481,9 +500,11 @@ type ServiceInstanceUpdateInput struct {
 	BuildCommand            *string                   `json:"buildCommand,omitempty"`
 	Builder                 *Builder                  `json:"builder,omitempty"`
 	CronSchedule            *string                   `json:"cronSchedule"`
+	DockerfilePath          string                    `json:"dockerfilePath"`
 	DrainingSeconds         int                       `json:"drainingSeconds"`
 	HealthcheckPath         *string                   `json:"healthcheckPath,omitempty"`
 	HealthcheckTimeout      *int                      `json:"healthcheckTimeout,omitempty"`
+	Ipv6EgressEnabled       bool                      `json:"ipv6EgressEnabled"`
 	MultiRegionConfig       *map[string]interface{}   `json:"multiRegionConfig,omitempty"`
 	NixpacksPlan            *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
 	NumReplicas             *int                      `json:"numReplicas,omitempty"`
@@ -510,6 +531,9 @@ func (v *ServiceInstanceUpdateInput) GetBuilder() *Builder { return v.Builder }
 // GetCronSchedule returns ServiceInstanceUpdateInput.CronSchedule, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetCronSchedule() *string { return v.CronSchedule }
 
+// GetDockerfilePath returns ServiceInstanceUpdateInput.DockerfilePath, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetDockerfilePath() string { return v.DockerfilePath }
+
 // GetDrainingSeconds returns ServiceInstanceUpdateInput.DrainingSeconds, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetDrainingSeconds() int { return v.DrainingSeconds }
 
@@ -518,6 +542,9 @@ func (v *ServiceInstanceUpdateInput) GetHealthcheckPath() *string { return v.Hea
 
 // GetHealthcheckTimeout returns ServiceInstanceUpdateInput.HealthcheckTimeout, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetHealthcheckTimeout() *int { return v.HealthcheckTimeout }
+
+// GetIpv6EgressEnabled returns ServiceInstanceUpdateInput.Ipv6EgressEnabled, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetIpv6EgressEnabled() bool { return v.Ipv6EgressEnabled }
 
 // GetMultiRegionConfig returns ServiceInstanceUpdateInput.MultiRegionConfig, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetMultiRegionConfig() *map[string]interface{} {
@@ -2314,7 +2341,8 @@ type getServiceInstanceServiceInstance struct {
 	RootDirectory     *string                                               `json:"rootDirectory"`
 	RailwayConfigFile *string                                               `json:"railwayConfigFile"`
 	CronSchedule      *string                                               `json:"cronSchedule"`
-	LatestDeployment  getServiceInstanceServiceInstanceLatestDeployment     `json:"latestDeployment"`
+	// The most recent deployment for this service instance
+	LatestDeployment getServiceInstanceServiceInstanceLatestDeployment `json:"latestDeployment"`
 }
 
 // GetSource returns getServiceInstanceServiceInstance.Source, and is useful for accessing the field via an interface.
@@ -3341,6 +3369,8 @@ fragment CustomDomain on CustomDomain {
 			requiredValue
 			zone
 		}
+		verificationDnsHost
+		verificationToken
 	}
 	environmentId
 	serviceId
@@ -4322,6 +4352,8 @@ fragment CustomDomain on CustomDomain {
 			requiredValue
 			zone
 		}
+		verificationDnsHost
+		verificationToken
 	}
 	environmentId
 	serviceId

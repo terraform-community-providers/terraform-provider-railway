@@ -35,6 +35,8 @@ resource "railway_custom_domain" "api" {
 - `host_label` (String) Host label of the custom domain.
 - `id` (String) Identifier of the custom domain.
 - `project_id` (String) Identifier of the project the custom domain belongs to.
+- `verification_host_label` (String) DNS host label for custom domain verification
+- `verification_record_value` (String) DNS record value for custom domain verification
 - `zone` (String) Zone of the custom domain.
 
 ## Import
