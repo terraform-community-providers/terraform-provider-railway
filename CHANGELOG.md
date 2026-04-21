@@ -1,3 +1,9 @@
+## 0.6.2
+
+### Enhancements
+* Add support for `target_port` in `railway_custom_domain` resource
+* Added `verification_host_label` and `verification_record_value` to `railway_custom_domain` resource
+
 ## 0.6.1
 
 ### Bug fixes

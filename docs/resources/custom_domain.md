@@ -29,6 +29,10 @@ resource "railway_custom_domain" "api" {
 - `environment_id` (String) Identifier of the environment the custom domain belongs to.
 - `service_id` (String) Identifier of the service the custom domain belongs to.
 
+### Optional
+
+- `target_port` (Number) Target port of the service for the custom domain.
+
 ### Read-Only
 
 - `dns_record_value` (String) DNS record value of the custom domain.
