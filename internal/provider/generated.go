@@ -1044,6 +1044,22 @@ type __getProjectInput struct {
 // GetId returns __getProjectInput.Id, and is useful for accessing the field via an interface.
 func (v *__getProjectInput) GetId() string { return v.Id }
 
+// __getRenderedVariablesInput is used internally by genqlient
+type __getRenderedVariablesInput struct {
+	ProjectId     string `json:"projectId"`
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetProjectId returns __getRenderedVariablesInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__getRenderedVariablesInput) GetProjectId() string { return v.ProjectId }
+
+// GetEnvironmentId returns __getRenderedVariablesInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getRenderedVariablesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __getRenderedVariablesInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__getRenderedVariablesInput) GetServiceId() string { return v.ServiceId }
+
 // __getServiceInput is used internally by genqlient
 type __getServiceInput struct {
 	Id string `json:"id"`
@@ -2323,6 +2339,15 @@ type getProjectResponse struct {
 
 // GetProject returns getProjectResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectResponse) GetProject() getProjectProject { return v.Project }
+
+// getRenderedVariablesResponse is returned by getRenderedVariables on success.
+type getRenderedVariablesResponse struct {
+	// All variables by pluginId or serviceId. If neither are provided, all shared variables are returned.
+	Variables map[string]interface{} `json:"variables"`
+}
+
+// GetVariables returns getRenderedVariablesResponse.Variables, and is useful for accessing the field via an interface.
+func (v *getRenderedVariablesResponse) GetVariables() map[string]interface{} { return v.Variables }
 
 // getServiceInstanceResponse is returned by getServiceInstance on success.
 type getServiceInstanceResponse struct {
@@ -4035,6 +4060,40 @@ fragment Project on Project {
 	var err error
 
 	var data getProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getRenderedVariables(
+	ctx context.Context,
+	client graphql.Client,
+	projectId string,
+	environmentId string,
+	serviceId string,
+) (*getRenderedVariablesResponse, error) {
+	req := &graphql.Request{
+		OpName: "getRenderedVariables",
+		Query: `
+query getRenderedVariables ($projectId: String!, $environmentId: String!, $serviceId: String!) {
+	variables(environmentId: $environmentId, projectId: $projectId, serviceId: $serviceId, unrendered: false)
+}
+`,
+		Variables: &__getRenderedVariablesInput{
+			ProjectId:     projectId,
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+		},
+	}
+	var err error
+
+	var data getRenderedVariablesResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
