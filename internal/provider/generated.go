@@ -23,6 +23,7 @@ const (
 type CustomDomain struct {
 	Id            string             `json:"id"`
 	Domain        string             `json:"domain"`
+	TargetPort    int                `json:"targetPort"`
 	Status        CustomDomainStatus `json:"status"`
 	EnvironmentId string             `json:"environmentId"`
 	ServiceId     string             `json:"serviceId"`
@@ -33,6 +34,9 @@ func (v *CustomDomain) GetId() string { return v.Id }
 
 // GetDomain returns CustomDomain.Domain, and is useful for accessing the field via an interface.
 func (v *CustomDomain) GetDomain() string { return v.Domain }
+
+// GetTargetPort returns CustomDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *CustomDomain) GetTargetPort() int { return v.TargetPort }
 
 // GetStatus returns CustomDomain.Status, and is useful for accessing the field via an interface.
 func (v *CustomDomain) GetStatus() CustomDomainStatus { return v.Status }
@@ -1180,6 +1184,22 @@ func (v *__redeployServiceInstanceInput) GetEnvironmentId() string { return v.En
 // GetServiceId returns __redeployServiceInstanceInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *__redeployServiceInstanceInput) GetServiceId() string { return v.ServiceId }
 
+// __updateCustomDomainInput is used internally by genqlient
+type __updateCustomDomainInput struct {
+	EnvironmentId string `json:"environmentId"`
+	Id            string `json:"id"`
+	TargetPort    *int   `json:"targetPort"`
+}
+
+// GetEnvironmentId returns __updateCustomDomainInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__updateCustomDomainInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetId returns __updateCustomDomainInput.Id, and is useful for accessing the field via an interface.
+func (v *__updateCustomDomainInput) GetId() string { return v.Id }
+
+// GetTargetPort returns __updateCustomDomainInput.TargetPort, and is useful for accessing the field via an interface.
+func (v *__updateCustomDomainInput) GetTargetPort() *int { return v.TargetPort }
+
 // __updateProjectInput is used internally by genqlient
 type __updateProjectInput struct {
 	Id    string             `json:"id"`
@@ -1352,6 +1372,11 @@ func (v *createCustomDomainCustomDomainCreateCustomDomain) GetDomain() string {
 	return v.CustomDomain.Domain
 }
 
+// GetTargetPort returns createCustomDomainCustomDomainCreateCustomDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *createCustomDomainCustomDomainCreateCustomDomain) GetTargetPort() int {
+	return v.CustomDomain.TargetPort
+}
+
 // GetStatus returns createCustomDomainCustomDomainCreateCustomDomain.Status, and is useful for accessing the field via an interface.
 func (v *createCustomDomainCustomDomainCreateCustomDomain) GetStatus() CustomDomainStatus {
 	return v.CustomDomain.Status
@@ -1397,6 +1422,8 @@ type __premarshalcreateCustomDomainCustomDomainCreateCustomDomain struct {
 
 	Domain string `json:"domain"`
 
+	TargetPort int `json:"targetPort"`
+
 	Status CustomDomainStatus `json:"status"`
 
 	EnvironmentId string `json:"environmentId"`
@@ -1417,6 +1444,7 @@ func (v *createCustomDomainCustomDomainCreateCustomDomain) __premarshalJSON() (*
 
 	retval.Id = v.CustomDomain.Id
 	retval.Domain = v.CustomDomain.Domain
+	retval.TargetPort = v.CustomDomain.TargetPort
 	retval.Status = v.CustomDomain.Status
 	retval.EnvironmentId = v.CustomDomain.EnvironmentId
 	retval.ServiceId = v.CustomDomain.ServiceId
@@ -2759,6 +2787,11 @@ func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetDomain(
 	return v.CustomDomain.Domain
 }
 
+// GetTargetPort returns listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetTargetPort() int {
+	return v.CustomDomain.TargetPort
+}
+
 // GetStatus returns listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain.Status, and is useful for accessing the field via an interface.
 func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) GetStatus() CustomDomainStatus {
 	return v.CustomDomain.Status
@@ -2804,6 +2837,8 @@ type __premarshallistCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain str
 
 	Domain string `json:"domain"`
 
+	TargetPort int `json:"targetPort"`
+
 	Status CustomDomainStatus `json:"status"`
 
 	EnvironmentId string `json:"environmentId"`
@@ -2824,6 +2859,7 @@ func (v *listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain) __premarsh
 
 	retval.Id = v.CustomDomain.Id
 	retval.Domain = v.CustomDomain.Domain
+	retval.TargetPort = v.CustomDomain.TargetPort
 	retval.Status = v.CustomDomain.Status
 	retval.EnvironmentId = v.CustomDomain.EnvironmentId
 	retval.ServiceId = v.CustomDomain.ServiceId
@@ -3003,6 +3039,15 @@ type redeployServiceInstanceResponse struct {
 func (v *redeployServiceInstanceResponse) GetServiceInstanceRedeploy() bool {
 	return v.ServiceInstanceRedeploy
 }
+
+// updateCustomDomainResponse is returned by updateCustomDomain on success.
+type updateCustomDomainResponse struct {
+	// Updates a custom domain.
+	CustomDomainUpdate bool `json:"customDomainUpdate"`
+}
+
+// GetCustomDomainUpdate returns updateCustomDomainResponse.CustomDomainUpdate, and is useful for accessing the field via an interface.
+func (v *updateCustomDomainResponse) GetCustomDomainUpdate() bool { return v.CustomDomainUpdate }
 
 // updateProjectProjectUpdateProject includes the requested fields of the GraphQL type Project.
 type updateProjectProjectUpdateProject struct {
@@ -3363,6 +3408,7 @@ mutation createCustomDomain ($input: CustomDomainCreateInput!) {
 fragment CustomDomain on CustomDomain {
 	id
 	domain
+	targetPort
 	status {
 		dnsRecords {
 			hostlabel
@@ -4346,6 +4392,7 @@ query listCustomDomains ($environmentId: String!, $serviceId: String!, $projectI
 fragment CustomDomain on CustomDomain {
 	id
 	domain
+	targetPort
 	status {
 		dnsRecords {
 			hostlabel
@@ -4486,6 +4533,40 @@ mutation redeployServiceInstance ($environmentId: String!, $serviceId: String!) 
 	var err error
 
 	var data redeployServiceInstanceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func updateCustomDomain(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	id string,
+	targetPort *int,
+) (*updateCustomDomainResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateCustomDomain",
+		Query: `
+mutation updateCustomDomain ($environmentId: String!, $id: String!, $targetPort: Int) {
+	customDomainUpdate(environmentId: $environmentId, id: $id, targetPort: $targetPort)
+}
+`,
+		Variables: &__updateCustomDomainInput{
+			EnvironmentId: environmentId,
+			Id:            id,
+			TargetPort:    targetPort,
+		},
+	}
+	var err error
+
+	var data updateCustomDomainResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
