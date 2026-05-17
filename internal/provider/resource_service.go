@@ -415,7 +415,7 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 
-	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data, true)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service settings, got error: %s", err))
@@ -454,7 +454,7 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 	data.Name = types.StringValue(service.Name)
 	data.ProjectId = types.StringValue(service.ProjectId)
 
-	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data, false)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service settings, got error: %s", err))
@@ -631,7 +631,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	err = getAndBuildServiceInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data, true)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service settings, got error: %s", err))
@@ -733,7 +733,7 @@ func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]Servic
 	return instanceInput
 }
 
-func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
+func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel, preserveMissing bool) error {
 	// Read the service again to get the updated source attributes
 	_, environment, err := defaultEnvironmentForProject(ctx, client, projectId)
 
@@ -749,23 +749,34 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 
 	if response.ServiceInstance.CronSchedule != nil {
 		data.CronSchedule = types.StringValue(*response.ServiceInstance.CronSchedule)
+	} else if !preserveMissing {
+		data.CronSchedule = types.StringNull()
 	}
 
 	if response.ServiceInstance.RootDirectory != nil && len(*response.ServiceInstance.RootDirectory) != 0 {
 		data.RootDirectory = types.StringValue(*response.ServiceInstance.RootDirectory)
+	} else if !preserveMissing {
+		data.RootDirectory = types.StringNull()
 	}
 
 	if response.ServiceInstance.RailwayConfigFile != nil && len(*response.ServiceInstance.RailwayConfigFile) != 0 {
 		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
+	} else if !preserveMissing {
+		data.ConfigPath = types.StringNull()
 	}
 
 	if response.ServiceInstance.Source != nil {
 		if response.ServiceInstance.Source.Image != nil {
 			data.SourceImage = types.StringValue(*response.ServiceInstance.Source.Image)
+		} else if !preserveMissing {
+			data.SourceImage = types.StringNull()
 		}
 
 		if response.ServiceInstance.Source.Repo != nil {
 			data.SourceRepo = types.StringValue(*response.ServiceInstance.Source.Repo)
+			if !preserveMissing {
+				data.SourceImage = types.StringNull()
+			}
 
 			triggersResponse, err := listDeploymentTriggers(ctx, client, projectId, environment.Id, serviceId)
 
@@ -776,13 +787,22 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 			// up to 1 deployment trigger is allowed for one (service, environment) pair. So, dealing with [0] only
 			if edges := triggersResponse.DeploymentTriggers.Edges; len(edges) > 0 {
 				data.SourceRepoBranch = types.StringValue(edges[0].Node.Branch)
-			} else if data.SourceRepoBranch.IsNull() || data.SourceRepoBranch.IsUnknown() {
-				// Only set to null if there's no existing value
-				// This preserves the branch value during updates when triggers might not be immediately available
+			} else if !preserveMissing || data.SourceRepoBranch.IsNull() || data.SourceRepoBranch.IsUnknown() {
+				// During normal reads, a missing trigger means the branch has
+				// drifted out of Railway and must be cleared from state. During
+				// create/update, preserve a known planned value because Railway
+				// may expose the trigger asynchronously just after serviceConnect.
 				data.SourceRepoBranch = types.StringNull()
 			}
 			// Otherwise keep the existing value from state/plan
+		} else if !preserveMissing {
+			data.SourceRepo = types.StringNull()
+			data.SourceRepoBranch = types.StringNull()
 		}
+	} else if !preserveMissing {
+		data.SourceImage = types.StringNull()
+		data.SourceRepo = types.StringNull()
+		data.SourceRepoBranch = types.StringNull()
 	}
 
 	if len(response.ServiceInstance.LatestDeployment.Meta) != 0 {
