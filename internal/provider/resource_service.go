@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -658,7 +660,7 @@ func (r *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	_, err := deleteService(ctx, *r.client, data.Id.ValueString())
+	err := deleteServiceWithRetry(ctx, *r.client, data.Id.ValueString())
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete service, got error: %s", err))
@@ -953,4 +955,48 @@ func redeployAllInstances(ctx context.Context, client graphql.Client, serviceId 
 	tflog.Trace(ctx, "redeployed all service instances")
 
 	return nil
+}
+
+// deleteServiceWithRetry wraps deleteService with bounded retry on transient
+// Railway upstream errors (most often 504 Gateway Timeout when Railway's
+// container deprovisioner takes longer than the API gateway's read timeout).
+// Without this, normal-looking destroys leak projects/services.
+func deleteServiceWithRetry(ctx context.Context, client graphql.Client, id string) error {
+	const maxAttempts = 4
+	var lastErr error
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		_, err := deleteService(ctx, client, id)
+		if err == nil {
+			return nil
+		}
+		lastErr = err
+
+		// Only retry on transient upstream errors. genqlient surfaces the HTTP
+		// status in the error message — match on common gateway-timeout shapes
+		// rather than introspecting wrapped error types.
+		msg := err.Error()
+		transient := strings.Contains(msg, "504") ||
+			strings.Contains(msg, "Gateway Timeout") ||
+			strings.Contains(msg, "502") ||
+			strings.Contains(msg, "Bad Gateway")
+		if !transient {
+			return err
+		}
+
+		if attempt == maxAttempts {
+			break
+		}
+
+		// Linear backoff, capped. Service teardown on Railway commonly
+		// finishes within ~10s once it actually starts; longer waits don't
+		// help once we're past the gateway timeout window.
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(time.Duration(attempt*5) * time.Second):
+		}
+	}
+
+	return lastErr
 }
