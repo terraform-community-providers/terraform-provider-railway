@@ -1,0 +1,22 @@
+query listProjectsForDataSource(
+  $workspaceId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  projects(
+    workspaceId: $workspaceId
+    includeDeleted: false
+    first: 100
+    after: $after
+  ) {
+    edges {
+      node {
+        ...Project
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}

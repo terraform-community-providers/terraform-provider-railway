@@ -1160,6 +1160,30 @@ func (v *__listDeploymentTriggersInput) GetEnvironmentId() string { return v.Env
 // GetServiceId returns __listDeploymentTriggersInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *__listDeploymentTriggersInput) GetServiceId() string { return v.ServiceId }
 
+// __listEnvironmentsForDataSourceInput is used internally by genqlient
+type __listEnvironmentsForDataSourceInput struct {
+	ProjectId string  `json:"projectId"`
+	After     *string `json:"after"`
+}
+
+// GetProjectId returns __listEnvironmentsForDataSourceInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__listEnvironmentsForDataSourceInput) GetProjectId() string { return v.ProjectId }
+
+// GetAfter returns __listEnvironmentsForDataSourceInput.After, and is useful for accessing the field via an interface.
+func (v *__listEnvironmentsForDataSourceInput) GetAfter() *string { return v.After }
+
+// __listProjectsForDataSourceInput is used internally by genqlient
+type __listProjectsForDataSourceInput struct {
+	WorkspaceId string  `json:"workspaceId"`
+	After       *string `json:"after"`
+}
+
+// GetWorkspaceId returns __listProjectsForDataSourceInput.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *__listProjectsForDataSourceInput) GetWorkspaceId() string { return v.WorkspaceId }
+
+// GetAfter returns __listProjectsForDataSourceInput.After, and is useful for accessing the field via an interface.
+func (v *__listProjectsForDataSourceInput) GetAfter() *string { return v.After }
+
 // __listServiceDomainsInput is used internally by genqlient
 type __listServiceDomainsInput struct {
 	EnvironmentId string `json:"environmentId"`
@@ -1175,6 +1199,18 @@ func (v *__listServiceDomainsInput) GetServiceId() string { return v.ServiceId }
 
 // GetProjectId returns __listServiceDomainsInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *__listServiceDomainsInput) GetProjectId() string { return v.ProjectId }
+
+// __listServicesForDataSourceInput is used internally by genqlient
+type __listServicesForDataSourceInput struct {
+	ProjectId string  `json:"projectId"`
+	After     *string `json:"after"`
+}
+
+// GetProjectId returns __listServicesForDataSourceInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__listServicesForDataSourceInput) GetProjectId() string { return v.ProjectId }
+
+// GetAfter returns __listServicesForDataSourceInput.After, and is useful for accessing the field via an interface.
+func (v *__listServicesForDataSourceInput) GetAfter() *string { return v.After }
 
 // __redeployServiceInstanceInput is used internally by genqlient
 type __redeployServiceInstanceInput struct {
@@ -2934,6 +2970,284 @@ func (v *listDeploymentTriggersResponse) GetDeploymentTriggers() listDeploymentT
 	return v.DeploymentTriggers
 }
 
+// listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection includes the requested fields of the GraphQL type QueryEnvironmentsConnection.
+type listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection struct {
+	Edges    []listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge `json:"edges"`
+	PageInfo listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo                               `json:"pageInfo"`
+}
+
+// GetEdges returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection) GetEdges() []listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge {
+	return v.Edges
+}
+
+// GetPageInfo returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection) GetPageInfo() listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo {
+	return v.PageInfo
+}
+
+// listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge includes the requested fields of the GraphQL type QueryEnvironmentsConnectionEdge.
+type listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge struct {
+	Node listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment `json:"node"`
+}
+
+// GetNode returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdge) GetNode() listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment {
+	return v.Node
+}
+
+// listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment includes the requested fields of the GraphQL type Environment.
+type listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment struct {
+	Environment `json:"-"`
+}
+
+// GetId returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment.Id, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) GetId() string {
+	return v.Environment.Id
+}
+
+// GetName returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment.Name, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) GetName() string {
+	return v.Environment.Name
+}
+
+// GetProjectId returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment.ProjectId, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) GetProjectId() string {
+	return v.Environment.ProjectId
+}
+
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Environment)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshallistEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment) __premarshalJSON() (*__premarshallistEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment, error) {
+	var retval __premarshallistEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionEdgesQueryEnvironmentsConnectionEdgeNodeEnvironment
+
+	retval.Id = v.Environment.Id
+	retval.Name = v.Environment.Name
+	retval.ProjectId = v.Environment.ProjectId
+	return &retval, nil
+}
+
+// listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+type listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo struct {
+	HasNextPage bool   `json:"hasNextPage"`
+	EndCursor   string `json:"endCursor"`
+}
+
+// GetHasNextPage returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// GetEndCursor returns listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
+
+// listEnvironmentsForDataSourceResponse is returned by listEnvironmentsForDataSource on success.
+type listEnvironmentsForDataSourceResponse struct {
+	// Gets all environments for a project.
+	Environments listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection `json:"environments"`
+}
+
+// GetEnvironments returns listEnvironmentsForDataSourceResponse.Environments, and is useful for accessing the field via an interface.
+func (v *listEnvironmentsForDataSourceResponse) GetEnvironments() listEnvironmentsForDataSourceEnvironmentsQueryEnvironmentsConnection {
+	return v.Environments
+}
+
+// listProjectsForDataSourceProjectsQueryProjectsConnection includes the requested fields of the GraphQL type QueryProjectsConnection.
+type listProjectsForDataSourceProjectsQueryProjectsConnection struct {
+	Edges    []listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdge `json:"edges"`
+	PageInfo listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo                           `json:"pageInfo"`
+}
+
+// GetEdges returns listProjectsForDataSourceProjectsQueryProjectsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnection) GetEdges() []listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdge {
+	return v.Edges
+}
+
+// GetPageInfo returns listProjectsForDataSourceProjectsQueryProjectsConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnection) GetPageInfo() listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo {
+	return v.PageInfo
+}
+
+// listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdge includes the requested fields of the GraphQL type QueryProjectsConnectionEdge.
+type listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdge struct {
+	Node listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject `json:"node"`
+}
+
+// GetNode returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdge) GetNode() listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject {
+	return v.Node
+}
+
+// listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject includes the requested fields of the GraphQL type Project.
+type listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject struct {
+	Project `json:"-"`
+}
+
+// GetId returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject.Id, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) GetId() string {
+	return v.Project.Id
+}
+
+// GetName returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject.Name, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) GetName() string {
+	return v.Project.Name
+}
+
+// GetDescription returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject.Description, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) GetDescription() string {
+	return v.Project.Description
+}
+
+// GetIsPublic returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject.IsPublic, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) GetIsPublic() bool {
+	return v.Project.IsPublic
+}
+
+// GetPrDeploys returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject.PrDeploys, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) GetPrDeploys() bool {
+	return v.Project.PrDeploys
+}
+
+// GetWorkspace returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject.Workspace, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) GetWorkspace() *ProjectWorkspace {
+	return v.Project.Workspace
+}
+
+// GetEnvironments returns listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject.Environments, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) GetEnvironments() ProjectEnvironmentsProjectEnvironmentsConnection {
+	return v.Project.Environments
+}
+
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Project)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshallistProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	Description string `json:"description"`
+
+	IsPublic bool `json:"isPublic"`
+
+	PrDeploys bool `json:"prDeploys"`
+
+	Workspace *ProjectWorkspace `json:"workspace"`
+
+	Environments ProjectEnvironmentsProjectEnvironmentsConnection `json:"environments"`
+}
+
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject) __premarshalJSON() (*__premarshallistProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject, error) {
+	var retval __premarshallistProjectsForDataSourceProjectsQueryProjectsConnectionEdgesQueryProjectsConnectionEdgeNodeProject
+
+	retval.Id = v.Project.Id
+	retval.Name = v.Project.Name
+	retval.Description = v.Project.Description
+	retval.IsPublic = v.Project.IsPublic
+	retval.PrDeploys = v.Project.PrDeploys
+	retval.Workspace = v.Project.Workspace
+	retval.Environments = v.Project.Environments
+	return &retval, nil
+}
+
+// listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+type listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo struct {
+	HasNextPage bool   `json:"hasNextPage"`
+	EndCursor   string `json:"endCursor"`
+}
+
+// GetHasNextPage returns listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// GetEndCursor returns listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceProjectsQueryProjectsConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
+
+// listProjectsForDataSourceResponse is returned by listProjectsForDataSource on success.
+type listProjectsForDataSourceResponse struct {
+	// Gets all projects for a user or workspace.
+	Projects listProjectsForDataSourceProjectsQueryProjectsConnection `json:"projects"`
+}
+
+// GetProjects returns listProjectsForDataSourceResponse.Projects, and is useful for accessing the field via an interface.
+func (v *listProjectsForDataSourceResponse) GetProjects() listProjectsForDataSourceProjectsQueryProjectsConnection {
+	return v.Projects
+}
+
 // listServiceDomainsDomainsAllDomains includes the requested fields of the GraphQL type AllDomains.
 type listServiceDomainsDomainsAllDomains struct {
 	ServiceDomains []listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain `json:"serviceDomains"`
@@ -3047,6 +3361,139 @@ type listServiceDomainsResponse struct {
 // GetDomains returns listServiceDomainsResponse.Domains, and is useful for accessing the field via an interface.
 func (v *listServiceDomainsResponse) GetDomains() listServiceDomainsDomainsAllDomains {
 	return v.Domains
+}
+
+// listServicesForDataSourceProject includes the requested fields of the GraphQL type Project.
+type listServicesForDataSourceProject struct {
+	Services listServicesForDataSourceProjectServicesProjectServicesConnection `json:"services"`
+}
+
+// GetServices returns listServicesForDataSourceProject.Services, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProject) GetServices() listServicesForDataSourceProjectServicesProjectServicesConnection {
+	return v.Services
+}
+
+// listServicesForDataSourceProjectServicesProjectServicesConnection includes the requested fields of the GraphQL type ProjectServicesConnection.
+type listServicesForDataSourceProjectServicesProjectServicesConnection struct {
+	Edges    []listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdge `json:"edges"`
+	PageInfo listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo                             `json:"pageInfo"`
+}
+
+// GetEdges returns listServicesForDataSourceProjectServicesProjectServicesConnection.Edges, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnection) GetEdges() []listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdge {
+	return v.Edges
+}
+
+// GetPageInfo returns listServicesForDataSourceProjectServicesProjectServicesConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnection) GetPageInfo() listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo {
+	return v.PageInfo
+}
+
+// listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdge includes the requested fields of the GraphQL type ProjectServicesConnectionEdge.
+type listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdge struct {
+	Node listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService `json:"node"`
+}
+
+// GetNode returns listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdge) GetNode() listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService {
+	return v.Node
+}
+
+// listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService includes the requested fields of the GraphQL type Service.
+type listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService struct {
+	Service `json:"-"`
+}
+
+// GetId returns listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService.Id, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService) GetId() string {
+	return v.Service.Id
+}
+
+// GetName returns listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService.Name, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService) GetName() string {
+	return v.Service.Name
+}
+
+// GetProjectId returns listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService.ProjectId, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService) GetProjectId() string {
+	return v.Service.ProjectId
+}
+
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.Service)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshallistServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	ProjectId string `json:"projectId"`
+}
+
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService) __premarshalJSON() (*__premarshallistServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService, error) {
+	var retval __premarshallistServicesForDataSourceProjectServicesProjectServicesConnectionEdgesProjectServicesConnectionEdgeNodeService
+
+	retval.Id = v.Service.Id
+	retval.Name = v.Service.Name
+	retval.ProjectId = v.Service.ProjectId
+	return &retval, nil
+}
+
+// listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+type listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo struct {
+	HasNextPage bool   `json:"hasNextPage"`
+	EndCursor   string `json:"endCursor"`
+}
+
+// GetHasNextPage returns listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// GetEndCursor returns listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceProjectServicesProjectServicesConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
+
+// listServicesForDataSourceResponse is returned by listServicesForDataSource on success.
+type listServicesForDataSourceResponse struct {
+	// Get a project by ID
+	Project listServicesForDataSourceProject `json:"project"`
+}
+
+// GetProject returns listServicesForDataSourceResponse.Project, and is useful for accessing the field via an interface.
+func (v *listServicesForDataSourceResponse) GetProject() listServicesForDataSourceProject {
+	return v.Project
 }
 
 // redeployServiceInstanceResponse is returned by redeployServiceInstance on success.
@@ -4488,6 +4935,114 @@ query listDeploymentTriggers ($projectId: String!, $environmentId: String!, $ser
 	return &data, err
 }
 
+func listEnvironmentsForDataSource(
+	ctx context.Context,
+	client graphql.Client,
+	projectId string,
+	after *string,
+) (*listEnvironmentsForDataSourceResponse, error) {
+	req := &graphql.Request{
+		OpName: "listEnvironmentsForDataSource",
+		Query: `
+query listEnvironmentsForDataSource ($projectId: String!, $after: String) {
+	environments(projectId: $projectId, first: 100, after: $after) {
+		edges {
+			node {
+				... Environment
+			}
+		}
+		pageInfo {
+			hasNextPage
+			endCursor
+		}
+	}
+}
+fragment Environment on Environment {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__listEnvironmentsForDataSourceInput{
+			ProjectId: projectId,
+			After:     after,
+		},
+	}
+	var err error
+
+	var data listEnvironmentsForDataSourceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func listProjectsForDataSource(
+	ctx context.Context,
+	client graphql.Client,
+	workspaceId string,
+	after *string,
+) (*listProjectsForDataSourceResponse, error) {
+	req := &graphql.Request{
+		OpName: "listProjectsForDataSource",
+		Query: `
+query listProjectsForDataSource ($workspaceId: String!, $after: String) {
+	projects(workspaceId: $workspaceId, includeDeleted: false, first: 100, after: $after) {
+		edges {
+			node {
+				... Project
+			}
+		}
+		pageInfo {
+			hasNextPage
+			endCursor
+		}
+	}
+}
+fragment Project on Project {
+	id
+	name
+	description
+	isPublic
+	prDeploys
+	workspace {
+		id
+	}
+	environments {
+		edges {
+			node {
+				id
+				name
+				createdAt
+			}
+		}
+	}
+}
+`,
+		Variables: &__listProjectsForDataSourceInput{
+			WorkspaceId: workspaceId,
+			After:       after,
+		},
+	}
+	var err error
+
+	var data listProjectsForDataSourceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func listServiceDomains(
 	ctx context.Context,
 	client graphql.Client,
@@ -4523,6 +5078,55 @@ fragment ServiceDomain on ServiceDomain {
 	var err error
 
 	var data listServiceDomainsResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func listServicesForDataSource(
+	ctx context.Context,
+	client graphql.Client,
+	projectId string,
+	after *string,
+) (*listServicesForDataSourceResponse, error) {
+	req := &graphql.Request{
+		OpName: "listServicesForDataSource",
+		Query: `
+query listServicesForDataSource ($projectId: String!, $after: String) {
+	project(id: $projectId) {
+		services(first: 100, after: $after) {
+			edges {
+				node {
+					... Service
+				}
+			}
+			pageInfo {
+				hasNextPage
+				endCursor
+			}
+		}
+	}
+}
+fragment Service on Service {
+	id
+	name
+	projectId
+}
+`,
+		Variables: &__listServicesForDataSourceInput{
+			ProjectId: projectId,
+			After:     after,
+		},
+	}
+	var err error
+
+	var data listServicesForDataSourceResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

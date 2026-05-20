@@ -139,6 +139,10 @@ func (r *EnvironmentResource) Create(ctx context.Context, req resource.CreateReq
 	data.Name = types.StringValue(environment.Name)
 	data.ProjecId = types.StringValue(environment.ProjectId)
 
+	if data.SourceEnvironmentId.IsUnknown() {
+		data.SourceEnvironmentId = types.StringNull()
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

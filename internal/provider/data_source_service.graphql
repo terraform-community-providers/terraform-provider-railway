@@ -1,0 +1,19 @@
+query listServicesForDataSource(
+  $projectId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  project(id: $projectId) {
+    services(first: 100, after: $after) {
+      edges {
+        node {
+          ...Service
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}

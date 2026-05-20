@@ -1,0 +1,21 @@
+query listEnvironmentsForDataSource(
+  $projectId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  environments(
+    projectId: $projectId
+    first: 100
+    after: $after
+  ) {
+    edges {
+      node {
+        ...Environment
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
