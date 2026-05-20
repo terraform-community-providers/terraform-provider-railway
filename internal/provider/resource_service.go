@@ -780,7 +780,7 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 				data.SourceImage = types.StringNull()
 			}
 
-			triggersResponse, err := listDeploymentTriggers(ctx, client, projectId, environment.Id, serviceId)
+			triggersResponse, err := listDeploymentTriggers(ctx, client, projectId, environment.Id, serviceId, nil)
 
 			if err != nil {
 				return err

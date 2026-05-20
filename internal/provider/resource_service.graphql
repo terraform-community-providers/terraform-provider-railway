@@ -189,21 +189,6 @@ mutation disconnectService(
   }
 }
 
-query listDeploymentTriggers(
-  $projectId: String!
-  $environmentId: String!
-  $serviceId: String!
-) {
-  deploymentTriggers(
-    environmentId: $environmentId
-    projectId: $projectId
-    serviceId: $serviceId
-  ) {
-    edges {
-      node {
-        id
-        branch
-      }
-    }
-  }
-}
+# `listDeploymentTriggers` now lives in resource_deployment_trigger.graphql
+# alongside its sibling create/update/delete mutations and the
+# DeploymentTrigger fragment.

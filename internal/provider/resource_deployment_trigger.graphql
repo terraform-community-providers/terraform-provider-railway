@@ -1,0 +1,68 @@
+fragment DeploymentTrigger on DeploymentTrigger {
+  id
+  branch
+  checkSuites
+  environmentId
+  projectId
+  provider
+  repository
+  serviceId
+}
+
+# Railway exposes deploymentTriggers at the query root as a tuple-scoped list
+# (projectId + environmentId + serviceId), and Railway enforces exactly one
+# trigger per (service, env). The resource reads via this list, expects 1
+# match, and surfaces zero/multi as explicit errors via selectUniqueByName
+# in resource_deployment_trigger.go.
+query listDeploymentTriggers(
+  $projectId: String!
+  $environmentId: String!
+  $serviceId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  deploymentTriggers(
+    projectId: $projectId
+    environmentId: $environmentId
+    serviceId: $serviceId
+    first: 100
+    after: $after
+  ) {
+    edges {
+      node {
+        ...DeploymentTrigger
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+# @genqlient(for: "DeploymentTriggerCreateInput.checkSuites", omitempty: true, pointer: true)
+# @genqlient(for: "DeploymentTriggerCreateInput.rootDirectory", omitempty: true, pointer: true)
+mutation createDeploymentTrigger(
+  $input: DeploymentTriggerCreateInput!
+) {
+  deploymentTriggerCreate(input: $input) {
+    ...DeploymentTrigger
+  }
+}
+
+# @genqlient(for: "DeploymentTriggerUpdateInput.branch", pointer: true)
+# @genqlient(for: "DeploymentTriggerUpdateInput.checkSuites", pointer: true)
+# @genqlient(for: "DeploymentTriggerUpdateInput.repository", pointer: true)
+# @genqlient(for: "DeploymentTriggerUpdateInput.rootDirectory", pointer: true)
+mutation updateDeploymentTrigger(
+  $id: String!
+  $input: DeploymentTriggerUpdateInput!
+) {
+  deploymentTriggerUpdate(id: $id, input: $input) {
+    ...DeploymentTrigger
+  }
+}
+
+mutation deleteDeploymentTrigger($id: String!) {
+  deploymentTriggerDelete(id: $id)
+}
