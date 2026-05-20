@@ -15,7 +15,9 @@ on:
     types: [opened, synchronize, reopened, labeled]
 
 concurrency:
-  group: acceptance-${{ github.event.pull_request.number || github.ref }}
+  # Railway throttles project creation per user. Keep disposable acceptance
+  # runs serialized across PRs so two tests do not create projects at once.
+  group: railway-disposable-acceptance-${{ github.repository }}
   cancel-in-progress: false
 
 permissions:
