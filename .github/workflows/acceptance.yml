@@ -51,6 +51,10 @@ jobs:
       - name: Run disposable acceptance tests
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # Optional. If the RAILWAY_TOKEN has access to multiple workspaces,
+          # the Railway API rejects projectCreate without workspace_id. Tests
+          # that create projects read this and thread it through their HCL.
+          RAILWAY_TEST_WORKSPACE_ID: ${{ secrets.RAILWAY_TEST_WORKSPACE_ID }}
           TEST_REGEX: ${{ github.event_name == 'workflow_dispatch' && inputs.test_regex || 'TestAcc(EnvironmentResourceSourceEnvironmentId|ServiceDomainResourceTargetPort)' }}
         run: |
           set -euo pipefail
