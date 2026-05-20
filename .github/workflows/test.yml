@@ -49,7 +49,7 @@ jobs:
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
   test:
-    name: Terraform Provider Acceptance Test
+    name: Unit tests
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -69,8 +69,5 @@ jobs:
       - name: Install deps
         run: go mod download
       - name: Test
-        env:
-          TF_ACC: 1
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10

@@ -1,0 +1,63 @@
+name: Disposable Acceptance Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref or SHA to test. Defaults to the workflow ref."
+        required: false
+        default: ""
+      test_regex:
+        description: "Go test -run regex for disposable acceptance tests."
+        required: false
+        default: "TestAcc(EnvironmentResourceSourceEnvironmentId|ServiceDomainResourceTargetPort)"
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+concurrency:
+  group: acceptance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    name: Disposable Railway acceptance tests
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'acceptance')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || '' }}
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Install deps
+        run: go mod download
+
+      - name: Run disposable acceptance tests
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          TEST_REGEX: ${{ github.event_name == 'workflow_dispatch' && inputs.test_regex || 'TestAcc(EnvironmentResourceSourceEnvironmentId|ServiceDomainResourceTargetPort)' }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RAILWAY_TOKEN}" ]; then
+            echo "::error::RAILWAY_TOKEN repository secret is required for acceptance tests"
+            exit 1
+          fi
+
+          TF_ACC=1 go test -v -count=1 -timeout 120m ./internal/provider -run "${TEST_REGEX}"
