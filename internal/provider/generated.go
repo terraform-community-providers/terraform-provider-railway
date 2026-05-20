@@ -445,6 +445,7 @@ type ServiceDomain struct {
 	Suffix        string `json:"suffix"`
 	EnvironmentId string `json:"environmentId"`
 	ServiceId     string `json:"serviceId"`
+	TargetPort    int    `json:"targetPort"`
 }
 
 // GetId returns ServiceDomain.Id, and is useful for accessing the field via an interface.
@@ -461,6 +462,9 @@ func (v *ServiceDomain) GetEnvironmentId() string { return v.EnvironmentId }
 
 // GetServiceId returns ServiceDomain.ServiceId, and is useful for accessing the field via an interface.
 func (v *ServiceDomain) GetServiceId() string { return v.ServiceId }
+
+// GetTargetPort returns ServiceDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *ServiceDomain) GetTargetPort() int { return v.TargetPort }
 
 type ServiceDomainCreateInput struct {
 	EnvironmentId string `json:"environmentId"`
@@ -482,7 +486,7 @@ type ServiceDomainUpdateInput struct {
 	EnvironmentId   string `json:"environmentId"`
 	ServiceDomainId string `json:"serviceDomainId"`
 	ServiceId       string `json:"serviceId"`
-	TargetPort      int    `json:"targetPort"`
+	TargetPort      *int   `json:"targetPort"`
 }
 
 // GetDomain returns ServiceDomainUpdateInput.Domain, and is useful for accessing the field via an interface.
@@ -498,7 +502,7 @@ func (v *ServiceDomainUpdateInput) GetServiceDomainId() string { return v.Servic
 func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
 
 // GetTargetPort returns ServiceDomainUpdateInput.TargetPort, and is useful for accessing the field via an interface.
-func (v *ServiceDomainUpdateInput) GetTargetPort() int { return v.TargetPort }
+func (v *ServiceDomainUpdateInput) GetTargetPort() *int { return v.TargetPort }
 
 type ServiceInstanceUpdateInput struct {
 	BuildCommand            *string                   `json:"buildCommand,omitempty"`
@@ -1683,6 +1687,11 @@ func (v *createServiceDomainServiceDomainCreateServiceDomain) GetServiceId() str
 	return v.ServiceDomain.ServiceId
 }
 
+// GetTargetPort returns createServiceDomainServiceDomainCreateServiceDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *createServiceDomainServiceDomainCreateServiceDomain) GetTargetPort() int {
+	return v.ServiceDomain.TargetPort
+}
+
 func (v *createServiceDomainServiceDomainCreateServiceDomain) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -1718,6 +1727,8 @@ type __premarshalcreateServiceDomainServiceDomainCreateServiceDomain struct {
 	EnvironmentId string `json:"environmentId"`
 
 	ServiceId string `json:"serviceId"`
+
+	TargetPort int `json:"targetPort"`
 }
 
 func (v *createServiceDomainServiceDomainCreateServiceDomain) MarshalJSON() ([]byte, error) {
@@ -1736,6 +1747,7 @@ func (v *createServiceDomainServiceDomainCreateServiceDomain) __premarshalJSON()
 	retval.Suffix = v.ServiceDomain.Suffix
 	retval.EnvironmentId = v.ServiceDomain.EnvironmentId
 	retval.ServiceId = v.ServiceDomain.ServiceId
+	retval.TargetPort = v.ServiceDomain.TargetPort
 	return &retval, nil
 }
 
@@ -2962,6 +2974,11 @@ func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetServ
 	return v.ServiceDomain.ServiceId
 }
 
+// GetTargetPort returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetTargetPort() int {
+	return v.ServiceDomain.TargetPort
+}
+
 func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -2997,6 +3014,8 @@ type __premarshallistServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain 
 	EnvironmentId string `json:"environmentId"`
 
 	ServiceId string `json:"serviceId"`
+
+	TargetPort int `json:"targetPort"`
 }
 
 func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) MarshalJSON() ([]byte, error) {
@@ -3015,6 +3034,7 @@ func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) __prema
 	retval.Suffix = v.ServiceDomain.Suffix
 	retval.EnvironmentId = v.ServiceDomain.EnvironmentId
 	retval.ServiceId = v.ServiceDomain.ServiceId
+	retval.TargetPort = v.ServiceDomain.TargetPort
 	return &retval, nil
 }
 
@@ -3584,6 +3604,7 @@ fragment ServiceDomain on ServiceDomain {
 	suffix
 	environmentId
 	serviceId
+	targetPort
 }
 `,
 		Variables: &__createServiceDomainInput{
@@ -4490,6 +4511,7 @@ fragment ServiceDomain on ServiceDomain {
 	suffix
 	environmentId
 	serviceId
+	targetPort
 }
 `,
 		Variables: &__listServiceDomainsInput{

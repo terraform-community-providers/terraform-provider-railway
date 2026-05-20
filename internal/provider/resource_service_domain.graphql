@@ -4,6 +4,7 @@ fragment ServiceDomain on ServiceDomain {
   suffix
   environmentId
   serviceId
+  targetPort
 }
 
 query listServiceDomains(
@@ -31,6 +32,7 @@ mutation createServiceDomain(
   }
 }
 
+# @genqlient(for: "ServiceDomainUpdateInput.targetPort", pointer: true)
 mutation updateServiceDomain(
   $input: ServiceDomainUpdateInput!
 ) {
