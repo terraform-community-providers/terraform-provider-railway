@@ -29,9 +29,10 @@ type EnvironmentResource struct {
 }
 
 type EnvironmentResourceModel struct {
-	Id       types.String `tfsdk:"id"`
-	Name     types.String `tfsdk:"name"`
-	ProjecId types.String `tfsdk:"project_id"`
+	Id                  types.String `tfsdk:"id"`
+	Name                types.String `tfsdk:"name"`
+	ProjecId            types.String `tfsdk:"project_id"`
+	SourceEnvironmentId types.String `tfsdk:"source_environment_id"`
 }
 
 func (r *EnvironmentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -64,6 +65,18 @@ func (r *EnvironmentResource) Schema(ctx context.Context, req resource.SchemaReq
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
+				},
+			},
+			"source_environment_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of the environment to clone when creating this environment. This value cannot be reconstructed during import; leave it unset in imported resource configuration.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
@@ -105,6 +118,10 @@ func (r *EnvironmentResource) Create(ctx context.Context, req resource.CreateReq
 	input := EnvironmentCreateInput{
 		Name:      data.Name.ValueString(),
 		ProjectId: data.ProjecId.ValueString(),
+	}
+
+	if !data.SourceEnvironmentId.IsNull() && !data.SourceEnvironmentId.IsUnknown() {
+		input.SourceEnvironmentId = data.SourceEnvironmentId.ValueStringPointer()
 	}
 
 	response, err := createEnvironment(ctx, *r.client, input)
