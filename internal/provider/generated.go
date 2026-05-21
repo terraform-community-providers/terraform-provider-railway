@@ -594,6 +594,74 @@ func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
 // GetTargetPort returns ServiceDomainUpdateInput.TargetPort, and is useful for accessing the field via an interface.
 func (v *ServiceDomainUpdateInput) GetTargetPort() *int { return v.TargetPort }
 
+// ServiceInstance includes the GraphQL fields of ServiceInstance requested by the fragment ServiceInstance.
+type ServiceInstance struct {
+	Id                 string                             `json:"id"`
+	EnvironmentId      string                             `json:"environmentId"`
+	ServiceId          string                             `json:"serviceId"`
+	BuildCommand       string                             `json:"buildCommand"`
+	Builder            Builder                            `json:"builder"`
+	CronSchedule       string                             `json:"cronSchedule"`
+	HealthcheckPath    string                             `json:"healthcheckPath"`
+	HealthcheckTimeout int                                `json:"healthcheckTimeout"`
+	NumReplicas        int                                `json:"numReplicas"`
+	Region             string                             `json:"region"`
+	RootDirectory      string                             `json:"rootDirectory"`
+	StartCommand       string                             `json:"startCommand"`
+	Source             ServiceInstanceSourceServiceSource `json:"source"`
+}
+
+// GetId returns ServiceInstance.Id, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetId() string { return v.Id }
+
+// GetEnvironmentId returns ServiceInstance.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns ServiceInstance.ServiceId, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetServiceId() string { return v.ServiceId }
+
+// GetBuildCommand returns ServiceInstance.BuildCommand, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetBuildCommand() string { return v.BuildCommand }
+
+// GetBuilder returns ServiceInstance.Builder, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetBuilder() Builder { return v.Builder }
+
+// GetCronSchedule returns ServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetCronSchedule() string { return v.CronSchedule }
+
+// GetHealthcheckPath returns ServiceInstance.HealthcheckPath, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetHealthcheckPath() string { return v.HealthcheckPath }
+
+// GetHealthcheckTimeout returns ServiceInstance.HealthcheckTimeout, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetHealthcheckTimeout() int { return v.HealthcheckTimeout }
+
+// GetNumReplicas returns ServiceInstance.NumReplicas, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetNumReplicas() int { return v.NumReplicas }
+
+// GetRegion returns ServiceInstance.Region, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetRegion() string { return v.Region }
+
+// GetRootDirectory returns ServiceInstance.RootDirectory, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetRootDirectory() string { return v.RootDirectory }
+
+// GetStartCommand returns ServiceInstance.StartCommand, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetStartCommand() string { return v.StartCommand }
+
+// GetSource returns ServiceInstance.Source, and is useful for accessing the field via an interface.
+func (v *ServiceInstance) GetSource() ServiceInstanceSourceServiceSource { return v.Source }
+
+// ServiceInstanceSourceServiceSource includes the requested fields of the GraphQL type ServiceSource.
+type ServiceInstanceSourceServiceSource struct {
+	Image string `json:"image"`
+	Repo  string `json:"repo"`
+}
+
+// GetImage returns ServiceInstanceSourceServiceSource.Image, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceSourceServiceSource) GetImage() string { return v.Image }
+
+// GetRepo returns ServiceInstanceSourceServiceSource.Repo, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceSourceServiceSource) GetRepo() string { return v.Repo }
+
 type ServiceInstanceUpdateInput struct {
 	BuildCommand            *string                   `json:"buildCommand,omitempty"`
 	Builder                 *Builder                  `json:"builder,omitempty"`
@@ -1310,6 +1378,14 @@ func (v *__listServiceDomainsInput) GetServiceId() string { return v.ServiceId }
 // GetProjectId returns __listServiceDomainsInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *__listServiceDomainsInput) GetProjectId() string { return v.ProjectId }
 
+// __listServiceInstancesInput is used internally by genqlient
+type __listServiceInstancesInput struct {
+	ServiceId string `json:"serviceId"`
+}
+
+// GetServiceId returns __listServiceInstancesInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__listServiceInstancesInput) GetServiceId() string { return v.ServiceId }
+
 // __listServicesForDataSourceInput is used internally by genqlient
 type __listServicesForDataSourceInput struct {
 	ProjectId string  `json:"projectId"`
@@ -1393,6 +1469,22 @@ func (v *__updateServiceInput) GetId() string { return v.Id }
 
 // GetInput returns __updateServiceInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateServiceInput) GetInput() ServiceUpdateInput { return v.Input }
+
+// __updateServiceInstanceForEnvInput is used internally by genqlient
+type __updateServiceInstanceForEnvInput struct {
+	ServiceId     string                     `json:"serviceId"`
+	EnvironmentId string                     `json:"environmentId"`
+	Input         ServiceInstanceUpdateInput `json:"input"`
+}
+
+// GetServiceId returns __updateServiceInstanceForEnvInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__updateServiceInstanceForEnvInput) GetServiceId() string { return v.ServiceId }
+
+// GetEnvironmentId returns __updateServiceInstanceForEnvInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__updateServiceInstanceForEnvInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetInput returns __updateServiceInstanceForEnvInput.Input, and is useful for accessing the field via an interface.
+func (v *__updateServiceInstanceForEnvInput) GetInput() ServiceInstanceUpdateInput { return v.Input }
 
 // __updateServiceInstanceInput is used internally by genqlient
 type __updateServiceInstanceInput struct {
@@ -3733,6 +3825,195 @@ func (v *listServiceDomainsResponse) GetDomains() listServiceDomainsDomainsAllDo
 	return v.Domains
 }
 
+// listServiceInstancesResponse is returned by listServiceInstances on success.
+type listServiceInstancesResponse struct {
+	// Get a service by ID
+	Service listServiceInstancesService `json:"service"`
+}
+
+// GetService returns listServiceInstancesResponse.Service, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesResponse) GetService() listServiceInstancesService { return v.Service }
+
+// listServiceInstancesService includes the requested fields of the GraphQL type Service.
+type listServiceInstancesService struct {
+	ServiceInstances listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection `json:"serviceInstances"`
+}
+
+// GetServiceInstances returns listServiceInstancesService.ServiceInstances, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesService) GetServiceInstances() listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection {
+	return v.ServiceInstances
+}
+
+// listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection includes the requested fields of the GraphQL type ServiceServiceInstancesConnection.
+type listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection struct {
+	Edges []listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge `json:"edges"`
+}
+
+// GetEdges returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection.Edges, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection) GetEdges() []listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge {
+	return v.Edges
+}
+
+// listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge includes the requested fields of the GraphQL type ServiceServiceInstancesConnectionEdge.
+type listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge struct {
+	Node listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance `json:"node"`
+}
+
+// GetNode returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge) GetNode() listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance {
+	return v.Node
+}
+
+// listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance includes the requested fields of the GraphQL type ServiceInstance.
+type listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance struct {
+	ServiceInstance `json:"-"`
+}
+
+// GetId returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.Id, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetId() string {
+	return v.ServiceInstance.Id
+}
+
+// GetEnvironmentId returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetEnvironmentId() string {
+	return v.ServiceInstance.EnvironmentId
+}
+
+// GetServiceId returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.ServiceId, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetServiceId() string {
+	return v.ServiceInstance.ServiceId
+}
+
+// GetBuildCommand returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.BuildCommand, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetBuildCommand() string {
+	return v.ServiceInstance.BuildCommand
+}
+
+// GetBuilder returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.Builder, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetBuilder() Builder {
+	return v.ServiceInstance.Builder
+}
+
+// GetCronSchedule returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetCronSchedule() string {
+	return v.ServiceInstance.CronSchedule
+}
+
+// GetHealthcheckPath returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.HealthcheckPath, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetHealthcheckPath() string {
+	return v.ServiceInstance.HealthcheckPath
+}
+
+// GetHealthcheckTimeout returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.HealthcheckTimeout, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetHealthcheckTimeout() int {
+	return v.ServiceInstance.HealthcheckTimeout
+}
+
+// GetNumReplicas returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.NumReplicas, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetNumReplicas() int {
+	return v.ServiceInstance.NumReplicas
+}
+
+// GetRegion returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.Region, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetRegion() string {
+	return v.ServiceInstance.Region
+}
+
+// GetRootDirectory returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.RootDirectory, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetRootDirectory() string {
+	return v.ServiceInstance.RootDirectory
+}
+
+// GetStartCommand returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.StartCommand, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetStartCommand() string {
+	return v.ServiceInstance.StartCommand
+}
+
+// GetSource returns listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance.Source, and is useful for accessing the field via an interface.
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) GetSource() ServiceInstanceSourceServiceSource {
+	return v.ServiceInstance.Source
+}
+
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ServiceInstance)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshallistServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance struct {
+	Id string `json:"id"`
+
+	EnvironmentId string `json:"environmentId"`
+
+	ServiceId string `json:"serviceId"`
+
+	BuildCommand string `json:"buildCommand"`
+
+	Builder Builder `json:"builder"`
+
+	CronSchedule string `json:"cronSchedule"`
+
+	HealthcheckPath string `json:"healthcheckPath"`
+
+	HealthcheckTimeout int `json:"healthcheckTimeout"`
+
+	NumReplicas int `json:"numReplicas"`
+
+	Region string `json:"region"`
+
+	RootDirectory string `json:"rootDirectory"`
+
+	StartCommand string `json:"startCommand"`
+
+	Source ServiceInstanceSourceServiceSource `json:"source"`
+}
+
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *listServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance) __premarshalJSON() (*__premarshallistServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance, error) {
+	var retval __premarshallistServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance
+
+	retval.Id = v.ServiceInstance.Id
+	retval.EnvironmentId = v.ServiceInstance.EnvironmentId
+	retval.ServiceId = v.ServiceInstance.ServiceId
+	retval.BuildCommand = v.ServiceInstance.BuildCommand
+	retval.Builder = v.ServiceInstance.Builder
+	retval.CronSchedule = v.ServiceInstance.CronSchedule
+	retval.HealthcheckPath = v.ServiceInstance.HealthcheckPath
+	retval.HealthcheckTimeout = v.ServiceInstance.HealthcheckTimeout
+	retval.NumReplicas = v.ServiceInstance.NumReplicas
+	retval.Region = v.ServiceInstance.Region
+	retval.RootDirectory = v.ServiceInstance.RootDirectory
+	retval.StartCommand = v.ServiceInstance.StartCommand
+	retval.Source = v.ServiceInstance.Source
+	return &retval, nil
+}
+
 // listServicesForDataSourceProject includes the requested fields of the GraphQL type Project.
 type listServicesForDataSourceProject struct {
 	Services listServicesForDataSourceProjectServicesProjectServicesConnection `json:"services"`
@@ -4118,6 +4399,17 @@ type updateServiceDomainResponse struct {
 
 // GetServiceDomainUpdate returns updateServiceDomainResponse.ServiceDomainUpdate, and is useful for accessing the field via an interface.
 func (v *updateServiceDomainResponse) GetServiceDomainUpdate() bool { return v.ServiceDomainUpdate }
+
+// updateServiceInstanceForEnvResponse is returned by updateServiceInstanceForEnv on success.
+type updateServiceInstanceForEnvResponse struct {
+	// Update a service instance
+	ServiceInstanceUpdate bool `json:"serviceInstanceUpdate"`
+}
+
+// GetServiceInstanceUpdate returns updateServiceInstanceForEnvResponse.ServiceInstanceUpdate, and is useful for accessing the field via an interface.
+func (v *updateServiceInstanceForEnvResponse) GetServiceInstanceUpdate() bool {
+	return v.ServiceInstanceUpdate
+}
 
 // updateServiceInstanceResponse is returned by updateServiceInstance on success.
 type updateServiceInstanceResponse struct {
@@ -5672,6 +5964,65 @@ fragment ServiceDomain on ServiceDomain {
 	return &data, err
 }
 
+// Railway doesn't expose a `serviceInstance(id: ...)` root query; instances
+// are reached through the parent service. List all instances on the service,
+// filter by environment_id in Go.
+func listServiceInstances(
+	ctx context.Context,
+	client graphql.Client,
+	serviceId string,
+) (*listServiceInstancesResponse, error) {
+	req := &graphql.Request{
+		OpName: "listServiceInstances",
+		Query: `
+query listServiceInstances ($serviceId: String!) {
+	service(id: $serviceId) {
+		serviceInstances {
+			edges {
+				node {
+					... ServiceInstance
+				}
+			}
+		}
+	}
+}
+fragment ServiceInstance on ServiceInstance {
+	id
+	environmentId
+	serviceId
+	buildCommand
+	builder
+	cronSchedule
+	healthcheckPath
+	healthcheckTimeout
+	numReplicas
+	region
+	rootDirectory
+	startCommand
+	source {
+		image
+		repo
+	}
+}
+`,
+		Variables: &__listServiceInstancesInput{
+			ServiceId: serviceId,
+		},
+	}
+	var err error
+
+	var data listServiceInstancesResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func listServicesForDataSource(
 	ctx context.Context,
 	client graphql.Client,
@@ -5974,6 +6325,43 @@ mutation updateServiceInstance ($serviceId: String!, $input: ServiceInstanceUpda
 	var err error
 
 	var data updateServiceInstanceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+// Pointer annotations on ServiceInstanceUpdateInput fields live alongside the
+// pre-existing `updateServiceInstance` mutation in resource_service.graphql
+// (they apply to the type globally). No need to re-declare here.
+func updateServiceInstanceForEnv(
+	ctx context.Context,
+	client graphql.Client,
+	serviceId string,
+	environmentId string,
+	input ServiceInstanceUpdateInput,
+) (*updateServiceInstanceForEnvResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateServiceInstanceForEnv",
+		Query: `
+mutation updateServiceInstanceForEnv ($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+	serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+}
+`,
+		Variables: &__updateServiceInstanceForEnvInput{
+			ServiceId:     serviceId,
+			EnvironmentId: environmentId,
+			Input:         input,
+		},
+	}
+	var err error
+
+	var data updateServiceInstanceForEnvResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

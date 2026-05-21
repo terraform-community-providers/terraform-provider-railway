@@ -10,7 +10,7 @@ on:
       test_regex:
         description: "Go test -run regex for disposable acceptance tests."
         required: false
-        default: "TestAcc(EnvironmentResourceSourceEnvironmentId|ServiceDomainResourceTargetPort|ProjectDataSourceByName|EnvironmentDataSourceByName|ServiceDataSourceByName|DeploymentTriggerLifecycle)"
+        default: "TestAcc(EnvironmentResourceSourceEnvironmentId|ServiceDomainResourceTargetPort|ProjectDataSourceByName|EnvironmentDataSourceByName|ServiceDataSourceByName|DeploymentTriggerLifecycle|ServiceInstanceLifecycle)"
   pull_request:
     types: [opened, synchronize, reopened, labeled]
 
@@ -57,7 +57,7 @@ jobs:
           # the Railway API rejects projectCreate without workspace_id. Tests
           # that create projects read this and thread it through their HCL.
           RAILWAY_TEST_WORKSPACE_ID: ${{ secrets.RAILWAY_TEST_WORKSPACE_ID }}
-          TEST_REGEX: ${{ github.event_name == 'workflow_dispatch' && inputs.test_regex || 'TestAcc(EnvironmentResourceSourceEnvironmentId|ServiceDomainResourceTargetPort|ProjectDataSourceByName|EnvironmentDataSourceByName|ServiceDataSourceByName|DeploymentTriggerLifecycle)' }}
+          TEST_REGEX: ${{ github.event_name == 'workflow_dispatch' && inputs.test_regex || 'TestAcc(EnvironmentResourceSourceEnvironmentId|ServiceDomainResourceTargetPort|ProjectDataSourceByName|EnvironmentDataSourceByName|ServiceDataSourceByName|DeploymentTriggerLifecycle|ServiceInstanceLifecycle)' }}
         run: |
           set -euo pipefail
 

@@ -1,0 +1,48 @@
+fragment ServiceInstance on ServiceInstance {
+  id
+  environmentId
+  serviceId
+  buildCommand
+  builder
+  cronSchedule
+  healthcheckPath
+  healthcheckTimeout
+  numReplicas
+  region
+  rootDirectory
+  startCommand
+  source {
+    image
+    repo
+  }
+}
+
+# Railway doesn't expose a `serviceInstance(id: ...)` root query; instances
+# are reached through the parent service. List all instances on the service,
+# filter by environment_id in Go.
+query listServiceInstances($serviceId: String!) {
+  service(id: $serviceId) {
+    serviceInstances {
+      edges {
+        node {
+          ...ServiceInstance
+        }
+      }
+    }
+  }
+}
+
+# Pointer annotations on ServiceInstanceUpdateInput fields live alongside the
+# pre-existing `updateServiceInstance` mutation in resource_service.graphql
+# (they apply to the type globally). No need to re-declare here.
+mutation updateServiceInstanceForEnv(
+  $serviceId: String!
+  $environmentId: String!
+  $input: ServiceInstanceUpdateInput!
+) {
+  serviceInstanceUpdate(
+    serviceId: $serviceId
+    environmentId: $environmentId
+    input: $input
+  )
+}
