@@ -1,0 +1,50 @@
+fragment ManagedVolume on Volume {
+  id
+  name
+  projectId
+}
+
+query getManagedVolumes(
+  $projectId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  project(id: $projectId) {
+    volumes(first: 100, after: $after) {
+      edges {
+        node {
+          ...ManagedVolume
+        }
+      }
+      pageInfo {
+        # @genqlient(pointer: true)
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+mutation createManagedVolume(
+  $projectId: String!
+  $mountPath: String!
+) {
+  volumeCreate(input: {
+    projectId: $projectId
+    mountPath: $mountPath
+    serviceId: null
+    environmentId: null
+  }) {
+    ...ManagedVolume
+  }
+}
+
+mutation updateManagedVolume($id: String!, $input: VolumeUpdateInput!) {
+  volumeUpdate(volumeId: $id, input: $input) {
+    ...ManagedVolume
+  }
+}
+
+mutation deleteManagedVolume($id: String!) {
+  volumeDelete(volumeId: $id)
+}

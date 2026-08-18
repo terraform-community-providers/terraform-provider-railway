@@ -34,7 +34,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/terraform-community-providers/railway",
+		Address: "registry.opentofu.org/dpkass/railway",
 		Debug:   debug,
 	}
 

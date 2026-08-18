@@ -1,0 +1,66 @@
+fragment ManagedBucket on Bucket {
+  id
+  name
+  projectId
+}
+
+query getManagedBuckets(
+  $projectId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  project(id: $projectId) {
+    buckets(first: 100, after: $after) {
+      edges {
+        node {
+          ...ManagedBucket
+        }
+      }
+      pageInfo {
+        # @genqlient(pointer: true)
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+query getEnvironmentConfig($environmentId: String!) {
+  environment(id: $environmentId) {
+    config(decryptVariables: false)
+  }
+}
+
+# @genqlient(for: "BucketCreateInput.environmentId", omitempty: false, pointer: true)
+mutation createManagedBucket(
+  $input: BucketCreateInput!
+) {
+  bucketCreate(input: $input) {
+    ...ManagedBucket
+  }
+}
+
+mutation updateManagedBucket($id: String!, $input: BucketUpdateInput!) {
+  bucketUpdate(id: $id, input: $input) {
+    ...ManagedBucket
+  }
+}
+
+query getBucketS3Credentials(
+  $projectId: String!
+  $environmentId: String!
+  $bucketId: String!
+) {
+  bucketS3Credentials(
+    projectId: $projectId
+    environmentId: $environmentId
+    bucketId: $bucketId
+  ) {
+    accessKeyId
+    secretAccessKey
+    endpoint
+    bucketName
+    region
+    urlStyle
+  }
+}

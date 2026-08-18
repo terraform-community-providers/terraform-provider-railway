@@ -167,12 +167,12 @@ func (r *ServiceDomainResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	err = getAndBuildServiceDomain(ctx, *r.client, service.Service.ProjectId, domain.EnvironmentId, domain.ServiceId, domainName, data)
-
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service domain, got error: %s", err))
-		return
-	}
+	data.Id = types.StringValue(domain.Id)
+	data.EnvironmentId = types.StringValue(domain.EnvironmentId)
+	data.ServiceId = types.StringValue(domain.ServiceId)
+	data.ProjectId = types.StringValue(service.Service.ProjectId)
+	data.Suffix = types.StringValue(domain.Suffix)
+	data.Domain = types.StringValue(domainName)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -235,12 +235,10 @@ func (r *ServiceDomainResource) Update(ctx context.Context, req resource.UpdateR
 
 	tflog.Trace(ctx, "updated a service domain")
 
-	err = getAndBuildServiceDomain(ctx, *r.client, state.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), domainName, data)
-
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service domain, got error: %s", err))
-		return
-	}
+	data.Id = state.Id
+	data.ProjectId = state.ProjectId
+	data.Suffix = state.Suffix
+	data.Domain = types.StringValue(domainName)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

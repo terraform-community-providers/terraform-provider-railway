@@ -1,0 +1,62 @@
+fragment ManagedVolumeInstance on VolumeInstance {
+  id
+  volumeId
+  environmentId
+  # @genqlient(pointer: true)
+  serviceId
+  mountPath
+  sizeMB
+  # @genqlient(pointer: true)
+  state
+}
+
+query getManagedVolumeInstances(
+  $environmentId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  environment(id: $environmentId) {
+    volumeInstances(first: 100, after: $after) {
+      edges {
+        node {
+          ...ManagedVolumeInstance
+        }
+      }
+      pageInfo {
+        # @genqlient(pointer: true)
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+mutation updateManagedVolumeInstance(
+  $volumeId: String!
+  $environmentId: String!
+  # @genqlient(pointer: true)
+  $serviceId: String
+  $mountPath: String!
+) {
+  volumeInstanceUpdate(
+    volumeId: $volumeId
+    environmentId: $environmentId
+    input: {
+      serviceId: $serviceId
+      mountPath: $mountPath
+    }
+  )
+}
+
+mutation deleteManagedVolumeInstance(
+  $volumeId: String!
+  $environmentId: String!
+) {
+  volumeInstanceUpdate(
+    volumeId: $volumeId
+    environmentId: $environmentId
+    input: {
+      state: DELETED
+    }
+  )
+}

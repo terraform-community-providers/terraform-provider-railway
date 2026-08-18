@@ -3,15 +3,12 @@
 page_title: "railway_service Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway service.
-  ⚠️ NOTE: All the other settings not specified here are recommended to be specified in the Railway config file.
+  Project-level Railway service identity. Environment-specific deployment settings are deprecated on this resource and should be managed with railway_service_instance.
 ---
 
 # railway_service (Resource)
 
-Railway service.
-
-> ⚠️ **NOTE:** All the other settings not specified here are recommended to be specified in the Railway config file.
+Project-level Railway service identity. Environment-specific deployment settings are deprecated on this resource and should be managed with `railway_service_instance`.
 
 ## Example Usage
 
@@ -32,16 +29,16 @@ resource "railway_service" "example" {
 
 ### Optional
 
-- `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
-- `cron_schedule` (String) Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.
-- `regions` (Attributes List) Regions with replicas to deploy service in. (see [below for nested schema](#nestedatt--regions))
-- `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
-- `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
-- `source_image_registry_password` (String, Sensitive) Private Docker registry credentials.
-- `source_image_registry_username` (String) Private Docker registry credentials.
-- `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
-- `source_repo_branch` (String) Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.
-- `volume` (Attributes) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
+- `config_path` (String, Deprecated) Path to the Railway config file. Conflicts with `source_image`.
+- `cron_schedule` (String, Deprecated) Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.
+- `regions` (Attributes List, Deprecated) Regions with replicas to deploy service in. (see [below for nested schema](#nestedatt--regions))
+- `root_directory` (String, Deprecated) Directory to user for the service. Conflicts with `source_image`.
+- `source_image` (String, Deprecated) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
+- `source_image_registry_password` (String, Sensitive, Deprecated) Private Docker registry credentials.
+- `source_image_registry_username` (String, Deprecated) Private Docker registry credentials.
+- `source_repo` (String, Deprecated) Source repository of the service. Conflicts with `source_image`.
+- `source_repo_branch` (String, Deprecated) Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.
+- `volume` (Attributes, Deprecated) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
 
 ### Read-Only
 

@@ -1,9 +1,11 @@
 package provider
 
 import (
+	"net/http"
 	"os"
 	"testing"
 
+	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
@@ -20,4 +22,14 @@ func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("RAILWAY_TOKEN"); v == "" {
 		t.Fatal("RAILWAY_TOKEN must be set for acceptance tests")
 	}
+}
+
+func testAccClient() graphql.Client {
+	httpClient := http.Client{
+		Transport: &authedTransport{
+			token:   os.Getenv("RAILWAY_TOKEN"),
+			wrapped: http.DefaultTransport,
+		},
+	}
+	return graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
 }

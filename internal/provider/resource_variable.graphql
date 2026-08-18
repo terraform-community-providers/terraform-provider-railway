@@ -31,3 +31,25 @@ mutation redeployServiceInstance(
 ) {
     serviceInstanceRedeploy(environmentId: $environmentId, serviceId: $serviceId)
 }
+
+query getEnvironmentVariables(
+  $environmentId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  environment(id: $environmentId) {
+    variables(first: 100, after: $after) {
+      edges {
+        node {
+          name
+          serviceId
+          isSealed
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
