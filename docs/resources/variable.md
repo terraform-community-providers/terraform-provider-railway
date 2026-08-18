@@ -3,12 +3,12 @@
 page_title: "railway_variable Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway variable. Any changes in collection triggers service redeployment.
+  Railway service variable. Configure exactly one of value for a readable variable or value_wo with value_wo_version for a sealed variable whose value must not be stored in Terraform state. Changes to variables trigger service redeployment.
 ---
 
 # railway_variable (Resource)
 
-Railway variable. Any changes in collection triggers service redeployment.
+Railway service variable. Configure exactly one of `value` for a readable variable or `value_wo` with `value_wo_version` for a sealed variable whose value must not be stored in Terraform state. Changes to variables trigger service redeployment.
 
 ## Example Usage
 
@@ -18,6 +18,14 @@ resource "railway_variable" "example" {
   value          = "1234567890"
   environment_id = railway_project.example.default_environment.id
   service_id     = railway_service.example.id
+}
+
+resource "railway_variable" "sealed" {
+  name             = "API_KEY"
+  value_wo         = var.api_key
+  value_wo_version = var.api_key_version
+  environment_id   = railway_project.example.default_environment.id
+  service_id       = railway_service.example.id
 }
 ```
 
@@ -29,7 +37,14 @@ resource "railway_variable" "example" {
 - `environment_id` (String) Identifier of the environment the variable belongs to.
 - `name` (String) Name of the variable.
 - `service_id` (String) Identifier of the service the variable belongs to.
-- `value` (String, Sensitive) Value of the variable.
+
+### Optional
+
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `value` (String, Sensitive) Readable value stored in Terraform state.
+- `value_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only value used to create a sealed variable. The value is never stored in Terraform state and cannot be retrieved from Railway.
+- `value_wo_version` (Number) Version used to trigger updates to `value_wo`. Change this value whenever the write-only value changes. Imported sealed variables start at version 1, so use a greater version to rotate their value after import.
 
 ### Read-Only
 

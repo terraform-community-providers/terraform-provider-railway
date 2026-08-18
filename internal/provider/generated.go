@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
+	"github.com/terraform-community-providers/terraform-provider-railway/internal/railway"
 )
 
 type Builder string
@@ -158,6 +159,14 @@ func (v *EnvironmentCreateInput) GetSourceEnvironmentId() *string { return v.Sou
 
 // GetStageInitialChanges returns EnvironmentCreateInput.StageInitialChanges, and is useful for accessing the field via an interface.
 func (v *EnvironmentCreateInput) GetStageInitialChanges() bool { return v.StageInitialChanges }
+
+type EnvironmentPatchStatus string
+
+const (
+	EnvironmentPatchStatusApplying  EnvironmentPatchStatus = "APPLYING"
+	EnvironmentPatchStatusCommitted EnvironmentPatchStatus = "COMMITTED"
+	EnvironmentPatchStatusStaged    EnvironmentPatchStatus = "STAGED"
+)
 
 // Project includes the GraphQL fields of Project requested by the fragment Project.
 type Project struct {
@@ -884,6 +893,22 @@ func (v *VolumeVolumeInstancesVolumeVolumeInstancesConnectionEdgesVolumeVolumeIn
 	return v.SizeMB
 }
 
+// __commitEnvironmentPatchInput is used internally by genqlient
+type __commitEnvironmentPatchInput struct {
+	EnvironmentId string                    `json:"environmentId"`
+	Patch         railway.EnvironmentConfig `json:"patch"`
+	CommitMessage string                    `json:"commitMessage"`
+}
+
+// GetEnvironmentId returns __commitEnvironmentPatchInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__commitEnvironmentPatchInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetPatch returns __commitEnvironmentPatchInput.Patch, and is useful for accessing the field via an interface.
+func (v *__commitEnvironmentPatchInput) GetPatch() railway.EnvironmentConfig { return v.Patch }
+
+// GetCommitMessage returns __commitEnvironmentPatchInput.CommitMessage, and is useful for accessing the field via an interface.
+func (v *__commitEnvironmentPatchInput) GetCommitMessage() string { return v.CommitMessage }
+
 // __connectServiceInput is used internally by genqlient
 type __connectServiceInput struct {
 	Id    string              `json:"id"`
@@ -1031,6 +1056,34 @@ type __getEnvironmentInput struct {
 
 // GetId returns __getEnvironmentInput.Id, and is useful for accessing the field via an interface.
 func (v *__getEnvironmentInput) GetId() string { return v.Id }
+
+// __getEnvironmentPatchInput is used internally by genqlient
+type __getEnvironmentPatchInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __getEnvironmentPatchInput.Id, and is useful for accessing the field via an interface.
+func (v *__getEnvironmentPatchInput) GetId() string { return v.Id }
+
+// __getEnvironmentPatchLifecycleInput is used internally by genqlient
+type __getEnvironmentPatchLifecycleInput struct {
+	EnvironmentId string `json:"environmentId"`
+}
+
+// GetEnvironmentId returns __getEnvironmentPatchLifecycleInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getEnvironmentPatchLifecycleInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// __getEnvironmentVariablesInput is used internally by genqlient
+type __getEnvironmentVariablesInput struct {
+	EnvironmentId string  `json:"environmentId"`
+	After         *string `json:"after"`
+}
+
+// GetEnvironmentId returns __getEnvironmentVariablesInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getEnvironmentVariablesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetAfter returns __getEnvironmentVariablesInput.After, and is useful for accessing the field via an interface.
+func (v *__getEnvironmentVariablesInput) GetAfter() *string { return v.After }
 
 // __getEnvironmentsInput is used internally by genqlient
 type __getEnvironmentsInput struct {
@@ -1283,6 +1336,17 @@ type __upsertVariableInput struct {
 
 // GetInput returns __upsertVariableInput.Input, and is useful for accessing the field via an interface.
 func (v *__upsertVariableInput) GetInput() VariableUpsertInput { return v.Input }
+
+// commitEnvironmentPatchResponse is returned by commitEnvironmentPatch on success.
+type commitEnvironmentPatchResponse struct {
+	// Commit the provided patch to the environment.
+	EnvironmentPatchCommit string `json:"environmentPatchCommit"`
+}
+
+// GetEnvironmentPatchCommit returns commitEnvironmentPatchResponse.EnvironmentPatchCommit, and is useful for accessing the field via an interface.
+func (v *commitEnvironmentPatchResponse) GetEnvironmentPatchCommit() string {
+	return v.EnvironmentPatchCommit
+}
 
 // connectServiceResponse is returned by connectService on success.
 type connectServiceResponse struct {
@@ -2143,6 +2207,50 @@ func (v *getEnvironmentEnvironment) __premarshalJSON() (*__premarshalgetEnvironm
 	return &retval, nil
 }
 
+// getEnvironmentPatchEnvironmentPatch includes the requested fields of the GraphQL type EnvironmentPatch.
+type getEnvironmentPatchEnvironmentPatch struct {
+	Status           EnvironmentPatchStatus `json:"status"`
+	LastAppliedError string                 `json:"lastAppliedError"`
+}
+
+// GetStatus returns getEnvironmentPatchEnvironmentPatch.Status, and is useful for accessing the field via an interface.
+func (v *getEnvironmentPatchEnvironmentPatch) GetStatus() EnvironmentPatchStatus { return v.Status }
+
+// GetLastAppliedError returns getEnvironmentPatchEnvironmentPatch.LastAppliedError, and is useful for accessing the field via an interface.
+func (v *getEnvironmentPatchEnvironmentPatch) GetLastAppliedError() string { return v.LastAppliedError }
+
+// getEnvironmentPatchLifecycleEnvironment includes the requested fields of the GraphQL type Environment.
+type getEnvironmentPatchLifecycleEnvironment struct {
+	UnmergedChangesCount int `json:"unmergedChangesCount"`
+}
+
+// GetUnmergedChangesCount returns getEnvironmentPatchLifecycleEnvironment.UnmergedChangesCount, and is useful for accessing the field via an interface.
+func (v *getEnvironmentPatchLifecycleEnvironment) GetUnmergedChangesCount() int {
+	return v.UnmergedChangesCount
+}
+
+// getEnvironmentPatchLifecycleResponse is returned by getEnvironmentPatchLifecycle on success.
+type getEnvironmentPatchLifecycleResponse struct {
+	// Find a single environment
+	Environment getEnvironmentPatchLifecycleEnvironment `json:"environment"`
+}
+
+// GetEnvironment returns getEnvironmentPatchLifecycleResponse.Environment, and is useful for accessing the field via an interface.
+func (v *getEnvironmentPatchLifecycleResponse) GetEnvironment() getEnvironmentPatchLifecycleEnvironment {
+	return v.Environment
+}
+
+// getEnvironmentPatchResponse is returned by getEnvironmentPatch on success.
+type getEnvironmentPatchResponse struct {
+	// Get a single environment patch by ID
+	EnvironmentPatch getEnvironmentPatchEnvironmentPatch `json:"environmentPatch"`
+}
+
+// GetEnvironmentPatch returns getEnvironmentPatchResponse.EnvironmentPatch, and is useful for accessing the field via an interface.
+func (v *getEnvironmentPatchResponse) GetEnvironmentPatch() getEnvironmentPatchEnvironmentPatch {
+	return v.EnvironmentPatch
+}
+
 // getEnvironmentResponse is returned by getEnvironment on success.
 type getEnvironmentResponse struct {
 	// Find a single environment
@@ -2151,6 +2259,91 @@ type getEnvironmentResponse struct {
 
 // GetEnvironment returns getEnvironmentResponse.Environment, and is useful for accessing the field via an interface.
 func (v *getEnvironmentResponse) GetEnvironment() getEnvironmentEnvironment { return v.Environment }
+
+// getEnvironmentVariablesEnvironment includes the requested fields of the GraphQL type Environment.
+type getEnvironmentVariablesEnvironment struct {
+	Variables getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection `json:"variables"`
+}
+
+// GetVariables returns getEnvironmentVariablesEnvironment.Variables, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironment) GetVariables() getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection {
+	return v.Variables
+}
+
+// getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection includes the requested fields of the GraphQL type EnvironmentVariablesConnection.
+type getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection struct {
+	Edges    []getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdge `json:"edges"`
+	PageInfo getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo                                  `json:"pageInfo"`
+}
+
+// GetEdges returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection) GetEdges() []getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdge {
+	return v.Edges
+}
+
+// GetPageInfo returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnection) GetPageInfo() getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdge includes the requested fields of the GraphQL type EnvironmentVariablesConnectionEdge.
+type getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdge struct {
+	Node getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable `json:"node"`
+}
+
+// GetNode returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdge) GetNode() getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable {
+	return v.Node
+}
+
+// getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable includes the requested fields of the GraphQL type Variable.
+type getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable struct {
+	Name      string `json:"name"`
+	ServiceId string `json:"serviceId"`
+	IsSealed  bool   `json:"isSealed"`
+}
+
+// GetName returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable.Name, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable) GetName() string {
+	return v.Name
+}
+
+// GetServiceId returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable.ServiceId, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable) GetServiceId() string {
+	return v.ServiceId
+}
+
+// GetIsSealed returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable.IsSealed, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionEdgesEnvironmentVariablesConnectionEdgeNodeVariable) GetIsSealed() bool {
+	return v.IsSealed
+}
+
+// getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+type getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo struct {
+	EndCursor   string `json:"endCursor"`
+	HasNextPage bool   `json:"hasNextPage"`
+}
+
+// GetEndCursor returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
+
+// GetHasNextPage returns getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesEnvironmentVariablesEnvironmentVariablesConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// getEnvironmentVariablesResponse is returned by getEnvironmentVariables on success.
+type getEnvironmentVariablesResponse struct {
+	// Find a single environment
+	Environment getEnvironmentVariablesEnvironment `json:"environment"`
+}
+
+// GetEnvironment returns getEnvironmentVariablesResponse.Environment, and is useful for accessing the field via an interface.
+func (v *getEnvironmentVariablesResponse) GetEnvironment() getEnvironmentVariablesEnvironment {
+	return v.Environment
+}
 
 // getEnvironmentsEnvironmentsQueryEnvironmentsConnection includes the requested fields of the GraphQL type QueryEnvironmentsConnection.
 type getEnvironmentsEnvironmentsQueryEnvironmentsConnection struct {
@@ -3353,6 +3546,40 @@ type upsertVariableResponse struct {
 // GetVariableUpsert returns upsertVariableResponse.VariableUpsert, and is useful for accessing the field via an interface.
 func (v *upsertVariableResponse) GetVariableUpsert() bool { return v.VariableUpsert }
 
+func commitEnvironmentPatch(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	patch railway.EnvironmentConfig,
+	commitMessage string,
+) (*commitEnvironmentPatchResponse, error) {
+	req := &graphql.Request{
+		OpName: "commitEnvironmentPatch",
+		Query: `
+mutation commitEnvironmentPatch ($environmentId: String!, $patch: EnvironmentConfig!, $commitMessage: String) {
+	environmentPatchCommit(environmentId: $environmentId, patch: $patch, commitMessage: $commitMessage)
+}
+`,
+		Variables: &__commitEnvironmentPatchInput{
+			EnvironmentId: environmentId,
+			Patch:         patch,
+			CommitMessage: commitMessage,
+		},
+	}
+	var err error
+
+	var data commitEnvironmentPatchResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func connectService(
 	ctx context.Context,
 	client graphql.Client,
@@ -3989,6 +4216,117 @@ fragment Environment on Environment {
 	var err error
 
 	var data getEnvironmentResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getEnvironmentPatch(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*getEnvironmentPatchResponse, error) {
+	req := &graphql.Request{
+		OpName: "getEnvironmentPatch",
+		Query: `
+query getEnvironmentPatch ($id: String!) {
+	environmentPatch(id: $id) {
+		status
+		lastAppliedError
+	}
+}
+`,
+		Variables: &__getEnvironmentPatchInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data getEnvironmentPatchResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getEnvironmentPatchLifecycle(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+) (*getEnvironmentPatchLifecycleResponse, error) {
+	req := &graphql.Request{
+		OpName: "getEnvironmentPatchLifecycle",
+		Query: `
+query getEnvironmentPatchLifecycle ($environmentId: String!) {
+	environment(id: $environmentId) {
+		unmergedChangesCount
+	}
+}
+`,
+		Variables: &__getEnvironmentPatchLifecycleInput{
+			EnvironmentId: environmentId,
+		},
+	}
+	var err error
+
+	var data getEnvironmentPatchLifecycleResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getEnvironmentVariables(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	after *string,
+) (*getEnvironmentVariablesResponse, error) {
+	req := &graphql.Request{
+		OpName: "getEnvironmentVariables",
+		Query: `
+query getEnvironmentVariables ($environmentId: String!, $after: String) {
+	environment(id: $environmentId) {
+		variables(first: 100, after: $after) {
+			edges {
+				node {
+					name
+					serviceId
+					isSealed
+				}
+			}
+			pageInfo {
+				endCursor
+				hasNextPage
+			}
+		}
+	}
+}
+`,
+		Variables: &__getEnvironmentVariablesInput{
+			EnvironmentId: environmentId,
+			After:         after,
+		},
+	}
+	var err error
+
+	var data getEnvironmentVariablesResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
