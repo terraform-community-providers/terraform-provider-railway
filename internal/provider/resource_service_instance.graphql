@@ -1,0 +1,75 @@
+# @genqlient(for: "ServiceInstance.source", pointer: true)
+# @genqlient(for: "ServiceSource.image", pointer: true)
+# @genqlient(for: "ServiceSource.repo", pointer: true)
+# @genqlient(for: "ServiceInstance.cronSchedule", pointer: true)
+# @genqlient(for: "ServiceInstance.rootDirectory", pointer: true)
+# @genqlient(for: "ServiceInstance.railwayConfigFile", pointer: true)
+# @genqlient(for: "ServiceInstance.startCommand", pointer: true)
+# @genqlient(for: "ServiceInstance.healthcheckPath", pointer: true)
+# @genqlient(for: "ServiceInstance.healthcheckTimeout", pointer: true)
+query getManagedServiceInstance(
+  $environmentId: String!
+  $serviceId: String!
+) {
+  serviceInstance(environmentId: $environmentId, serviceId: $serviceId) {
+    source {
+      image
+      repo
+    }
+    cronSchedule
+    rootDirectory
+    railwayConfigFile
+    startCommand
+    healthcheckPath
+    healthcheckTimeout
+  }
+  environment(id: $environmentId) {
+    config(decryptVariables: false)
+  }
+  serviceInstanceLimitOverride(
+    environmentId: $environmentId
+    serviceId: $serviceId
+  )
+}
+
+query getServiceInstanceProjectEnvironments(
+  $projectId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  project(id: $projectId) {
+    environments(first: 100, after: $after) {
+      edges {
+        node {
+          id
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}
+
+query getEnvironmentServiceInstances(
+  $projectId: String!
+  $environmentId: String!
+  # @genqlient(pointer: true)
+  $after: String
+) {
+  environment(id: $environmentId, projectId: $projectId) {
+    config(decryptVariables: false)
+    serviceInstances(first: 100, after: $after) {
+      edges {
+        node {
+          serviceId
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}

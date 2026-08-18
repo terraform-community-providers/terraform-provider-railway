@@ -88,7 +88,7 @@ func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataReq
 
 func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway service.\n\n> ⚠️ **NOTE:** All the other settings not specified here are recommended to be specified in the Railway config file.",
+		MarkdownDescription: "Project-level Railway service identity. Environment-specific deployment settings are deprecated on this resource and should be managed with `railway_service_instance`.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the service.",
@@ -116,6 +116,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"cron_schedule": schema.StringAttribute{
 				MarkdownDescription: "Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.",
+				DeprecationMessage:  "Use `railway_service_instance.cron_schedule` instead. Service deployment settings are scoped to an environment.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(9),
@@ -123,6 +124,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"source_image": schema.StringAttribute{
 				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.",
+				DeprecationMessage:  "Use `railway_service_instance.source_image` instead. Service sources are scoped to an environment.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -134,6 +136,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"source_image_registry_username": schema.StringAttribute{
 				MarkdownDescription: "Private Docker registry credentials.",
+				DeprecationMessage:  "Use `railway_service_instance.source_image_registry_username` instead. Registry credentials are scoped to an environment.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -146,6 +149,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"source_image_registry_password": schema.StringAttribute{
 				MarkdownDescription: "Private Docker registry credentials.",
+				DeprecationMessage:  "Use `railway_service_instance.source_image_registry_password` instead. Registry credentials are scoped to an environment.",
 				Optional:            true,
 				Sensitive:           true,
 				Validators: []validator.String{
@@ -159,6 +163,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"source_repo": schema.StringAttribute{
 				MarkdownDescription: "Source repository of the service. Conflicts with `source_image`.",
+				DeprecationMessage:  "Use `railway_service_instance.source_repo` instead. Service sources are scoped to an environment.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(3),
@@ -167,6 +172,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"source_repo_branch": schema.StringAttribute{
 				MarkdownDescription: "Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.",
+				DeprecationMessage:  "Use `railway_service_instance.source_repo_branch` instead. Deployment triggers are scoped to an environment.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -175,6 +181,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"root_directory": schema.StringAttribute{
 				MarkdownDescription: "Directory to user for the service. Conflicts with `source_image`.",
+				DeprecationMessage:  "Use `railway_service_instance.root_directory` instead. Build settings are scoped to an environment.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -182,6 +189,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"config_path": schema.StringAttribute{
 				MarkdownDescription: "Path to the Railway config file. Conflicts with `source_image`.",
+				DeprecationMessage:  "Use `railway_service_instance.config_path` instead. Build settings are scoped to an environment.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -189,6 +197,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"volume": schema.SingleNestedAttribute{
 				MarkdownDescription: "Volume connected to the service.",
+				DeprecationMessage:  "This embedded volume is deprecated and will be replaced by dedicated volume and volume-instance resources.",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
@@ -223,6 +232,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"regions": schema.ListNestedAttribute{
 				MarkdownDescription: "Regions with replicas to deploy service in.",
+				DeprecationMessage:  "Use `railway_service_instance.regions` instead. Replica configuration is scoped to an environment.",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.List{
@@ -747,24 +757,29 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		return err
 	}
 
-	if response.ServiceInstance.CronSchedule != nil {
+	if !data.CronSchedule.IsNull() && !data.CronSchedule.IsUnknown() &&
+		response.ServiceInstance.CronSchedule != nil {
 		data.CronSchedule = types.StringValue(*response.ServiceInstance.CronSchedule)
 	}
 
-	if response.ServiceInstance.RootDirectory != nil && len(*response.ServiceInstance.RootDirectory) != 0 {
+	if !data.RootDirectory.IsNull() && !data.RootDirectory.IsUnknown() &&
+		response.ServiceInstance.RootDirectory != nil && len(*response.ServiceInstance.RootDirectory) != 0 {
 		data.RootDirectory = types.StringValue(*response.ServiceInstance.RootDirectory)
 	}
 
-	if response.ServiceInstance.RailwayConfigFile != nil && len(*response.ServiceInstance.RailwayConfigFile) != 0 {
+	if !data.ConfigPath.IsNull() && !data.ConfigPath.IsUnknown() &&
+		response.ServiceInstance.RailwayConfigFile != nil && len(*response.ServiceInstance.RailwayConfigFile) != 0 {
 		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
 	}
 
 	if response.ServiceInstance.Source != nil {
-		if response.ServiceInstance.Source.Image != nil {
+		if !data.SourceImage.IsNull() && !data.SourceImage.IsUnknown() &&
+			response.ServiceInstance.Source.Image != nil {
 			data.SourceImage = types.StringValue(*response.ServiceInstance.Source.Image)
 		}
 
-		if response.ServiceInstance.Source.Repo != nil {
+		if !data.SourceRepo.IsNull() && !data.SourceRepo.IsUnknown() &&
+			response.ServiceInstance.Source.Repo != nil {
 			data.SourceRepo = types.StringValue(*response.ServiceInstance.Source.Repo)
 
 			triggersResponse, err := listDeploymentTriggers(ctx, client, projectId, environment.Id, serviceId)
@@ -785,7 +800,9 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		}
 	}
 
-	if len(response.ServiceInstance.LatestDeployment.Meta) != 0 {
+	if data.Regions.IsUnknown() {
+		data.Regions = types.ListNull(types.ObjectType{AttrTypes: regionAttrTypes})
+	} else if !data.Regions.IsNull() && len(response.ServiceInstance.LatestDeployment.Meta) != 0 {
 		regions, err := getRegionsFromLatestDeployment(response.ServiceInstance.LatestDeployment)
 
 		if err != nil {
@@ -793,8 +810,6 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		}
 
 		data.Regions = types.ListValueMust(types.ObjectType{AttrTypes: regionAttrTypes}, regions)
-	} else if data.Regions.IsUnknown() {
-		data.Regions = types.ListNull(types.ObjectType{AttrTypes: regionAttrTypes})
 	}
 
 	return nil
