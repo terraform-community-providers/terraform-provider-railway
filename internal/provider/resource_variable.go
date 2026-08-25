@@ -174,6 +174,11 @@ func (r *VariableResource) Read(ctx context.Context, req resource.ReadRequest, r
 	err := getVariable(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Name.ValueString(), data)
 
 	if err != nil {
+		if isNotFoundError(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variable, got error: %s", err))
 		return
 	}
@@ -304,14 +309,17 @@ func getVariable(ctx context.Context, client graphql.Client, projectId string, e
 		return err
 	}
 
-	if value, ok := response.Variables[name]; ok {
-		data.Id = types.StringValue(fmt.Sprintf("%s:%s:%s", serviceId, environmentId, name))
-		data.Name = types.StringValue(name)
-		data.Value = types.StringValue(fmt.Sprintf("%v", value))
-		data.ProjectId = types.StringValue(projectId)
-		data.EnvironmentId = types.StringValue(environmentId)
-		data.ServiceId = types.StringValue(serviceId)
+	value, ok := response.Variables[name]
+	if !ok {
+		return fmt.Errorf("variable %q: %w", name, errNotFound)
 	}
+
+	data.Id = types.StringValue(fmt.Sprintf("%s:%s:%s", serviceId, environmentId, name))
+	data.Name = types.StringValue(name)
+	data.Value = types.StringValue(fmt.Sprintf("%v", value))
+	data.ProjectId = types.StringValue(projectId)
+	data.EnvironmentId = types.StringValue(environmentId)
+	data.ServiceId = types.StringValue(serviceId)
 
 	return nil
 }

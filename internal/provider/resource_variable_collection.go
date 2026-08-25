@@ -221,6 +221,11 @@ func (r *VariableCollectionResource) Read(ctx context.Context, req resource.Read
 	err := getVariableCollection(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), variableNames, data)
 
 	if err != nil {
+		if isNotFoundError(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read variable collection, got error: %s", err))
 		return
 	}
@@ -439,6 +444,10 @@ func getVariableCollection(ctx context.Context, client graphql.Client, projectId
 				return fmt.Errorf("cannot convert variable %s to string", name)
 			}
 		}
+	}
+
+	if len(variables) == 0 {
+		return fmt.Errorf("variable collection: none of %d variables exist: %w", len(names), errNotFound)
 	}
 
 	data.Id = types.StringValue(getVariableCollectionId(ctx, serviceId, environmentId, names))

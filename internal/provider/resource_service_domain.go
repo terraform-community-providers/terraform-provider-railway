@@ -189,6 +189,11 @@ func (r *ServiceDomainResource) Read(ctx context.Context, req resource.ReadReque
 	err := getAndBuildServiceDomain(ctx, *r.client, data.ProjectId.ValueString(), data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.Domain.ValueString(), data)
 
 	if err != nil {
+		if isNotFoundError(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read service domain, got error: %s", err))
 		return
 	}
@@ -310,7 +315,7 @@ func findServiceDomain(ctx context.Context, client graphql.Client, projectId str
 		}
 	}
 
-	return nil, fmt.Errorf("service domain doesn't exist")
+	return nil, fmt.Errorf("service domain %q: %w", domain, errNotFound)
 }
 
 func getAndBuildServiceDomain(ctx context.Context, client graphql.Client, projectId string, environmentId string, serviceId string, domain string, data *ServiceDomainResourceModel) error {
