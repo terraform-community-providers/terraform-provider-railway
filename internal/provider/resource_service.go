@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -28,6 +29,11 @@ import (
 
 var _ resource.Resource = &ServiceResource{}
 var _ resource.ResourceWithImportState = &ServiceResource{}
+
+const (
+	serviceVolumeInstancePollInterval = time.Second
+	serviceVolumeInstanceTimeout      = 30 * time.Second
+)
 
 func NewServiceResource() resource.Resource {
 	return &ServiceResource{}
@@ -333,6 +339,8 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 	var data *ServiceResourceModel
 	var volumeData *ServiceResourceVolumeModel
 	var regionsData *[]ServiceResourceRegionModel
+	volumeCreated := false
+	var createdVolumeId string
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	resp.Diagnostics.Append(data.Regions.ElementsAs(ctx, &regionsData, true)...)
@@ -402,6 +410,8 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 
 		tflog.Trace(ctx, "updated a volume")
+		volumeCreated = true
+		createdVolumeId = volumeResponse.VolumeCreate.Volume.Id
 	}
 
 	if !data.SourceRepo.IsNull() || !data.SourceImage.IsNull() {
@@ -422,7 +432,24 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	if volumeCreated {
+		data.Volume = types.ObjectValueMust(
+			volumeAttrTypes,
+			map[string]attr.Value{
+				"id":         types.StringValue(createdVolumeId),
+				"name":       volumeData.Name,
+				"mount_path": volumeData.MountPath,
+				"size":       types.Float64Null(),
+			},
+		)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		err = waitForAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	} else {
+		_, err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	}
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
@@ -461,7 +488,7 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	_, err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
@@ -478,6 +505,8 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	var state *ServiceResourceModel
 	var volumeState *ServiceResourceVolumeModel
+	volumeCreated := false
+	var createdVolumeId string
 	// var regionsState *[]ServiceResourceRegionModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -573,6 +602,8 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 
 		tflog.Trace(ctx, "updated a volume")
+		volumeCreated = true
+		createdVolumeId = volumeResponse.VolumeCreate.Volume.Id
 	}
 
 	// Update volume if it was changed
@@ -638,7 +669,24 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	if volumeCreated {
+		data.Volume = types.ObjectValueMust(
+			volumeAttrTypes,
+			map[string]attr.Value{
+				"id":         types.StringValue(createdVolumeId),
+				"name":       volumeData.Name,
+				"mount_path": volumeData.MountPath,
+				"size":       types.Float64Null(),
+			},
+		)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		err = waitForAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	} else {
+		_, err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	}
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
@@ -843,20 +891,20 @@ func getRegionsFromLatestDeployment(latestDeployment getServiceInstanceServiceIn
 	return regions, nil
 }
 
-func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
+func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) (bool, error) {
 	data.Volume = types.ObjectNull(volumeAttrTypes)
 
 	// Read the service again to get the updated source attributes
 	_, environment, err := defaultEnvironmentForProject(ctx, client, projectId)
 
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	response, err := getVolumeInstances(ctx, client, projectId)
 
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	for _, volume := range response.Project.Volumes.Edges {
@@ -871,11 +919,38 @@ func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, proje
 						"size":       types.Float64Value(float64(volumeInstance.Node.SizeMB)),
 					},
 				)
+				return true, nil
 			}
 		}
 	}
 
-	return nil
+	return false, nil
+}
+
+func waitForAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
+	timeout := time.NewTimer(serviceVolumeInstanceTimeout)
+	defer timeout.Stop()
+
+	ticker := time.NewTicker(serviceVolumeInstancePollInterval)
+	defer ticker.Stop()
+
+	for {
+		found, err := getAndBuildVolumeInstance(ctx, client, projectId, serviceId, data)
+		if err != nil {
+			return err
+		}
+		if found {
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-timeout.C:
+			return fmt.Errorf("timed out waiting for volume instance for service %s", serviceId)
+		case <-ticker.C:
+		}
+	}
 }
 
 func updateServiceConnection(ctx context.Context, client graphql.Client, serviceId string, data *ServiceResourceModel, state *ServiceResourceModel) error {
