@@ -1,10 +1,14 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
 
+	frameworkresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	frameworkschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	frameworktypes "github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -531,6 +535,74 @@ func TestAccServiceResourceCronScheduleMultipleRegions(t *testing.T) {
 	})
 }
 
+func TestServiceResourceSchemaRedeployEnvironmentIDsIsSet(t *testing.T) {
+	var resp frameworkresource.SchemaResponse
+
+	(&ServiceResource{}).Schema(context.Background(), frameworkresource.SchemaRequest{}, &resp)
+
+	attr, ok := resp.Schema.Attributes["redeploy_environment_ids"]
+	if !ok {
+		t.Fatal("expected redeploy_environment_ids attribute to exist")
+	}
+
+	setAttr, ok := attr.(frameworkschema.SetAttribute)
+	if !ok {
+		t.Fatalf("expected redeploy_environment_ids to be a set attribute, got %T", attr)
+	}
+
+	if !setAttr.Optional {
+		t.Fatal("expected redeploy_environment_ids to be optional")
+	}
+
+	if setAttr.ElementType != frameworktypes.StringType {
+		t.Fatalf("expected redeploy_environment_ids to contain strings, got %T", setAttr.ElementType)
+	}
+}
+
+func TestResolveRedeployEnvironmentIDsDefaultsToAllInstances(t *testing.T) {
+	t.Parallel()
+
+	environmentIDs, err := resolveRedeployEnvironmentIDs(
+		testServiceInstancesResponse("env-prod", "env-staging"),
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if len(environmentIDs) != 2 || environmentIDs[0] != "env-prod" || environmentIDs[1] != "env-staging" {
+		t.Fatalf("expected all environment ids to be redeployed, got %#v", environmentIDs)
+	}
+}
+
+func TestResolveRedeployEnvironmentIDsFiltersConfiguredTargets(t *testing.T) {
+	t.Parallel()
+
+	environmentIDs, err := resolveRedeployEnvironmentIDs(
+		testServiceInstancesResponse("env-prod", "env-staging", "env-pr-123"),
+		[]string{"env-staging", "env-prod"},
+	)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if len(environmentIDs) != 2 || environmentIDs[0] != "env-prod" || environmentIDs[1] != "env-staging" {
+		t.Fatalf("expected only configured environment ids in service-instance order, got %#v", environmentIDs)
+	}
+}
+
+func TestResolveRedeployEnvironmentIDsFailsForUnknownEnvironment(t *testing.T) {
+	t.Parallel()
+
+	_, err := resolveRedeployEnvironmentIDs(
+		testServiceInstancesResponse("env-prod", "env-staging"),
+		[]string{"env-prod", "env-missing"},
+	)
+	if err == nil {
+		t.Fatal("expected an error for an unknown environment id")
+	}
+}
+
 func testAccServiceResourceConfigDefault(name string) string {
 	return fmt.Sprintf(`
 resource "railway_service" "test" {
@@ -538,6 +610,27 @@ resource "railway_service" "test" {
   project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
 }
 `, name)
+}
+
+func testServiceInstancesResponse(environmentIDs ...string) *getServiceInstancesResponse {
+	edges := make([]getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge, 0, len(environmentIDs))
+
+	for _, environmentID := range environmentIDs {
+		edges = append(edges, getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdge{
+			Node: getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnectionEdgesServiceServiceInstancesConnectionEdgeNodeServiceInstance{
+				Id:            environmentID + "-instance",
+				EnvironmentId: environmentID,
+			},
+		})
+	}
+
+	return &getServiceInstancesResponse{
+		Service: getServiceInstancesService{
+			ServiceInstances: getServiceInstancesServiceServiceInstancesServiceServiceInstancesConnection{
+				Edges: edges,
+			},
+		},
+	}
 }
 
 func testAccServiceResourceConfigNonDefaultRegions(name string) string {

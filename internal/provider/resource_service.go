@@ -71,6 +71,7 @@ type ServiceResourceModel struct {
 	Name                               types.String `tfsdk:"name"`
 	ProjectId                          types.String `tfsdk:"project_id"`
 	CronSchedule                       types.String `tfsdk:"cron_schedule"`
+	RedeployEnvironmentIds             types.Set    `tfsdk:"redeploy_environment_ids"`
 	SourceImage                        types.String `tfsdk:"source_image"`
 	SourceImagePrivateRegistryUsername types.String `tfsdk:"source_image_registry_username"`
 	SourceImagePrivateRegistryPassword types.String `tfsdk:"source_image_registry_password"`
@@ -120,6 +121,11 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(9),
 				},
+			},
+			"redeploy_environment_ids": schema.SetAttribute{
+				MarkdownDescription: "Environment IDs to redeploy after service updates. If omitted, all current service instances are redeployed.",
+				Optional:            true,
+				ElementType:         types.StringType,
 			},
 			"source_image": schema.StringAttribute{
 				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.",
@@ -258,10 +264,13 @@ func (r *ServiceResource) ConfigValidators(ctx context.Context) []resource.Confi
 			path.MatchRoot("source_repo"),
 		),
 		cronScheduleReplicasValidator{},
+		redeployEnvironmentIDsValidator{},
 	}
 }
 
 type cronScheduleReplicasValidator struct{}
+
+type redeployEnvironmentIDsValidator struct{}
 
 func (v cronScheduleReplicasValidator) Description(ctx context.Context) string {
 	return "`cron_schedule` can only be set when total number of replicas across all regions is 1"
@@ -305,6 +314,58 @@ func (v cronScheduleReplicasValidator) ValidateResource(ctx context.Context, req
 				"`cron_schedule` can only be set when total number of replicas across all regions is 1. Found %d replicas.",
 				sum,
 			),
+		)
+	}
+}
+
+func (v redeployEnvironmentIDsValidator) Description(ctx context.Context) string {
+	return "`redeploy_environment_ids` must contain at least one valid environment id"
+}
+
+func (v redeployEnvironmentIDsValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v redeployEnvironmentIDsValidator) ValidateResource(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data ServiceResourceModel
+	var redeployEnvironmentIDs []string
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if data.RedeployEnvironmentIds.IsNull() || data.RedeployEnvironmentIds.IsUnknown() {
+		return
+	}
+
+	resp.Diagnostics.Append(data.RedeployEnvironmentIds.ElementsAs(ctx, &redeployEnvironmentIDs, false)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if len(redeployEnvironmentIDs) == 0 {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("redeploy_environment_ids"),
+			"Invalid `redeploy_environment_ids` value",
+			"`redeploy_environment_ids` must contain at least one environment id when specified.",
+		)
+		return
+	}
+
+	uuidMatcher := uuidRegex()
+
+	for _, environmentID := range redeployEnvironmentIDs {
+		if uuidMatcher.MatchString(environmentID) {
+			continue
+		}
+
+		resp.Diagnostics.AddAttributeError(
+			path.Root("redeploy_environment_ids"),
+			"Invalid environment id",
+			fmt.Sprintf("`%s` is not a valid environment id.", environmentID),
 		)
 	}
 }
@@ -475,6 +536,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 	var data *ServiceResourceModel
 	var volumeData *ServiceResourceVolumeModel
 	var regionsData *[]ServiceResourceRegionModel
+	var redeployEnvironmentIDs []string
 
 	var state *ServiceResourceModel
 	var volumeState *ServiceResourceVolumeModel
@@ -490,6 +552,14 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	if !data.RedeployEnvironmentIds.IsNull() && !data.RedeployEnvironmentIds.IsUnknown() {
+		resp.Diagnostics.Append(data.RedeployEnvironmentIds.ElementsAs(ctx, &redeployEnvironmentIDs, false)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	if data.Name.ValueString() != state.Name.ValueString() {
@@ -624,7 +694,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service repo or image connection, got error: %s", err))
 	}
 
-	err = redeployAllInstances(ctx, *r.client, data.Id.ValueString())
+	err = redeployAllInstances(ctx, *r.client, data.Id.ValueString(), redeployEnvironmentIDs)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to redeploy services after update, got error: %s", err))
@@ -915,15 +985,21 @@ func buildServiceConnectInput(data *ServiceResourceModel) ServiceConnectInput {
 	return ServiceConnectInput{}
 }
 
-func redeployAllInstances(ctx context.Context, client graphql.Client, serviceId string) error {
+func redeployAllInstances(ctx context.Context, client graphql.Client, serviceId string, configuredEnvironmentIDs []string) error {
 	instances, err := getServiceInstances(ctx, client, serviceId)
 
 	if err != nil {
 		return err
 	}
 
-	for _, instance := range instances.Service.ServiceInstances.Edges {
-		_, err := redeployServiceInstance(ctx, client, instance.Node.EnvironmentId, serviceId)
+	environmentIDs, err := resolveRedeployEnvironmentIDs(instances, configuredEnvironmentIDs)
+
+	if err != nil {
+		return err
+	}
+
+	for _, environmentID := range environmentIDs {
+		_, err := redeployServiceInstance(ctx, client, environmentID, serviceId)
 
 		if err != nil {
 			return err
@@ -933,4 +1009,39 @@ func redeployAllInstances(ctx context.Context, client graphql.Client, serviceId 
 	tflog.Trace(ctx, "redeployed all service instances")
 
 	return nil
+}
+
+func resolveRedeployEnvironmentIDs(instances *getServiceInstancesResponse, configuredEnvironmentIDs []string) ([]string, error) {
+	environmentIDs := make([]string, 0, len(instances.Service.ServiceInstances.Edges))
+
+	if len(configuredEnvironmentIDs) == 0 {
+		for _, instance := range instances.Service.ServiceInstances.Edges {
+			environmentIDs = append(environmentIDs, instance.Node.EnvironmentId)
+		}
+
+		return environmentIDs, nil
+	}
+
+	configuredEnvironmentIDSet := make(map[string]struct{}, len(configuredEnvironmentIDs))
+
+	for _, environmentID := range configuredEnvironmentIDs {
+		configuredEnvironmentIDSet[environmentID] = struct{}{}
+	}
+
+	for _, instance := range instances.Service.ServiceInstances.Edges {
+		environmentID := instance.Node.EnvironmentId
+
+		if _, ok := configuredEnvironmentIDSet[environmentID]; !ok {
+			continue
+		}
+
+		environmentIDs = append(environmentIDs, environmentID)
+		delete(configuredEnvironmentIDSet, environmentID)
+	}
+
+	if len(configuredEnvironmentIDSet) > 0 {
+		return nil, fmt.Errorf("invalid redeploy_environment_ids for service: %v", slices.Sorted(maps.Keys(configuredEnvironmentIDSet)))
+	}
+
+	return environmentIDs, nil
 }
