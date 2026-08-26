@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -90,6 +91,7 @@ func (p *RailwayProvider) Configure(ctx context.Context, req provider.ConfigureR
 	client := graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
 
 	resp.DataSourceData = &client
+	resp.EphemeralResourceData = &client
 	resp.ResourceData = &client
 }
 
@@ -97,6 +99,9 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewEnvironmentResource,
+		NewBucketResource,
+		NewBucketInstanceResource,
+		NewBucketCorsConfigurationResource,
 		NewServiceResource,
 		NewVariableResource,
 		NewVariableCollectionResource,
@@ -104,6 +109,12 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 		NewCustomDomainResource,
 		NewServiceDomainResource,
 		NewTcpProxyResource,
+	}
+}
+
+func (p *RailwayProvider) EphemeralResources(ctx context.Context) []func() ephemeral.EphemeralResource {
+	return []func() ephemeral.EphemeralResource{
+		NewBucketCredentialsEphemeralResource,
 	}
 }
 

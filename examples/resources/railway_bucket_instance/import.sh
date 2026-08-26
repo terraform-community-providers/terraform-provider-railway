@@ -1,0 +1,1 @@
+terraform import railway_bucket_instance.uploads environment_id:bucket_id

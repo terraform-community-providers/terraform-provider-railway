@@ -4,76 +4,156 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccVariableResourceDefault(t *testing.T) {
+func TestAccVariableResource(t *testing.T) {
+	projectName := "tf-acc-variable-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
 			{
-				Config: testAccVariableResourceConfigDefault("1234567890"),
+				Config: testAccVariableResourceConfig(
+					projectName,
+					"1234567890",
+					"first-secret",
+					1,
+					false,
+					"readable-value",
+				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("railway_variable.test", "id", "39da7e07-fa3a-42fd-b695-d229319f2993:d0519b29-5d12-4857-a5dd-76fa7418336c:REDIS_URL"),
-					resource.TestCheckResourceAttr("railway_variable.test", "name", "REDIS_URL"),
-					resource.TestCheckResourceAttr("railway_variable.test", "value", "1234567890"),
-					resource.TestCheckResourceAttr("railway_variable.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
-					resource.TestCheckResourceAttr("railway_variable.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_variable.readable", "value", "1234567890"),
+					resource.TestCheckNoResourceAttr("railway_variable.sealed", "value"),
+					resource.TestCheckNoResourceAttr("railway_variable.sealed", "value_wo"),
+					resource.TestCheckResourceAttr("railway_variable.sealed", "value_wo_version", "1"),
+					resource.TestCheckResourceAttr("railway_variable.transition", "value", "readable-value"),
 				),
 			},
-			// ImportState testing
 			{
-				ResourceName:      "railway_variable.test",
+				ResourceName:      "railway_variable.readable",
 				ImportState:       true,
-				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging:REDIS_URL",
+				ImportStateIdFunc: testAccVariableImportStateId("railway_variable.readable"),
 				ImportStateVerify: true,
 			},
-			// Update with default values
 			{
-				Config: testAccVariableResourceConfigDefault("1234567890"),
+				Config: testAccVariableResourceConfig(
+					projectName,
+					"$${{redis.REDIS_URL}}",
+					"second-secret",
+					2,
+					true,
+					"sealed-value",
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("railway_variable.transition", plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("railway_variable.test", "id", "39da7e07-fa3a-42fd-b695-d229319f2993:d0519b29-5d12-4857-a5dd-76fa7418336c:REDIS_URL"),
-					resource.TestCheckResourceAttr("railway_variable.test", "name", "REDIS_URL"),
-					resource.TestCheckResourceAttr("railway_variable.test", "value", "1234567890"),
-					resource.TestCheckResourceAttr("railway_variable.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
-					resource.TestCheckResourceAttr("railway_variable.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_variable.readable", "value", "${{redis.REDIS_URL}}"),
+					resource.TestCheckNoResourceAttr("railway_variable.sealed", "value_wo"),
+					resource.TestCheckResourceAttr("railway_variable.sealed", "value_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("railway_variable.transition", "value"),
+					resource.TestCheckNoResourceAttr("railway_variable.transition", "value_wo"),
+					resource.TestCheckResourceAttr("railway_variable.transition", "value_wo_version", "1"),
 				),
 			},
-			// Update and Read testing
 			{
-				Config: testAccVariableResourceConfigDefault("$${{redis.REDIS_URL}}"),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("railway_variable.test", "id", "39da7e07-fa3a-42fd-b695-d229319f2993:d0519b29-5d12-4857-a5dd-76fa7418336c:REDIS_URL"),
-					resource.TestCheckResourceAttr("railway_variable.test", "name", "REDIS_URL"),
-					resource.TestCheckResourceAttr("railway_variable.test", "value", "${{redis.REDIS_URL}}"),
-					resource.TestCheckResourceAttr("railway_variable.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
-					resource.TestCheckResourceAttr("railway_variable.test", "service_id", "39da7e07-fa3a-42fd-b695-d229319f2993"),
-					resource.TestCheckResourceAttr("railway_variable.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+				ResourceName:            "railway_variable.sealed",
+				ImportState:             true,
+				ImportStateIdFunc:       testAccVariableImportStateId("railway_variable.sealed"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"value_wo", "value_wo_version"},
+			},
+			{
+				Config: testAccVariableResourceConfig(
+					projectName,
+					"$${{redis.REDIS_URL}}",
+					"second-secret",
+					2,
+					false,
+					"new-readable-value",
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("railway_variable.transition", plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.TestCheckResourceAttr("railway_variable.transition", "value", "new-readable-value"),
 			},
-			// ImportState testing
-			{
-				ResourceName:      "railway_variable.test",
-				ImportState:       true,
-				ImportStateId:     "39da7e07-fa3a-42fd-b695-d229319f2993:staging:REDIS_URL",
-				ImportStateVerify: true,
-			},
-			// Delete testing automatically occurs in TestCase
 		},
 	})
 }
 
-func testAccVariableResourceConfigDefault(value string) string {
-	return fmt.Sprintf(`
-resource "railway_variable" "test" {
-  name = "REDIS_URL"
-  value = "%s"
-  environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
-  service_id = "39da7e07-fa3a-42fd-b695-d229319f2993"
+func testAccVariableResourceConfig(
+	projectName string,
+	readableValue string,
+	sealedValue string,
+	sealedVersion int64,
+	transitionSealed bool,
+	transitionValue string,
+) string {
+	transitionConfig := fmt.Sprintf(`
+resource "railway_variable" "transition" {
+  name           = "TERRAFORM_VARIABLE_TRANSITION_TEST"
+  value          = "%s"
+  environment_id = railway_project.test_variable.default_environment.id
+  service_id     = railway_service.test_variable.id
 }
-`, value)
+`, transitionValue)
+	if transitionSealed {
+		transitionConfig = fmt.Sprintf(`
+resource "railway_variable" "transition" {
+  name             = "TERRAFORM_VARIABLE_TRANSITION_TEST"
+  value_wo         = "%s"
+  value_wo_version = 1
+  environment_id   = railway_project.test_variable.default_environment.id
+  service_id       = railway_service.test_variable.id
+}
+`, transitionValue)
+	}
+
+	return fmt.Sprintf(`
+resource "railway_project" "test_variable" {
+  name = "%s"
+}
+
+resource "railway_service" "test_variable" {
+  name       = "terraform-provider-variable-test"
+  project_id = railway_project.test_variable.id
+}
+
+resource "railway_variable" "readable" {
+  name           = "REDIS_URL"
+  value          = "%s"
+  environment_id = railway_project.test_variable.default_environment.id
+  service_id     = railway_service.test_variable.id
+}
+
+resource "railway_variable" "sealed" {
+  name             = "TERRAFORM_SEALED_TEST"
+  value_wo         = "%s"
+  value_wo_version = %d
+  environment_id   = railway_project.test_variable.default_environment.id
+  service_id       = railway_service.test_variable.id
+}
+
+%s
+`, projectName, readableValue, sealedValue, sealedVersion, transitionConfig)
+}
+
+func testAccVariableImportStateId(resourceName string) resource.ImportStateIdFunc {
+	return func(state *terraform.State) (string, error) {
+		resourceState := state.RootModule().Resources[resourceName]
+		return fmt.Sprintf(
+			"%s:production:%s",
+			resourceState.Primary.Attributes["service_id"],
+			resourceState.Primary.Attributes["name"],
+		), nil
+	}
 }

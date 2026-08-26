@@ -1,0 +1,1 @@
+terraform import railway_bucket_cors_configuration.uploads project_id:environment_id:bucket_id
