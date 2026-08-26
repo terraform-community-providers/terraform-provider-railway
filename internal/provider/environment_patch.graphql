@@ -1,0 +1,24 @@
+query getEnvironmentPatchLifecycle($environmentId: String!) {
+  environment(id: $environmentId) {
+    unmergedChangesCount
+  }
+}
+
+mutation commitEnvironmentPatch(
+  $environmentId: String!
+  $patch: EnvironmentConfig!
+  $commitMessage: String
+) {
+  environmentPatchCommit(
+    environmentId: $environmentId
+    patch: $patch
+    commitMessage: $commitMessage
+  )
+}
+
+query getEnvironmentPatch($id: String!) {
+  environmentPatch(id: $id) {
+    status
+    lastAppliedError
+  }
+}

@@ -4,7 +4,7 @@ page_title: "railway_service Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
   Railway service.
-  ⚠️ NOTE: All the other settings not specified here are recommended to be specified in the Railway config file.
+  ⚠️ **NOTE:** All the other settings not specified here are recommended to be specified in the Railway config file.
 ---
 
 # railway_service (Resource)
@@ -41,7 +41,7 @@ resource "railway_service" "example" {
 - `source_image_registry_username` (String) Private Docker registry credentials.
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
 - `source_repo_branch` (String) Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.
-- `volume` (Attributes) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
+- `volume` (Attributes, Deprecated) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
 
 ### Read-Only
 
