@@ -44,8 +44,9 @@ func (d *ServiceDomainDataSource) Schema(ctx context.Context, req datasource.Sch
 				Computed:            true,
 			},
 			"domain": schema.StringAttribute{
-				MarkdownDescription: "Exact Railway-generated domain to look up.",
-				Required:            true,
+				MarkdownDescription: "Exact Railway-generated domain to look up. Omit this when the service has exactly one generated domain.",
+				Optional:            true,
+				Computed:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
 				},
@@ -106,14 +107,25 @@ func (d *ServiceDomainDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
+	domains := response.Domains.ServiceDomains
 	matches := make([]ServiceDomain, 0, 1)
-	for _, result := range response.Domains.ServiceDomains {
-		if result.ServiceDomain.Domain == data.Domain.ValueString() {
+	if data.Domain.IsNull() {
+		for _, result := range domains {
 			matches = append(matches, result.ServiceDomain)
+		}
+	} else {
+		for _, result := range domains {
+			if result.ServiceDomain.Domain == data.Domain.ValueString() {
+				matches = append(matches, result.ServiceDomain)
+			}
 		}
 	}
 	if len(matches) != 1 {
-		resp.Diagnostics.AddError("Service Domain Lookup Error", fmt.Sprintf("Expected exactly one service domain named %q for service %q in environment %q and project %q, found %d.", data.Domain.ValueString(), data.ServiceId.ValueString(), data.EnvironmentId.ValueString(), data.ProjectId.ValueString(), len(matches)))
+		selector := ""
+		if !data.Domain.IsNull() {
+			selector = fmt.Sprintf(" named %q", data.Domain.ValueString())
+		}
+		resp.Diagnostics.AddError("Service Domain Lookup Error", fmt.Sprintf("Expected exactly one service domain%s for service %q in environment %q and project %q, found %d.", selector, data.ServiceId.ValueString(), data.EnvironmentId.ValueString(), data.ProjectId.ValueString(), len(matches)))
 		return
 	}
 

@@ -111,6 +111,26 @@ func TestServiceDomainDataSourceSelectsExactDomain(t *testing.T) {
 	}
 }
 
+func TestServiceDomainDataSourceSelectsOnlyDomainWithoutName(t *testing.T) {
+	request := lookupRequest(t, `{"data":{"domains":{"serviceDomains":[{"id":"domain-id","domain":"server.up.railway.app","suffix":"up.railway.app","environmentId":"`+testLookupEnvironmentId+`","serviceId":"`+testLookupServiceId+`"}]}}}`)
+	response := readLookupDataSource(t, NewServiceDomainDataSource(), request.server, serviceDomainConfig(""))
+	assertNoReadErrors(t, response)
+
+	var state ServiceDomainDataSourceModel
+	getLookupState(t, response, &state)
+	if state.Id != types.StringValue("domain-id") || state.Domain != types.StringValue("server.up.railway.app") {
+		t.Errorf("state = %#v, want the only generated domain", state)
+	}
+}
+
+func TestServiceDomainDataSourceRejectsMultipleDomainsWithoutName(t *testing.T) {
+	server := lookupRequest(t, `{"data":{"domains":{"serviceDomains":[{"id":"one","domain":"one.up.railway.app","suffix":"up.railway.app","environmentId":"`+testLookupEnvironmentId+`","serviceId":"`+testLookupServiceId+`"},{"id":"two","domain":"two.up.railway.app","suffix":"up.railway.app","environmentId":"`+testLookupEnvironmentId+`","serviceId":"`+testLookupServiceId+`"}]}}}`)
+	response := readLookupDataSource(t, NewServiceDomainDataSource(), server.server, serviceDomainConfig(""))
+	if !response.Diagnostics.HasError() || !strings.Contains(fmt.Sprint(response.Diagnostics), "found 2") {
+		t.Fatalf("Read() diagnostics = %v, want ambiguous-domain error", response.Diagnostics)
+	}
+}
+
 func TestServiceDomainDataSourceRequiresOneExactMatch(t *testing.T) {
 	for _, test := range []struct {
 		name     string
@@ -169,8 +189,12 @@ func identityConfig(t *testing.T, source datasource.DataSource, id string) map[s
 }
 
 func serviceDomainConfig(domain string) map[string]tftypes.Value {
+	domainValue := interface{}(domain)
+	if domain == "" {
+		domainValue = nil
+	}
 	return map[string]tftypes.Value{
-		"id": tftypes.NewValue(tftypes.String, nil), "domain": tftypes.NewValue(tftypes.String, domain), "suffix": tftypes.NewValue(tftypes.String, nil),
+		"id": tftypes.NewValue(tftypes.String, nil), "domain": tftypes.NewValue(tftypes.String, domainValue), "suffix": tftypes.NewValue(tftypes.String, nil),
 		"project_id": tftypes.NewValue(tftypes.String, testLookupProjectId), "environment_id": tftypes.NewValue(tftypes.String, testLookupEnvironmentId), "service_id": tftypes.NewValue(tftypes.String, testLookupServiceId),
 	}
 }

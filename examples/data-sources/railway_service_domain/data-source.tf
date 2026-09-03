@@ -14,7 +14,6 @@ data "railway_service_domain" "server" {
   project_id     = data.railway_project.charming.id
   environment_id = data.railway_environment.production.id
   service_id     = data.railway_service.server.id
-  domain         = "server-production.up.railway.app"
 }
 
 output "generated_domain" {

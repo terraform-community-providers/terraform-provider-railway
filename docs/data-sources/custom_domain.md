@@ -64,5 +64,3 @@ output "custom_domain_dns" {
 - `verification_host_label` (String) TXT host label for custom domain verification.
 - `verification_record_value` (String) TXT record value for custom domain verification.
 - `zone` (String) DNS zone of the custom domain.
-
-

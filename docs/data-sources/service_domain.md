@@ -29,7 +29,6 @@ data "railway_service_domain" "server" {
   project_id     = data.railway_project.charming.id
   environment_id = data.railway_environment.production.id
   service_id     = data.railway_service.server.id
-  domain         = "server-production.up.railway.app"
 }
 
 output "generated_domain" {
@@ -42,10 +41,13 @@ output "generated_domain" {
 
 ### Required
 
-- `domain` (String) Exact Railway-generated domain to look up.
 - `environment_id` (String) Identifier of the environment containing the service domain.
 - `project_id` (String) Identifier of the project containing the service.
 - `service_id` (String) Identifier of the service owning the service domain.
+
+### Optional
+
+- `domain` (String) Exact Railway-generated domain to look up. Omit this when the service has exactly one generated domain.
 
 ### Read-Only
 
