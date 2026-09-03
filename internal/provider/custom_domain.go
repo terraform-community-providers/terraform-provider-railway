@@ -47,11 +47,16 @@ func readCustomDomain(ctx context.Context, client graphql.Client, environmentId 
 }
 
 func setCustomDomainModel(data *CustomDomainModel, domain CustomDomain, projectId string) error {
-	if len(domain.Status.DnsRecords) == 0 {
-		return fmt.Errorf("custom domain %q has no DNS records", domain.Domain)
+	var routeRecords []CustomDomainStatusDnsRecordsDNSRecords
+	for _, record := range domain.Status.DnsRecords {
+		if record.Purpose == DNSRecordPurposeDnsRecordPurposeTrafficRoute && record.RecordType == DNSRecordTypeDnsRecordTypeCname {
+			routeRecords = append(routeRecords, record)
+		}
 	}
-
-	dnsRecord := domain.Status.DnsRecords[0]
+	if len(routeRecords) != 1 {
+		return fmt.Errorf("custom domain %q has %d TRAFFIC_ROUTE CNAME records; expected exactly one", domain.Domain, len(routeRecords))
+	}
+	dnsRecord := routeRecords[0]
 	data.Id = types.StringValue(domain.Id)
 	data.Domain = types.StringValue(domain.Domain)
 	data.EnvironmentId = types.StringValue(domain.EnvironmentId)
@@ -60,8 +65,16 @@ func setCustomDomainModel(data *CustomDomainModel, domain CustomDomain, projectI
 	data.HostLabel = types.StringValue(dnsRecord.Hostlabel)
 	data.Zone = types.StringValue(dnsRecord.Zone)
 	data.DNSRecordValue = types.StringValue(dnsRecord.RequiredValue)
-	data.VerificationHostLabel = types.StringValue(domain.Status.VerificationDnsHost)
-	data.VerificationRecordValue = types.StringValue(domain.Status.VerificationToken)
+	if domain.Status.VerificationDnsHost == nil {
+		data.VerificationHostLabel = types.StringNull()
+	} else {
+		data.VerificationHostLabel = types.StringValue(*domain.Status.VerificationDnsHost)
+	}
+	if domain.Status.VerificationToken == nil {
+		data.VerificationRecordValue = types.StringNull()
+	} else {
+		data.VerificationRecordValue = types.StringValue(*domain.Status.VerificationToken)
+	}
 
 	if domain.TargetPort == 0 {
 		data.TargetPort = types.Int64Null()

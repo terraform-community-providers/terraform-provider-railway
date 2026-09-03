@@ -1,0 +1,14 @@
+data "railway_project" "charming" {
+  id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
+}
+
+data "railway_service" "server" {
+  id = "39da7e07-fa3a-42fd-b695-d229319f2993"
+}
+
+output "service_project" {
+  value = {
+    name       = data.railway_service.server.name
+    project_id = data.railway_project.charming.id
+  }
+}

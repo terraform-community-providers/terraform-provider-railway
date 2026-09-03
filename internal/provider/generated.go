@@ -73,8 +73,8 @@ func (v *CustomDomainCreateInput) GetTargetPort() *int { return v.TargetPort }
 // CustomDomainStatus includes the requested fields of the GraphQL type CustomDomainStatus.
 type CustomDomainStatus struct {
 	DnsRecords          []CustomDomainStatusDnsRecordsDNSRecords `json:"dnsRecords"`
-	VerificationDnsHost string                                   `json:"verificationDnsHost"`
-	VerificationToken   string                                   `json:"verificationToken"`
+	VerificationDnsHost *string                                  `json:"verificationDnsHost"`
+	VerificationToken   *string                                  `json:"verificationToken"`
 }
 
 // GetDnsRecords returns CustomDomainStatus.DnsRecords, and is useful for accessing the field via an interface.
@@ -83,16 +83,19 @@ func (v *CustomDomainStatus) GetDnsRecords() []CustomDomainStatusDnsRecordsDNSRe
 }
 
 // GetVerificationDnsHost returns CustomDomainStatus.VerificationDnsHost, and is useful for accessing the field via an interface.
-func (v *CustomDomainStatus) GetVerificationDnsHost() string { return v.VerificationDnsHost }
+func (v *CustomDomainStatus) GetVerificationDnsHost() *string { return v.VerificationDnsHost }
 
 // GetVerificationToken returns CustomDomainStatus.VerificationToken, and is useful for accessing the field via an interface.
-func (v *CustomDomainStatus) GetVerificationToken() string { return v.VerificationToken }
+func (v *CustomDomainStatus) GetVerificationToken() *string { return v.VerificationToken }
 
 // CustomDomainStatusDnsRecordsDNSRecords includes the requested fields of the GraphQL type DNSRecords.
 type CustomDomainStatusDnsRecordsDNSRecords struct {
-	Hostlabel     string `json:"hostlabel"`
-	RequiredValue string `json:"requiredValue"`
-	Zone          string `json:"zone"`
+	Hostlabel     string           `json:"hostlabel"`
+	RequiredValue string           `json:"requiredValue"`
+	Zone          string           `json:"zone"`
+	Fqdn          string           `json:"fqdn"`
+	Purpose       DNSRecordPurpose `json:"purpose"`
+	RecordType    DNSRecordType    `json:"recordType"`
 }
 
 // GetHostlabel returns CustomDomainStatusDnsRecordsDNSRecords.Hostlabel, and is useful for accessing the field via an interface.
@@ -103,6 +106,35 @@ func (v *CustomDomainStatusDnsRecordsDNSRecords) GetRequiredValue() string { ret
 
 // GetZone returns CustomDomainStatusDnsRecordsDNSRecords.Zone, and is useful for accessing the field via an interface.
 func (v *CustomDomainStatusDnsRecordsDNSRecords) GetZone() string { return v.Zone }
+
+// GetFqdn returns CustomDomainStatusDnsRecordsDNSRecords.Fqdn, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatusDnsRecordsDNSRecords) GetFqdn() string { return v.Fqdn }
+
+// GetPurpose returns CustomDomainStatusDnsRecordsDNSRecords.Purpose, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatusDnsRecordsDNSRecords) GetPurpose() DNSRecordPurpose { return v.Purpose }
+
+// GetRecordType returns CustomDomainStatusDnsRecordsDNSRecords.RecordType, and is useful for accessing the field via an interface.
+func (v *CustomDomainStatusDnsRecordsDNSRecords) GetRecordType() DNSRecordType { return v.RecordType }
+
+type DNSRecordPurpose string
+
+const (
+	DNSRecordPurposeDnsRecordPurposeAcmeDns01Challenge DNSRecordPurpose = "DNS_RECORD_PURPOSE_ACME_DNS01_CHALLENGE"
+	DNSRecordPurposeDnsRecordPurposeTrafficRoute       DNSRecordPurpose = "DNS_RECORD_PURPOSE_TRAFFIC_ROUTE"
+	DNSRecordPurposeDnsRecordPurposeUnspecified        DNSRecordPurpose = "DNS_RECORD_PURPOSE_UNSPECIFIED"
+	DNSRecordPurposeUnrecognized                       DNSRecordPurpose = "UNRECOGNIZED"
+)
+
+type DNSRecordType string
+
+const (
+	DNSRecordTypeDnsRecordTypeA           DNSRecordType = "DNS_RECORD_TYPE_A"
+	DNSRecordTypeDnsRecordTypeCname       DNSRecordType = "DNS_RECORD_TYPE_CNAME"
+	DNSRecordTypeDnsRecordTypeNs          DNSRecordType = "DNS_RECORD_TYPE_NS"
+	DNSRecordTypeDnsRecordTypeTxt         DNSRecordType = "DNS_RECORD_TYPE_TXT"
+	DNSRecordTypeDnsRecordTypeUnspecified DNSRecordType = "DNS_RECORD_TYPE_UNSPECIFIED"
+	DNSRecordTypeUnrecognized             DNSRecordType = "UNRECOGNIZED"
+)
 
 // Environment includes the GraphQL fields of Environment requested by the fragment Environment.
 type Environment struct {
@@ -242,6 +274,22 @@ func (v *ProjectCreateRepo) GetBranch() string { return v.Branch }
 
 // GetFullRepoName returns ProjectCreateRepo.FullRepoName, and is useful for accessing the field via an interface.
 func (v *ProjectCreateRepo) GetFullRepoName() string { return v.FullRepoName }
+
+// ProjectDataSourceProject includes the GraphQL fields of Project requested by the fragment ProjectDataSourceProject.
+type ProjectDataSourceProject struct {
+	Id          string  `json:"id"`
+	Name        string  `json:"name"`
+	WorkspaceId *string `json:"workspaceId"`
+}
+
+// GetId returns ProjectDataSourceProject.Id, and is useful for accessing the field via an interface.
+func (v *ProjectDataSourceProject) GetId() string { return v.Id }
+
+// GetName returns ProjectDataSourceProject.Name, and is useful for accessing the field via an interface.
+func (v *ProjectDataSourceProject) GetName() string { return v.Name }
+
+// GetWorkspaceId returns ProjectDataSourceProject.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *ProjectDataSourceProject) GetWorkspaceId() *string { return v.WorkspaceId }
 
 // ProjectEnvironmentsProjectEnvironmentsConnection includes the requested fields of the GraphQL type ProjectEnvironmentsConnection.
 type ProjectEnvironmentsProjectEnvironmentsConnection struct {
@@ -1171,6 +1219,30 @@ func (v *__listServiceDomainsInput) GetServiceId() string { return v.ServiceId }
 
 // GetProjectId returns __listServiceDomainsInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *__listServiceDomainsInput) GetProjectId() string { return v.ProjectId }
+
+// __readEnvironmentInput is used internally by genqlient
+type __readEnvironmentInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __readEnvironmentInput.Id, and is useful for accessing the field via an interface.
+func (v *__readEnvironmentInput) GetId() string { return v.Id }
+
+// __readProjectInput is used internally by genqlient
+type __readProjectInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __readProjectInput.Id, and is useful for accessing the field via an interface.
+func (v *__readProjectInput) GetId() string { return v.Id }
+
+// __readServiceInput is used internally by genqlient
+type __readServiceInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __readServiceInput.Id, and is useful for accessing the field via an interface.
+func (v *__readServiceInput) GetId() string { return v.Id }
 
 // __redeployServiceInstanceInput is used internally by genqlient
 type __redeployServiceInstanceInput struct {
@@ -3029,6 +3101,129 @@ func (v *listServiceDomainsResponse) GetDomains() listServiceDomainsDomainsAllDo
 	return v.Domains
 }
 
+// readEnvironmentEnvironment includes the requested fields of the GraphQL type Environment.
+type readEnvironmentEnvironment struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	ProjectId string `json:"projectId"`
+}
+
+// GetId returns readEnvironmentEnvironment.Id, and is useful for accessing the field via an interface.
+func (v *readEnvironmentEnvironment) GetId() string { return v.Id }
+
+// GetName returns readEnvironmentEnvironment.Name, and is useful for accessing the field via an interface.
+func (v *readEnvironmentEnvironment) GetName() string { return v.Name }
+
+// GetProjectId returns readEnvironmentEnvironment.ProjectId, and is useful for accessing the field via an interface.
+func (v *readEnvironmentEnvironment) GetProjectId() string { return v.ProjectId }
+
+// readEnvironmentResponse is returned by readEnvironment on success.
+type readEnvironmentResponse struct {
+	// Find a single environment
+	Environment readEnvironmentEnvironment `json:"environment"`
+}
+
+// GetEnvironment returns readEnvironmentResponse.Environment, and is useful for accessing the field via an interface.
+func (v *readEnvironmentResponse) GetEnvironment() readEnvironmentEnvironment { return v.Environment }
+
+// readProjectProject includes the requested fields of the GraphQL type Project.
+type readProjectProject struct {
+	ProjectDataSourceProject `json:"-"`
+}
+
+// GetId returns readProjectProject.Id, and is useful for accessing the field via an interface.
+func (v *readProjectProject) GetId() string { return v.ProjectDataSourceProject.Id }
+
+// GetName returns readProjectProject.Name, and is useful for accessing the field via an interface.
+func (v *readProjectProject) GetName() string { return v.ProjectDataSourceProject.Name }
+
+// GetWorkspaceId returns readProjectProject.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *readProjectProject) GetWorkspaceId() *string { return v.ProjectDataSourceProject.WorkspaceId }
+
+func (v *readProjectProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*readProjectProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.readProjectProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ProjectDataSourceProject)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalreadProjectProject struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	WorkspaceId *string `json:"workspaceId"`
+}
+
+func (v *readProjectProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *readProjectProject) __premarshalJSON() (*__premarshalreadProjectProject, error) {
+	var retval __premarshalreadProjectProject
+
+	retval.Id = v.ProjectDataSourceProject.Id
+	retval.Name = v.ProjectDataSourceProject.Name
+	retval.WorkspaceId = v.ProjectDataSourceProject.WorkspaceId
+	return &retval, nil
+}
+
+// readProjectResponse is returned by readProject on success.
+type readProjectResponse struct {
+	// Get a project by ID
+	Project readProjectProject `json:"project"`
+}
+
+// GetProject returns readProjectResponse.Project, and is useful for accessing the field via an interface.
+func (v *readProjectResponse) GetProject() readProjectProject { return v.Project }
+
+// readServiceResponse is returned by readService on success.
+type readServiceResponse struct {
+	// Get a service by ID
+	Service readServiceService `json:"service"`
+}
+
+// GetService returns readServiceResponse.Service, and is useful for accessing the field via an interface.
+func (v *readServiceResponse) GetService() readServiceService { return v.Service }
+
+// readServiceService includes the requested fields of the GraphQL type Service.
+type readServiceService struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	ProjectId string `json:"projectId"`
+}
+
+// GetId returns readServiceService.Id, and is useful for accessing the field via an interface.
+func (v *readServiceService) GetId() string { return v.Id }
+
+// GetName returns readServiceService.Name, and is useful for accessing the field via an interface.
+func (v *readServiceService) GetName() string { return v.Name }
+
+// GetProjectId returns readServiceService.ProjectId, and is useful for accessing the field via an interface.
+func (v *readServiceService) GetProjectId() string { return v.ProjectId }
+
 // redeployServiceInstanceResponse is returned by redeployServiceInstance on success.
 type redeployServiceInstanceResponse struct {
 	// Redeploy a service instance
@@ -3414,6 +3609,9 @@ fragment CustomDomain on CustomDomain {
 			hostlabel
 			requiredValue
 			zone
+			fqdn
+			purpose
+			recordType
 		}
 		verificationDnsHost
 		verificationToken
@@ -4398,6 +4596,9 @@ fragment CustomDomain on CustomDomain {
 			hostlabel
 			requiredValue
 			zone
+			fqdn
+			purpose
+			recordType
 		}
 		verificationDnsHost
 		verificationToken
@@ -4501,6 +4702,111 @@ fragment ServiceDomain on ServiceDomain {
 	var err error
 
 	var data listServiceDomainsResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func readEnvironment(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*readEnvironmentResponse, error) {
+	req := &graphql.Request{
+		OpName: "readEnvironment",
+		Query: `
+query readEnvironment ($id: String!) {
+	environment(id: $id) {
+		id
+		name
+		projectId
+	}
+}
+`,
+		Variables: &__readEnvironmentInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data readEnvironmentResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func readProject(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*readProjectResponse, error) {
+	req := &graphql.Request{
+		OpName: "readProject",
+		Query: `
+query readProject ($id: String!) {
+	project(id: $id) {
+		... ProjectDataSourceProject
+	}
+}
+fragment ProjectDataSourceProject on Project {
+	id
+	name
+	workspaceId
+}
+`,
+		Variables: &__readProjectInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data readProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func readService(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*readServiceResponse, error) {
+	req := &graphql.Request{
+		OpName: "readService",
+		Query: `
+query readService ($id: String!) {
+	service(id: $id) {
+		id
+		name
+		projectId
+	}
+}
+`,
+		Variables: &__readServiceInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data readServiceResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

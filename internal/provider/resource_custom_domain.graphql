@@ -1,3 +1,5 @@
+# @genqlient(for: "CustomDomainStatus.verificationDnsHost", pointer: true)
+# @genqlient(for: "CustomDomainStatus.verificationToken", pointer: true)
 fragment CustomDomain on CustomDomain {
   id
   domain
@@ -7,6 +9,9 @@ fragment CustomDomain on CustomDomain {
       hostlabel
       requiredValue
       zone
+      fqdn
+      purpose
+      recordType
     }
     verificationDnsHost
     verificationToken

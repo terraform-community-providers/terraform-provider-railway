@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,13 +17,16 @@ func TestSetCustomDomainModel(t *testing.T) {
 		Status: CustomDomainStatus{
 			DnsRecords: []CustomDomainStatusDnsRecordsDNSRecords{
 				{
+					Fqdn:          "api.example.com",
 					Hostlabel:     "api",
+					Purpose:       DNSRecordPurposeDnsRecordPurposeTrafficRoute,
+					RecordType:    DNSRecordTypeDnsRecordTypeCname,
 					RequiredValue: "target.railway.app",
 					Zone:          "example.com",
 				},
 			},
-			VerificationDnsHost: "_railway-verify.api",
-			VerificationToken:   "verification-token",
+			VerificationDnsHost: stringPointer("_railway-verify.api"),
+			VerificationToken:   stringPointer("verification-token"),
 		},
 	}
 	model := &CustomDomainModel{}
@@ -67,29 +71,71 @@ func TestSetCustomDomainModel(t *testing.T) {
 	}
 }
 
-func TestSetCustomDomainModelWithoutTargetPort(t *testing.T) {
-	domain := CustomDomain{
-		Status: CustomDomainStatus{
-			DnsRecords: []CustomDomainStatusDnsRecordsDNSRecords{{}},
-		},
-	}
-	model := &CustomDomainModel{}
+func TestSetCustomDomainModelSelectsTrafficRouteCNAME(t *testing.T) {
+	verification := CustomDomainStatusDnsRecordsDNSRecords{Fqdn: "verify.example.com", Purpose: DNSRecordPurposeDnsRecordPurposeAcmeDns01Challenge, RecordType: DNSRecordTypeDnsRecordTypeTxt}
+	route := CustomDomainStatusDnsRecordsDNSRecords{Fqdn: "api.example.com", Hostlabel: "api", RequiredValue: "target.railway.app", Zone: "example.com", Purpose: DNSRecordPurposeDnsRecordPurposeTrafficRoute, RecordType: DNSRecordTypeDnsRecordTypeCname}
+	otherTraffic := CustomDomainStatusDnsRecordsDNSRecords{Fqdn: "other.example.com", Purpose: DNSRecordPurposeDnsRecordPurposeTrafficRoute, RecordType: DNSRecordTypeDnsRecordTypeA}
+	for _, records := range [][]CustomDomainStatusDnsRecordsDNSRecords{
+		{verification, route, otherTraffic},
+		{route, otherTraffic, verification},
+	} {
+		domain := CustomDomain{Status: CustomDomainStatus{DnsRecords: records}}
+		model := &CustomDomainModel{}
 
-	err := setCustomDomainModel(model, domain, "project-id")
-	if err != nil {
-		t.Fatalf("setCustomDomainModel() error = %v", err)
-	}
+		err := setCustomDomainModel(model, domain, "project-id")
+		if err != nil {
+			t.Fatalf("setCustomDomainModel() error = %v", err)
+		}
 
-	if !model.TargetPort.IsNull() {
-		t.Errorf("TargetPort = %v, want null", model.TargetPort)
+		if !model.TargetPort.IsNull() {
+			t.Errorf("TargetPort = %v, want null", model.TargetPort)
+		}
+		if model.HostLabel != types.StringValue("api") {
+			t.Errorf("HostLabel = %v, want route host label", model.HostLabel)
+		}
+		if !model.VerificationHostLabel.IsNull() || !model.VerificationRecordValue.IsNull() {
+			t.Errorf("verification fields = %v/%v, want null", model.VerificationHostLabel, model.VerificationRecordValue)
+		}
 	}
 }
 
-func TestSetCustomDomainModelWithoutDNSRecord(t *testing.T) {
-	model := &CustomDomainModel{}
-
-	err := setCustomDomainModel(model, CustomDomain{}, "project-id")
-	if err == nil {
-		t.Fatal("setCustomDomainModel() error = nil, want error")
+func TestSetCustomDomainModelRejectsInvalidDNSRecords(t *testing.T) {
+	route := CustomDomainStatusDnsRecordsDNSRecords{Purpose: DNSRecordPurposeDnsRecordPurposeTrafficRoute, RecordType: DNSRecordTypeDnsRecordTypeCname}
+	for _, test := range []struct {
+		name    string
+		records []CustomDomainStatusDnsRecordsDNSRecords
+		want    string
+	}{
+		{name: "none", records: nil, want: "has 0"},
+		{name: "multiple", records: []CustomDomainStatusDnsRecordsDNSRecords{route, route}, want: "has 2"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			err := setCustomDomainModel(&CustomDomainModel{}, CustomDomain{Domain: "api.example.com", Status: CustomDomainStatus{DnsRecords: test.records}}, "project-id")
+			if err == nil || !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("setCustomDomainModel() error = %v, want substring %q", err, test.want)
+			}
+		})
 	}
 }
+
+func TestSetCustomDomainModelPreservesIndependentVerificationNulls(t *testing.T) {
+	route := CustomDomainStatusDnsRecordsDNSRecords{Purpose: DNSRecordPurposeDnsRecordPurposeTrafficRoute, RecordType: DNSRecordTypeDnsRecordTypeCname}
+	for _, test := range []struct {
+		status    CustomDomainStatus
+		wantHost  types.String
+		wantValue types.String
+	}{
+		{status: CustomDomainStatus{DnsRecords: []CustomDomainStatusDnsRecordsDNSRecords{route}, VerificationDnsHost: stringPointer("host")}, wantHost: types.StringValue("host"), wantValue: types.StringNull()},
+		{status: CustomDomainStatus{DnsRecords: []CustomDomainStatusDnsRecordsDNSRecords{route}, VerificationToken: stringPointer("token")}, wantHost: types.StringNull(), wantValue: types.StringValue("token")},
+	} {
+		model := &CustomDomainModel{}
+		if err := setCustomDomainModel(model, CustomDomain{Domain: "api.example.com", Status: test.status}, "project-id"); err != nil {
+			t.Fatalf("setCustomDomainModel() error = %v", err)
+		}
+		if model.VerificationHostLabel != test.wantHost || model.VerificationRecordValue != test.wantValue {
+			t.Errorf("verification fields = %v/%v, want %v/%v", model.VerificationHostLabel, model.VerificationRecordValue, test.wantHost, test.wantValue)
+		}
+	}
+}
+
+func stringPointer(value string) *string { return &value }
