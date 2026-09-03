@@ -1,0 +1,7 @@
+query readService($id: String!) {
+  service(id: $id) {
+    id
+    name
+    projectId
+  }
+}

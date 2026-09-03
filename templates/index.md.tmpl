@@ -8,14 +8,16 @@ This provider is used to interact with the many resources supported by [Railway]
 
 ## Authentication
 
-This provider requires a Railway API token in order to manage resources.
+This provider requires one Railway API token.
 
-To manage the full selection of resources, provide a **account/workspace token**.
+Use an account or workspace token for the full selection of resources. Use a project token for reads and actions that Railway permits within that project.
 
-There are several ways to provide the required token:
+Choose one authentication mode for each provider configuration:
 
-* **Set the `token` argument in the provider configuration**. You can set the `token` argument in the provider configuration. Use an input variable for the token.
-* **Set the `RAILWAY_TOKEN` environment variable**. The provider can read the `RAILWAY_TOKEN` environment variable and the token stored there to authenticate.
+* Set the sensitive `token` argument or the `RAILWAY_TOKEN` environment variable for account and workspace tokens. These use bearer authentication.
+* Set the sensitive `project_token` argument or the `RAILWAY_PROJECT_TOKEN` environment variable for project tokens. These use Railway project-token authentication.
+
+Do not set both token kinds for one provider configuration.
 
 ## Example Usage
 

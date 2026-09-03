@@ -16,9 +16,13 @@ import (
 )
 
 var (
-	envVarName          = "RAILWAY_TOKEN"
-	errMissingAuthToken = "Required token could not be found. Please set the token using an input variable in the provider configuration block or by using the `" + envVarName + "` environment variable."
+	tokenEnvVar             = "RAILWAY_TOKEN"
+	projectTokenEnvVar      = "RAILWAY_PROJECT_TOKEN"
+	errMissingAuthToken     = "Required token could not be found. Set token or project_token in the provider configuration, or set RAILWAY_TOKEN or RAILWAY_PROJECT_TOKEN."
+	errConflictingAuthToken = "Exactly one authentication kind must be configured. Set either token/RAILWAY_TOKEN or project_token/RAILWAY_PROJECT_TOKEN, not both."
 )
+
+const railwayGraphQLEndpoint = "https://backboard.railway.com/graphql/v2?source=terraform_provider_railway"
 
 func uuidRegex() *regexp.Regexp {
 	return regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
@@ -34,7 +38,8 @@ type RailwayProvider struct {
 }
 
 type RailwayProviderModel struct {
-	Token types.String `tfsdk:"token"`
+	Token        types.String `tfsdk:"token"`
+	ProjectToken types.String `tfsdk:"project_token"`
 }
 
 func (p *RailwayProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -46,8 +51,14 @@ func (p *RailwayProvider) Schema(ctx context.Context, req provider.SchemaRequest
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"token": schema.StringAttribute{
-				MarkdownDescription: "The token used to authenticate with Railway.",
+				MarkdownDescription: "Railway account or workspace token. Defaults to RAILWAY_TOKEN.",
 				Optional:            true,
+				Sensitive:           true,
+			},
+			"project_token": schema.StringAttribute{
+				MarkdownDescription: "Railway project token. Defaults to RAILWAY_PROJECT_TOKEN.",
+				Optional:            true,
+				Sensitive:           true,
 			},
 		},
 	}
@@ -61,33 +72,44 @@ func (p *RailwayProvider) Configure(ctx context.Context, req provider.ConfigureR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	token := ""
-
-	if !data.Token.IsNull() {
-		token = data.Token.ValueString()
+	if data.Token.IsUnknown() || data.ProjectToken.IsUnknown() {
+		return
 	}
 
-	// If a token wasn't set in the provider configuration block, try and fetch it
-	// from the environment variable.
+	token := data.Token.ValueString()
 	if token == "" {
-		token = os.Getenv(envVarName)
+		token = os.Getenv(tokenEnvVar)
+	}
+	projectToken := data.ProjectToken.ValueString()
+	if projectToken == "" {
+		projectToken = os.Getenv(projectTokenEnvVar)
 	}
 
-	// If we still don't have a token at this point, we return an error.
-	if token == "" {
+	if token == "" && projectToken == "" {
 		resp.Diagnostics.AddError("Missing API token", errMissingAuthToken)
 		return
+	}
+	if token != "" && projectToken != "" {
+		resp.Diagnostics.AddError("Conflicting API tokens", errConflictingAuthToken)
+		return
+	}
+
+	headerName := "Authorization"
+	headerValue := "Bearer " + token
+	if projectToken != "" {
+		headerName = "Project-Access-Token"
+		headerValue = projectToken
 	}
 
 	httpClient := http.Client{
 		Transport: &authedTransport{
-			token:   token,
-			wrapped: http.DefaultTransport,
+			headerName:  headerName,
+			headerValue: headerValue,
+			wrapped:     http.DefaultTransport,
 		},
 	}
 
-	client := graphql.NewClient("https://backboard.railway.app/graphql/v2?source=terraform_provider_railway", &httpClient)
+	client := graphql.NewClient(railwayGraphQLEndpoint, &httpClient)
 
 	resp.DataSourceData = &client
 	resp.ResourceData = &client
@@ -108,7 +130,13 @@ func (p *RailwayProvider) Resources(ctx context.Context) []func() resource.Resou
 }
 
 func (p *RailwayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewProjectDataSource,
+		NewEnvironmentDataSource,
+		NewServiceDataSource,
+		NewCustomDomainDataSource,
+		NewServiceDomainDataSource,
+	}
 }
 
 func New(version string) func() provider.Provider {

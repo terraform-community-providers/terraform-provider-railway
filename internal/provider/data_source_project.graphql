@@ -1,0 +1,12 @@
+# @genqlient(for: "Project.workspaceId", pointer: true)
+fragment ProjectDataSourceProject on Project {
+  id
+  name
+  workspaceId
+}
+
+query readProject($id: String!) {
+  project(id: $id) {
+    ...ProjectDataSourceProject
+  }
+}

@@ -1,0 +1,7 @@
+query readEnvironment($id: String!) {
+  environment(id: $id) {
+    id
+    name
+    projectId
+  }
+}
