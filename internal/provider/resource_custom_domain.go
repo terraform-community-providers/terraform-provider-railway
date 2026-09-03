@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -27,20 +26,6 @@ func NewCustomDomainResource() resource.Resource {
 
 type CustomDomainResource struct {
 	client *graphql.Client
-}
-
-type CustomDomainResourceModel struct {
-	Id                      types.String `tfsdk:"id"`
-	Domain                  types.String `tfsdk:"domain"`
-	TargetPort              types.Int64  `tfsdk:"target_port"`
-	EnvironmentId           types.String `tfsdk:"environment_id"`
-	ServiceId               types.String `tfsdk:"service_id"`
-	ProjectId               types.String `tfsdk:"project_id"`
-	HostLabel               types.String `tfsdk:"host_label"`
-	Zone                    types.String `tfsdk:"zone"`
-	DNSRecordValue          types.String `tfsdk:"dns_record_value"`
-	VerificationHostLabel   types.String `tfsdk:"verification_host_label"`
-	VerificationRecordValue types.String `tfsdk:"verification_record_value"`
 }
 
 func (r *CustomDomainResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -142,7 +127,7 @@ func (r *CustomDomainResource) Configure(ctx context.Context, req resource.Confi
 }
 
 func (r *CustomDomainResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *CustomDomainResourceModel
+	var data *CustomDomainModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -180,28 +165,16 @@ func (r *CustomDomainResource) Create(ctx context.Context, req resource.CreateRe
 
 	domain := response.CustomDomainCreate.CustomDomain
 
-	data.Id = types.StringValue(domain.Id)
-	data.Domain = types.StringValue(domain.Domain)
-	data.EnvironmentId = types.StringValue(domain.EnvironmentId)
-	data.ServiceId = types.StringValue(domain.ServiceId)
-	data.ProjectId = types.StringValue(service.Service.ProjectId)
-	data.HostLabel = types.StringValue(domain.Status.DnsRecords[0].Hostlabel)
-	data.Zone = types.StringValue(domain.Status.DnsRecords[0].Zone)
-	data.DNSRecordValue = types.StringValue(domain.Status.DnsRecords[0].RequiredValue)
-	data.VerificationHostLabel = types.StringValue(domain.Status.VerificationDnsHost)
-	data.VerificationRecordValue = types.StringValue(domain.Status.VerificationToken)
-
-	if domain.TargetPort == 0 {
-		data.TargetPort = types.Int64Null()
-	} else {
-		data.TargetPort = types.Int64Value(int64(domain.TargetPort))
+	if err := setCustomDomainModel(data, domain, service.Service.ProjectId); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read custom domain response, got error: %s", err))
+		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *CustomDomainResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *CustomDomainResourceModel
+	var data *CustomDomainModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -220,8 +193,8 @@ func (r *CustomDomainResource) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *CustomDomainResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *CustomDomainResourceModel
-	var state *CustomDomainResourceModel
+	var data *CustomDomainModel
+	var state *CustomDomainModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -266,7 +239,7 @@ func (r *CustomDomainResource) Update(ctx context.Context, req resource.UpdateRe
 }
 
 func (r *CustomDomainResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *CustomDomainResourceModel
+	var data *CustomDomainModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -315,51 +288,4 @@ func (r *CustomDomainResource) ImportState(ctx context.Context, req resource.Imp
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("service_id"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("environment_id"), environmentId)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project_id"), projectId)...)
-}
-
-func readCustomDomain(ctx context.Context, client graphql.Client, environmentId string, serviceId string, projectId string, domainHost string, data *CustomDomainResourceModel) error {
-	var domain CustomDomain
-
-	response, err := listCustomDomains(ctx, client, environmentId, serviceId, projectId)
-
-	if err != nil {
-		return fmt.Errorf("Unable to list custom domains, got error: %w", err)
-	}
-
-	for _, customDomain := range response.Domains.CustomDomains {
-		if customDomain.CustomDomain.Domain == domainHost {
-			domain = customDomain.CustomDomain
-			break
-		}
-	}
-
-	if domain.Id == "" {
-		return fmt.Errorf("Unable to find custom domain")
-	}
-
-	data.Id = types.StringValue(domain.Id)
-	data.Domain = types.StringValue(domain.Domain)
-	data.EnvironmentId = types.StringValue(domain.EnvironmentId)
-	data.ServiceId = types.StringValue(domain.ServiceId)
-	data.HostLabel = types.StringValue(domain.Status.DnsRecords[0].Hostlabel)
-	data.Zone = types.StringValue(domain.Status.DnsRecords[0].Zone)
-	data.DNSRecordValue = types.StringValue(domain.Status.DnsRecords[0].RequiredValue)
-	data.VerificationHostLabel = types.StringValue(domain.Status.VerificationDnsHost)
-	data.VerificationRecordValue = types.StringValue(domain.Status.VerificationToken)
-
-	if domain.TargetPort == 0 {
-		data.TargetPort = types.Int64Null()
-	} else {
-		data.TargetPort = types.Int64Value(int64(domain.TargetPort))
-	}
-
-	service, err := getService(ctx, client, domain.ServiceId)
-
-	if err != nil {
-		return fmt.Errorf("Unable to read service, got error: %w", err)
-	}
-
-	data.ProjectId = types.StringValue(service.Service.ProjectId)
-
-	return nil
 }
