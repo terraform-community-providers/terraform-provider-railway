@@ -1,0 +1,52 @@
+fragment Bucket on Bucket {
+  id
+  name
+  projectId
+}
+
+query getBucket(
+  $projectId: String!
+  $environmentId: String!
+) {
+  project(id: $projectId) {
+    buckets {
+      edges {
+        node {
+          ...Bucket
+        }
+      }
+    }
+  }
+  environment(id: $environmentId) {
+    id
+    projectId
+    config
+  }
+}
+
+# @genqlient(for: "BucketCreateInput.environmentId", omitempty: true, pointer: true)
+# @genqlient(for: "BucketCreateInput.name", omitempty: true, pointer: true)
+mutation createBucket(
+  $input: BucketCreateInput!
+) {
+  bucketCreate(input: $input) {
+    ...Bucket
+  }
+}
+
+mutation updateBucket(
+  $id: String!
+  $input: BucketUpdateInput!
+) {
+  bucketUpdate(id: $id, input: $input) {
+    ...Bucket
+  }
+}
+
+mutation commitEnvironmentPatch(
+  $environmentId: String!
+  $patch: EnvironmentConfig
+  $commitMessage: String
+) {
+  environmentPatchCommit(environmentId: $environmentId, patch: $patch, commitMessage: $commitMessage)
+}
