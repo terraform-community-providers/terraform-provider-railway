@@ -501,29 +501,41 @@ func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
 func (v *ServiceDomainUpdateInput) GetTargetPort() int { return v.TargetPort }
 
 type ServiceInstanceUpdateInput struct {
-	BuildCommand            *string                   `json:"buildCommand,omitempty"`
-	Builder                 *Builder                  `json:"builder,omitempty"`
-	CronSchedule            *string                   `json:"cronSchedule"`
-	DockerfilePath          *string                   `json:"dockerfilePath,omitempty"`
-	DrainingSeconds         *int                      `json:"drainingSeconds,omitempty"`
-	HealthcheckPath         *string                   `json:"healthcheckPath,omitempty"`
-	HealthcheckTimeout      *int                      `json:"healthcheckTimeout,omitempty"`
-	Ipv6EgressEnabled       *bool                     `json:"ipv6EgressEnabled,omitempty"`
-	MultiRegionConfig       *map[string]interface{}   `json:"multiRegionConfig,omitempty"`
-	NixpacksPlan            *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
-	NumReplicas             *int                      `json:"numReplicas,omitempty"`
-	OverlapSeconds          *int                      `json:"overlapSeconds,omitempty"`
-	PreDeployCommand        *[]string                 `json:"preDeployCommand,omitempty"`
-	RailwayConfigFile       *string                   `json:"railwayConfigFile,omitempty"`
-	Region                  *string                   `json:"region,omitempty"`
-	RegistryCredentials     *RegistryCredentialsInput `json:"registryCredentials,omitempty"`
-	RestartPolicyMaxRetries *int                      `json:"restartPolicyMaxRetries,omitempty"`
-	RestartPolicyType       *RestartPolicyType        `json:"restartPolicyType,omitempty"`
-	RootDirectory           *string                   `json:"rootDirectory,omitempty"`
-	SleepApplication        *bool                     `json:"sleepApplication,omitempty"`
-	Source                  *ServiceSourceInput       `json:"source,omitempty"`
-	StartCommand            *string                   `json:"startCommand,omitempty"`
-	WatchPatterns           *[]string                 `json:"watchPatterns,omitempty"`
+	// Instrument the service's processes with eBPF (OBI) while its tracing is on.
+	// Reaches running containers within about a minute, no redeploy needed.
+	AutoInstrumentationEnabled *bool                     `json:"autoInstrumentationEnabled,omitempty"`
+	BuildCommand               *string                   `json:"buildCommand,omitempty"`
+	Builder                    *Builder                  `json:"builder,omitempty"`
+	CronSchedule               *string                   `json:"cronSchedule"`
+	DockerfilePath             *string                   `json:"dockerfilePath,omitempty"`
+	DrainingSeconds            *int                      `json:"drainingSeconds,omitempty"`
+	HealthcheckPath            *string                   `json:"healthcheckPath,omitempty"`
+	HealthcheckTimeout         *int                      `json:"healthcheckTimeout,omitempty"`
+	Ipv6EgressEnabled          *bool                     `json:"ipv6EgressEnabled,omitempty"`
+	MultiRegionConfig          *map[string]interface{}   `json:"multiRegionConfig,omitempty"`
+	NixpacksPlan               *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
+	NumReplicas                *int                      `json:"numReplicas,omitempty"`
+	OverlapSeconds             *int                      `json:"overlapSeconds,omitempty"`
+	PreDeployCommand           *[]string                 `json:"preDeployCommand,omitempty"`
+	PreDeployTimeoutSeconds    *int                      `json:"preDeployTimeoutSeconds,omitempty"`
+	RailwayConfigFile          *string                   `json:"railwayConfigFile,omitempty"`
+	Region                     *string                   `json:"region,omitempty"`
+	RegistryCredentials        *RegistryCredentialsInput `json:"registryCredentials,omitempty"`
+	RestartPolicyMaxRetries    *int                      `json:"restartPolicyMaxRetries,omitempty"`
+	RestartPolicyType          *RestartPolicyType        `json:"restartPolicyType,omitempty"`
+	RootDirectory              *string                   `json:"rootDirectory,omitempty"`
+	SleepApplication           *bool                     `json:"sleepApplication,omitempty"`
+	Source                     *ServiceSourceInput       `json:"source,omitempty"`
+	StartCommand               *string                   `json:"startCommand,omitempty"`
+	// Trace requests to the service in this environment. Takes effect at the edge
+	// within seconds and in the app on the next deploy.
+	TracingEnabled *bool     `json:"tracingEnabled,omitempty"`
+	WatchPatterns  *[]string `json:"watchPatterns,omitempty"`
+}
+
+// GetAutoInstrumentationEnabled returns ServiceInstanceUpdateInput.AutoInstrumentationEnabled, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetAutoInstrumentationEnabled() *bool {
+	return v.AutoInstrumentationEnabled
 }
 
 // GetBuildCommand returns ServiceInstanceUpdateInput.BuildCommand, and is useful for accessing the field via an interface.
@@ -567,6 +579,11 @@ func (v *ServiceInstanceUpdateInput) GetOverlapSeconds() *int { return v.Overlap
 // GetPreDeployCommand returns ServiceInstanceUpdateInput.PreDeployCommand, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetPreDeployCommand() *[]string { return v.PreDeployCommand }
 
+// GetPreDeployTimeoutSeconds returns ServiceInstanceUpdateInput.PreDeployTimeoutSeconds, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetPreDeployTimeoutSeconds() *int {
+	return v.PreDeployTimeoutSeconds
+}
+
 // GetRailwayConfigFile returns ServiceInstanceUpdateInput.RailwayConfigFile, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetRailwayConfigFile() *string { return v.RailwayConfigFile }
 
@@ -599,6 +616,9 @@ func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.
 
 // GetStartCommand returns ServiceInstanceUpdateInput.StartCommand, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetStartCommand() *string { return v.StartCommand }
+
+// GetTracingEnabled returns ServiceInstanceUpdateInput.TracingEnabled, and is useful for accessing the field via an interface.
+func (v *ServiceInstanceUpdateInput) GetTracingEnabled() *bool { return v.TracingEnabled }
 
 // GetWatchPatterns returns ServiceInstanceUpdateInput.WatchPatterns, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetWatchPatterns() *[]string { return v.WatchPatterns }

@@ -9,69 +9,187 @@ directive @specifiedBy(
   url: String!
 ) on SCALAR
 
+type AccessGroup implements Node {
+  createdAt: DateTime!
+  id: ID!
+  members(after: String, before: String, first: Int, last: Int): AccessGroupMembersConnection!
+  name: String!
+  projects(after: String, before: String, first: Int, last: Int): AccessGroupProjectsConnection!
+  role: ProjectRole!
+  source: AccessGroupSource!
+  updatedAt: DateTime!
+  workspace: Workspace!
+  workspaceId: String!
+}
+
+input AccessGroupCreateInput {
+  name: String!
+  role: ProjectRole!
+  workspaceId: String!
+}
+
+type AccessGroupMember implements Node {
+  accessGroup: AccessGroup!
+  accessGroupId: String!
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime!
+  user: User!
+  userId: String!
+}
+
+input AccessGroupMemberInput {
+  accessGroupId: String!
+  userId: String!
+}
+
+type AccessGroupMembersConnection {
+  edges: [AccessGroupMembersConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type AccessGroupMembersConnectionEdge {
+  cursor: String!
+  node: AccessGroupMember!
+}
+
+type AccessGroupProject implements Node {
+  accessGroup: AccessGroup!
+  accessGroupId: String!
+  createdAt: DateTime!
+  id: ID!
+  project: Project!
+  projectId: String!
+  updatedAt: DateTime!
+}
+
+input AccessGroupProjectInput {
+  accessGroupId: String!
+  projectId: String!
+}
+
+type AccessGroupProjectsConnection {
+  edges: [AccessGroupProjectsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type AccessGroupProjectsConnectionEdge {
+  cursor: String!
+  node: AccessGroupProject!
+}
+
+enum AccessGroupSource {
+  MANUAL
+}
+
+input AccessGroupUpdateInput {
+  name: String
+  role: ProjectRole
+}
+
 type AccessRule {
   disallowed: String
 }
 
 enum ActiveFeatureFlag {
-  AUDIT_LOGS
-  BUCKET_FILE_BROWSER
-  DEBUG_SMART_DIAGNOSIS
+  ACTIVITY_FEED_HISTORY
+  AGENT_BOOTSTRAPS
+  AGENT_BYOK
+  AGENT_BYOK_ANTHROPIC
+  AGENT_BYOK_CHATGPT
+  AGENT_BYOK_FIREWORKS
+  AGENT_BYOK_OPENAI
+  AGENT_BYOK_OPENROUTER
+  AGENT_CONNECTORS
+  AGENT_TASKS
+  CHAT_SANDBOX
+  CLEARANCE
+  CLOUD_AGENTS
+  CLOUD_AGENT_BUILDER
+  CLOUD_AGENT_CHAT
+  CS_MCP_EXPRESS
+  EMAIL_FORWARDING
+  HA_FOR_MONGO
   IN_DASHBOARD_SUPPORT
-  IPV6_EGRESS
   MAGIC_CONFIG
-  POSTGRES_PGBOUNCER
+  MYSQL_PITR
   PRIORITY_BOARDING
-  SMART_DIAGNOSIS
-  UNLIMITED_SMART_DIAGNOSIS
+  RAILWAY_AGENT_DASHBOARD
+  RAILWAY_AGENT_FEED
+  TRACING
+  USAGE_INSIGHTS
+  VM_STORAGE_TRACES
 }
 
 enum ActivePlatformFlag {
-  AGENT_USAGE_BILLING
-  ALLOW_REPLICA_METRICS
-  ARCHIVER_V2_ROLLOUT
-  BUILDER_V3_ROLLOUT_EXISTING_SERVICES
-  BUILDER_V3_ROLLOUT_EXISTING_SERVICES_PRO
-  BUILDER_V3_ROLLOUT_NEW_SERVICES
-  BUILDER_V3_ROLLOUT_NEW_SERVICES_PRO
-  COMPARE_CLICKHOUSE_METRICS
+  AGENT_USAGE_CH_INGEST
+  ALERT_SUS_USERS_CRON_KILLSWITCH
+  BLOCK_TRIAL_RESTRICTION_APPEALS
+  BUILDER_V4_ROLLOUT
+  BUILD_DEPLOY_QUEUE_V2
+  CAC_T0_KILLSWITCH
+  CANVAS_CROSS_ENV_GUARD_ENFORCE
+  CHAT_SANDBOX
+  CLICKHOUSE_WORKSPACE_LIMIT_ENFORCE
+  CS_MCP
+  CS_MCP_EXPRESS
   CTRD_IMAGE_STORE_ROLLOUT
+  DEFAULT_USAGE_ALERTS
   DEMO_PERCENTAGE_ROLLOUT
-  DISABLE_OAUTH_ACCESS_TOKENS
-  ENABLE_RAW_SQL_QUERIES
-  FOCUSED_PR_ENVIRONMENTS
-  GITHUB_PERMISSION_NOTIFICATION_ROLLOUT
-  INLINE_NOTIFICATION_PROCESSING
+  DEPLOYMENT_DIAGNOSIS_KILLSWITCH
+  DEPLOY_SUPERSEDE_ON_PUSH
+  DEV_STUDIO
+  DEV_STUDIO_ANON_PROVISIONS
+  DOMAIN_RECONCILE_KILLSWITCH
+  EMAIL_FORWARDING_KILLSWITCH
   IN_DASHBOARD_SUPPORT
-  KAFKA_DEPLOYMENT_STATUS_CHANGES
+  KAFKA_EPHEMERAL_ENVIRONMENT_UPDATES
+  LOGS_LONG_WINDOW_CHUNKING
+  MCP_OAUTH_AUDIENCE_ENFORCE
+  MCP_OAUTH_CIMD
+  MCP_OAUTH_SCOPE_CHALLENGES
+  MCP_OAUTH_TOKEN_ROUTE_FENCE
+  NEW_PROJECT_PAGE
   NEW_STRIPE_WEBHOOK_VERSION_ROLLOUT
+  NUDGES
+  NUDGE_BACKUP_SCHEDULE_MISSING
+  NUDGE_FIRST_DEPLOY_FAILED
+  NUDGE_PUBLIC_DB_URL_WITHIN_PROJECT
+  NUDGE_RESUBSCRIBE_AFTER_DEAD_INVOICE
+  NUDGE_UPGRADE_TO_PRO
   OAUTH_DCR_KILLSWITCH
-  OAUTH_DEVICE_FLOW_KILLSWITCH
-  RADAR_AUTO_EVALUATE
+  PRE_DEPLOY_TIMEOUT_KILLSWITCH
+  PROJECT_HISTORY_DUAL_WRITE
+  RADAR_HTTP_PATTERN_DETECTION
+  RELAY_SPEND_RESERVATION_KILLSWITCH
+  REMOVE_DEPLOYMENT_COMPACT
   SERVICEINSTANCE_DATALOADER_FOR_STATIC_URL
   SPLIT_USAGE_QUERIES
+  SSH_ANON_PROVISIONING
+  SSH_TRIAL_GUEST_IDLE_SLEEP
+  STRIPE_INTERACTIVE_SUBSCRIPTION_ON_SESSION
   STRIPE_METERS_NEW_ACCOUNTS
   STRIPE_METERS_SHADOW_ENABLED
-  UNIFIED_SNAPSHOT_AND_BUILD
-  UNIFIED_SNAPSHOT_AND_BUILD_HOBBY
+  STRIPE_WEBHOOK_DISPUTE_CANCELLATION
+  TRIAL_RELAY_MODEL_ALLOWLIST_KILLSWITCH
   UPDATED_VM_QUERIES
-  USE_CLICKHOUSE_METRICS
-  USE_GH_WEBHOOKS_FOR_CHANGE_DETECTION
-  VM_TIME_RANGE_QUERY
+  USAGE_CH_READS
+  VM_COUPON_MIGRATION
+  VM_USAGE_CH_INGEST
+  WORKSPACE_MCP_KILLSWITCH
 }
 
 enum ActiveProjectFeatureFlag {
   PLACEHOLDER
+  RBS_VOLUMES
 }
 
 enum ActiveServiceFeatureFlag {
+  BUILDER_V4
   COPY_VOLUME_TO_ENVIRONMENT
-  ENABLE_DOCKER_EXTENSION
   PLACEHOLDER
   SKIPPED_BUILDS
-  USE_BUILDER_V3_FOR_CLI_DEPLOYS
-  USE_GH_WEBHOOKS_FOR_CHANGE_DETECTION
-  USE_VM_RUNTIME
+  USE_DEPLOYMENT_VMS
 }
 
 type AdoptionInfo implements Node {
@@ -102,6 +220,21 @@ type AdoptionInfo implements Node {
   workspace: Workspace!
 }
 
+input AgentUsageLimitSetInput {
+  hardLimitCents: Int!
+  softLimitCents: Int
+  workspaceId: String!
+}
+
+type AgentUsageSummary {
+  billingPeriodEnd: DateTime!
+  hardLimitCents: Int
+  hasCustomHardLimit: Boolean
+  softLimitCents: Int
+  totalUsedCents: Int!
+  usageRemaining: Float
+}
+
 """The aggregated usage of a single measurement."""
 type AggregatedUsage {
   """The measurement that was aggregated."""
@@ -123,6 +256,7 @@ type AllDomains {
 
 type ApiToken implements Node {
   displayToken: String!
+  expiresAt: DateTime
   id: ID!
   name: String!
   workspaceId: String
@@ -192,6 +326,17 @@ input AuditLogFilterInput {
   startDate: DateTime
 }
 
+input AutoUpdateScheduleWindowInput {
+  """UTC weekday: 0 (Sunday) through 6 (Saturday)"""
+  day: Int!
+
+  """UTC hour the window closes (exclusive), 1-24"""
+  endHour: Int!
+
+  """UTC hour the window opens (inclusive), 0-23"""
+  startHour: Int!
+}
+
 input BaseEnvironmentOverrideInput {
   baseEnvironmentOverrideId: String
 }
@@ -207,10 +352,24 @@ type BillingPeriod {
   start: DateTime!
 }
 
+type BotScopeBindingInfo {
+  canRemove: Boolean!
+  id: String!
+  platform: String!
+  scopeId: String!
+  scopeName: String
+  scopeType: String!
+  workspaceId: String!
+  workspaceName: String!
+}
+
 type Bucket implements Node {
   createdAt: DateTime!
+  deletedAt: DateTime
+  groupId: String
   id: ID!
   name: String!
+  parentServiceId: String
   project: Project!
   projectId: String!
   updatedAt: DateTime!
@@ -315,16 +474,535 @@ enum CertificateStatusDetailed {
   UNRECOGNIZED
 }
 
+type ChangeOperationResult {
+  kind: String!
+  outputs: JSON
+  path: String
+  status: String!
+  summary: String
+}
+
+type ChangeSetApplyResult {
+  changes: [ChangeOperationResult!]!
+  deploymentId: String
+  diagnostics: JSON!
+  id: String!
+  operationId: String
+  stagedPatchId: String
+  status: String!
+}
+
+type ChangeSetPreview {
+  changeSet: JSON!
+  diagnostics: JSON!
+  effects: JSON!
+}
+
+"""
+A Railway Authentication machine token: gets non-human callers past the sign-in
+on a project's protected services. The token itself is only returned when it's created.
+"""
+type ClearanceToken {
+  createdAt: DateTime!
+  creator: ClearanceTokenCreator
+
+  """Null means every environment of the project."""
+  environmentId: String
+  environmentName: String
+  expiresAt: DateTime!
+  id: String!
+  name: String!
+}
+
+input ClearanceTokenCreateInput {
+  """
+  Limit the token to one persistent environment. Omit for every environment, including PR environments made later.
+  """
+  environmentId: String
+
+  """Days until the token expires: 1 to 365, default 90."""
+  expiresInDays: Int
+  name: String!
+  projectId: String!
+}
+
+type ClearanceTokenCreatePayload {
+  clearanceToken: ClearanceToken!
+
+  """The token. Shown this once; it isn't stored."""
+  token: String!
+}
+
+type ClearanceTokenCreator {
+  avatar: String
+  email: String!
+  id: String!
+  name: String
+}
+
+input CliAuthEventTrackInput {
+  agentSessionId: String
+  arch: String
+  caller: String
+  cliVersion: String
+  errorMessage: String
+  installRequestId: String
+  isCi: Boolean
+  os: String
+  outcome: String!
+  sessionId: String
+  success: Boolean!
+  transport: String!
+  transportReason: String
+}
+
 input CliEventTrackInput {
+  agentSessionId: String
   arch: String!
+  caller: String
   cliVersion: String!
   command: String!
   durationMs: Int!
+  environmentId: String
+  errorClass: String
   errorMessage: String
+  installRequestId: String
   isCi: Boolean!
   os: String!
+  projectId: String
+  serviceId: String
+  sessionId: String
   subCommand: String
   success: Boolean!
+  workspaceId: String
+}
+
+"""A persistent cloud agent for running coding harnesses."""
+type CloudAgent {
+  """
+  WebSocket endpoint of the in-VM harness gate, for the dashboard chat. Survives
+  sleep: the domain is stable across sleep and wake. Prefers the machine
+  observation; when that carries no gate domain it falls back to the domain
+  network-cp actively serves, so an agent whose observation lagged still offers
+  chat. Null on agents created before the gate existed, or asleep/absent machines.
+  """
+  agentWsUrl: String
+
+  """Target ID for console or command execution. Null while unavailable."""
+  consoleTargetId: String
+  createdAt: DateTime!
+
+  """
+  The agent machine's public HTTP domain (port 8080) — the live preview. Prefers
+  the observation (falling back to the first declared domain when 8080 was never
+  requested); when the observation carries no domains it falls back to the
+  domain network-cp actively serves on 8080, so a preview shows even when the
+  observation lagged. Returns null while the machine sleeps.
+  """
+  domain: String
+
+  """
+  Every public domain on the agent's machine, one per port, in the order the machine declared them.
+  """
+  domains: [CloudAgentDomain!]!
+  environmentId: String!
+  id: ID!
+  name: String!
+  project: Project!
+  projectId: String!
+
+  """
+  Region the agent's machine runs in. Null briefly after creation, before the machine has been placed.
+  """
+  region: String
+
+  """
+  Live coding-agent sessions, one entry per session. Retained for 24h after the
+  last report, so a sleeping agent still shows what it was last doing.
+  """
+  sessions: [CloudAgentSnapshot!]!
+
+  """
+  Repo this agent's workspace was created from. Null for agents created without a source.
+  """
+  source: CloudAgentSource
+  status: CloudAgentStatus!
+}
+
+"""A checkpoint of a cloud agent's disk."""
+type CloudAgentCheckpoint {
+  createdAt: DateTime!
+  environmentId: String!
+
+  """Why the capture failed."""
+  failureReason: String
+  id: ID!
+  name: String
+
+  """Region the checkpoint was captured in."""
+  region: String!
+  status: CloudAgentCheckpointStatus!
+}
+
+"""Capture progress of a cloud agent checkpoint."""
+enum CloudAgentCheckpointStatus {
+  FAILED
+  IN_PROGRESS
+  SUCCEEDED
+}
+
+"""
+Opt-in public code endpoint, provisioned only when creating a cloud agent.
+"""
+input CloudAgentCodeEndpointInput {
+  """
+  Target port. Defaults to 4096; must be 1024-65535, excluding 8080 and 8790.
+  """
+  port: Int
+}
+
+input CloudAgentCreateInput {
+  """Create the cloud agent from an existing checkpoint."""
+  cloudAgentCheckpointId: String
+
+  """
+  Provision a code-* domain. Omit to disable, including when restoring a checkpoint or bootstrap.
+  """
+  codeEndpoint: CloudAgentCodeEndpointInput
+  environmentId: String!
+  name: String
+
+  """
+  Region to run the agent in, e.g. us-west2. Defaults to the checkpoint's region
+  when booting from one, else the workspace's preferred region.
+  """
+  region: String
+  source: CloudAgentSourceInput
+  variables: JSON
+}
+
+type CloudAgentDeployResult {
+  deploymentId: String!
+  serviceId: String!
+}
+
+"""One public domain on an agent's machine."""
+type CloudAgentDomain {
+  """Resolved FQDN."""
+  domain: String!
+
+  """Target port on the workload this domain routes to."""
+  port: Int!
+
+  """Label prefix the machine declared, e.g. app."""
+  prefix: String!
+}
+
+input CloudAgentFeedbackInput {
+  activeTools: [String!]!
+  agentVersion: String!
+  cloudAgentId: String!
+  description: String!
+  elapsedMs: Float
+  lastProgressAgeMs: Float
+  model: String!
+  reportId: String!
+  reportedAtMs: Float!
+  runId: String
+  runStartedAtMs: Float
+  sessionId: String!
+  sessionName: String
+  state: String!
+  steps: Int!
+  tuiVersion: String!
+}
+
+type CloudAgentRepository {
+  path: String!
+  repo: String!
+}
+
+"""The state of one coding agent session in a cloud agent."""
+type CloudAgentSnapshot {
+  harness: String!
+  lastEventKind: String!
+
+  """
+  Truncated most recent prompt of the session, display-only. Null when the harness never reported one.
+  """
+  latestPrompt: String
+
+  """
+  Truncated first prompt of the session, display-only. Null when the harness never reported one.
+  """
+  prompt: String
+  sessionId: String!
+
+  """
+  Durable console session name the harness ran inside. Null on older VMs that don't report it.
+  """
+  sessionName: String
+
+  """One of: unknown, working, waiting, idle, failed, done."""
+  state: String!
+  taskId: String
+  terminal: Boolean!
+
+  """
+  Generated display title for the session, display-only. Null until generated; fall back to latestPrompt, then prompt.
+  """
+  title: String
+  updatedAt: String!
+}
+
+input CloudAgentSnapshotInput {
+  harness: String!
+  lastEventKind: String!
+  latestPrompt: String
+  prompt: String
+  sessionId: String!
+  sessionName: String
+  state: String!
+  taskId: String
+  terminal: Boolean!
+  updatedAt: String!
+}
+
+"""
+Workspace provenance: the GitHub repo cloned into the agent's workspace at create time.
+"""
+type CloudAgentSource {
+  """Requested ref; null = the repo's default branch."""
+  branch: String
+
+  """Selected checkout directory; null means /app."""
+  dir: String
+
+  """owner/repo."""
+  repo: String!
+  repos: [CloudAgentRepository!]
+
+  """Service the repo was resolved from, when given."""
+  serviceId: String
+
+  """
+  Clone progress. Failed never blocks the agent; only CLONING should hold a launch.
+  """
+  status: CloudAgentSourceStatus
+}
+
+"""
+Repo to clone into the agent's workspace: exactly one of repo/serviceId.
+"""
+input CloudAgentSourceInput {
+  """Ref to check out; defaults to the repo's default branch."""
+  branch: String
+
+  """GitHub repo as owner/repo."""
+  repo: String
+
+  """Resolve the repo from this service's source."""
+  serviceId: String
+}
+
+enum CloudAgentSourceStatus {
+  CLONING
+  FAILED
+  READY
+}
+
+"""State reported by a cloud agent."""
+input CloudAgentStateReportInput {
+  agents: [CloudAgentSnapshotInput!]!
+  cloudAgentId: String!
+  reportedAt: String!
+}
+
+"""The current lifecycle state of a cloud agent."""
+enum CloudAgentStatus {
+  CRASHED
+  DELETING
+  FAILED
+  RUNNING
+  SLEEPING
+  STARTING
+}
+
+"""
+Task lifecycle and correlation. Read cloudAgentTask for the latest session response.
+"""
+type CloudAgentTask {
+  cloudAgentId: ID
+  completedAt: DateTime
+  createdAt: DateTime!
+  createdVia: CloudAgentTaskVia!
+  error: String
+  externalRef: String
+  id: ID!
+  metadata: JSON
+  promptPreview: String
+  requestedByUserId: ID
+  sessionId: String
+  startedAt: DateTime
+  status: CloudAgentTaskStatus!
+  structuredOutput: JSON
+
+  """The turn's closing text, once it has finished."""
+  text: String
+}
+
+type CloudAgentTaskCancelResult {
+  """
+  The status when cancel was requested. Poll cloudAgentTask for the outcome.
+  """
+  status: CloudAgentTaskStatus!
+  taskId: ID!
+}
+
+input CloudAgentTaskDispatchInput {
+  agentName: String
+
+  """Explicit agent reuse. Omit all targets to create a fresh agent."""
+  cloudAgentId: String
+  environmentId: String!
+  externalRef: String
+  idempotencyKey: String
+  metadata: JSON
+  mode: CloudAgentTaskMode
+
+  """JSON Schema object for structured output; requires PROMPT mode."""
+  outputSchema: JSON
+  projectId: String!
+  prompt: String!
+
+  """
+  Continue this task's original agent/session. Mutually exclusive with cloudAgentId/sessionId.
+  """
+  replyToTaskId: String
+
+  """Existing session to continue; requires cloudAgentId."""
+  sessionId: String
+  source: CloudAgentSourceInput
+
+  """
+  Also send task.progress callbacks, at most one per task every 15 seconds.
+  """
+  webhookProgress: Boolean
+  webhookSecret: String
+  webhookUrl: String
+}
+
+type CloudAgentTaskHandle {
+  cloudAgentId: ID!
+  replayed: Boolean!
+  sessionId: String!
+  status: CloudAgentTaskStatus!
+  taskId: ID!
+}
+
+"""
+A question the task's run is waiting on: a tool approval or an MCP server's form.
+"""
+type CloudAgentTaskInteraction {
+  actions: [CloudAgentTaskInteractionAction!]!
+  expiresAt: String
+
+  """Elicitation: the form fields to fill for ACCEPT."""
+  fields: JSON
+  kind: String!
+  message: String
+  requestId: ID!
+  requestedAt: String
+
+  """Elicitation: the MCP server asking."""
+  server: String
+
+  """Approval: a preview of the tool call's arguments."""
+  summary: JSON
+
+  """Approval: the tool waiting to run."""
+  tool: String
+}
+
+enum CloudAgentTaskInteractionAction {
+  ACCEPT
+  ALLOW
+  CANCEL
+  DECLINE
+  DENY
+}
+
+enum CloudAgentTaskMode {
+  FOLLOW_UP
+  PROMPT
+  STEER
+}
+
+type CloudAgentTaskPage {
+  nextCursor: String
+  tasks: [CloudAgentTask!]!
+}
+
+type CloudAgentTaskProgress {
+  attempt: Int
+  steps: Int!
+  todos: JSON
+
+  """Tools running now, by name."""
+  tools: [String!]!
+  updatedAt: String!
+}
+
+input CloudAgentTaskRespondInput {
+  action: CloudAgentTaskInteractionAction!
+
+  """
+  Who gave the answer, for the audit log (e.g. linear:<userId>). Not verified.
+  """
+  answeredBy: String
+
+  """ACCEPT only: the form values, keyed by field name."""
+  content: JSON
+
+  """pendingInteractions[].requestId"""
+  requestId: String!
+  taskId: String!
+}
+
+type CloudAgentTaskRespondResult {
+  outcome: String!
+  taskId: ID!
+}
+
+type CloudAgentTaskResult {
+  cloudAgentId: ID!
+  completedAt: String
+  error: String
+  externalRef: String
+  metadata: JSON
+
+  """Answer these with cloudAgentTaskRespond."""
+  pendingInteractions: [CloudAgentTaskInteraction!]!
+  progress: CloudAgentTaskProgress
+  sessionId: String!
+  sessionState: String
+  status: CloudAgentTaskStatus!
+  structuredOutput: JSON
+  taskId: ID!
+  text: String
+}
+
+enum CloudAgentTaskStatus {
+  AWAITING_INPUT
+  COMPLETED
+  FAILED
+  PENDING
+  RUNNING
+}
+
+enum CloudAgentTaskVia {
+  API
+  MCP
 }
 
 type CnameCheck {
@@ -349,6 +1027,13 @@ type ComplianceAgreementsInfo {
 
   """Whether the workspace has a Data Processing Agreement (GDPR)"""
   hasDPA: Boolean!
+}
+
+type ConnectedServiceInstance {
+  environmentId: String!
+  projectId: String!
+  serviceId: String!
+  serviceName: String
 }
 
 type Container implements Node {
@@ -391,7 +1076,7 @@ enum CreditType {
 }
 
 type CustomDomain implements Domain {
-  cdnMode: String
+  cdnMode: String @deprecated(reason: "Removed; always null.")
   cnameCheck: CnameCheck! @deprecated(reason: "Use the `status` field instead.")
   createdAt: DateTime
   deletedAt: DateTime
@@ -399,6 +1084,7 @@ type CustomDomain implements Domain {
   edgeId: String
   environmentId: String!
   id: ID!
+  isRailwayDomain: Boolean!
   projectId: String
   serviceId: String!
   status: CustomDomainStatus!
@@ -604,7 +1290,13 @@ type DeploymentEvent implements Node {
 }
 
 type DeploymentEventPayload {
+  attempt: Int
+  detail: String
+  durationMs: Int
   error: String
+  maxAttempts: Int
+  reason: String
+  skipped: Boolean
 }
 
 enum DeploymentEventStep {
@@ -732,7 +1424,68 @@ input DeploymentTriggerUpdateInput {
   rootDirectory: String
 }
 
+input DisablePitrForHaClusterInput {
+  """Environment containing the cluster"""
+  environmentId: String!
+
+  """Project containing the cluster (returned in payload)"""
+  projectId: String!
+
+  """Root service of the HA Postgres cluster"""
+  rootServiceId: String!
+}
+
+input DisableServiceCdnInput {
+  environmentId: String!
+  serviceId: String!
+}
+
 scalar DisplayConfig
+
+"""
+A single DNS query resolved for a service (one row per query, not aggregated)
+"""
+type DnsQueryLog {
+  """The IP addresses the name resolved to"""
+  answers: [String!]!
+
+  """
+  Ordered CNAME targets the queried name aliased through before the final answer (empty when the response had no CNAME)
+  """
+  cnameChain: [String!]!
+
+  """The deployment ID"""
+  deploymentId: String!
+
+  """The deployment instance ID"""
+  deploymentInstanceId: String!
+
+  """The domain name that was looked up"""
+  qname: String!
+
+  """The DNS record type queried (A, AAAA, TXT, ...)"""
+  qtype: String!
+
+  """When the query was resolved (ISO timestamp)"""
+  queriedAt: String!
+
+  """Whether the query targeted the internal zone or the public internet"""
+  queryZone: DnsQueryZone!
+
+  """
+  The DNS response code (NOERROR, NXDOMAIN, SERVFAIL, ...) or synthetic TIMEOUT/ERROR when no upstream response was received
+  """
+  rcode: String!
+
+  """The service ID that made the queries"""
+  serviceId: String!
+}
+
+"""Whether a DNS query targeted the internal zone or the public internet"""
+enum DnsQueryZone {
+  external
+  internal
+}
 
 enum DNSRecordPurpose {
   DNS_RECORD_PURPOSE_ACME_DNS01_CHALLENGE
@@ -774,7 +1527,7 @@ type DockerComposeImport {
 }
 
 interface Domain {
-  cdnMode: String
+  cdnMode: String @deprecated(reason: "Removed; always null.")
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
@@ -810,9 +1563,53 @@ type DomainWithStatus {
   domain: Domain
 }
 
+type EdgeCachingConfig {
+  defaultTtlSeconds: Int!
+  htmlCaching: String!
+  mode: String!
+  purgeOnDeploy: PurgeOnDeploy!
+  staleWhileRevalidate: StaleWhileRevalidateConfig!
+}
+
+input EdgeCachingConfigInput {
+  defaultTtlSeconds: Int
+  htmlCaching: String
+  mode: String
+  purgeOnDeploy: PurgeOnDeploy
+  staleWhileRevalidate: StaleWhileRevalidateInput
+}
+
+type EdgeConfig {
+  caching: EdgeCachingConfig
+  edgeRules: JSON
+  enabled: Boolean!
+  id: String!
+  overrides: JSON!
+  purgeEpoch: Int!
+  purgeEpochByKind: JSON!
+  tracing: EdgeTracingConfig
+  underAttackModeUntil: Int
+}
+
+input EdgeConfigInput {
+  caching: EdgeCachingConfigInput
+}
+
+type EdgeRuleDiagnostic {
+  code: String!
+  message: String!
+  path: String!
+}
+
+type EdgeTracingConfig {
+  enabled: Boolean!
+  sampleRate: Float
+}
+
 type EgressGateway {
   ipv4: String!
   region: String!
+  zone: String
 }
 
 input EgressGatewayCreateInput {
@@ -822,17 +1619,83 @@ input EgressGatewayCreateInput {
 }
 
 input EgressGatewayServiceTargetInput {
+  allEnvironments: Boolean
+  environmentId: String!
+  serviceId: String!
+}
+
+type EgressMigrationEnvironmentResult {
+  environmentId: String!
+  environmentName: String!
+  error: String
+  gateways: [EgressGateway!]!
+  success: Boolean!
+}
+
+type EgressMigrationResult {
+  environments: [EgressMigrationEnvironmentResult!]!
+  ips: [EgressGateway!]!
+}
+
+input EnablePitrForHaClusterInput {
+  """Environment containing the cluster"""
+  environmentId: String!
+
+  """Project containing the cluster (returned in payload)"""
+  projectId: String!
+
+  """Root service of the HA Postgres cluster"""
+  rootServiceId: String!
+}
+
+input EnableServiceCdnInput {
+  config: EdgeConfigInput
   environmentId: String!
   serviceId: String!
 }
 
 type Environment implements Node {
   canAccess: Boolean!
+  canvasGroupRefs: JSON!
+
+  """
+  Services whose edge caching was turned off when the Railway Authentication default last turned on.
+  """
+  clearanceCachingTurnedOff: [String!]!
+
+  """
+  Whether Railway Authentication protects this environment's services that have no setting of their own.
+  """
+  clearanceDefault: Boolean!
+  clearanceDefaultUpdatedAt: DateTime
+
+  """
+  When the current Railway Authentication default last finished reaching every service that inherits it.
+  """
+  clearancePropagatedAt: DateTime
+  clearancePropagationError: String
+
+  """
+  How many of the environment's services follow its Railway Authentication default, and how many have their own on or off.
+  """
+  clearanceServiceCounts: EnvironmentClearanceServiceCounts!
   config(decryptVariables: Boolean): EnvironmentConfig!
+
+  """
+  Opaque snapshot token of the environment's IaC-relevant config. Echo it back
+  as baseConfigEtag on environmentApplyChangeSet for optimistic concurrency.
+  """
+  configEtag: String!
   createdAt: DateTime!
   deletedAt: DateTime
   deploymentTriggers(after: String, before: String, first: Int, last: Int): EnvironmentDeploymentTriggersConnection!
   deployments(after: String, before: String, first: Int, last: Int): EnvironmentDeploymentsConnection!
+
+  """
+  IaC resource address → partial name for this environment. '*' is the
+  whole-project owner. Used so omit=delete only applies to resources this file already owns.
+  """
+  iacPartials: JSON
   id: ID!
   isEphemeral: Boolean!
   meta: EnvironmentMeta
@@ -846,6 +1709,18 @@ type Environment implements Node {
   volumeInstances(after: String, before: String, first: Int, last: Int): EnvironmentVolumeInstancesConnection!
 }
 
+input EnvironmentClearanceDefaultUpdateInput {
+  enabled: Boolean!
+  environmentId: String!
+  projectId: String!
+}
+
+type EnvironmentClearanceServiceCounts {
+  inheriting: Int!
+  off: Int!
+  on: Int!
+}
+
 """
 
 EnvironmentConfig is a custom scalar type that represents the serializedConfig for an environment.
@@ -853,6 +1728,29 @@ JSON Schema: https://backboard.railway.com/schema/environment.schema.json
 
 """
 scalar EnvironmentConfig
+
+input EnvironmentConfigPlanCommentUpsertInput {
+  environmentId: String!
+
+  """
+  GitHub Actions OIDC token (id-token: write) with audience `railway`. Its
+  `repository` claim proves the caller runs in the repo the comment is posted to.
+  """
+  githubOidcToken: String!
+
+  """
+  Structured plan summary: { changes: [{ kind?, summary }], destructive,
+  sourceTree, configEtag, changeSetHash, cliVersion? }. The comment body is
+  composed server-side.
+  """
+  plan: JSON!
+  prNumber: Int!
+}
+
+type EnvironmentConfigPlanCommentUpsertResult {
+  commentId: String!
+  url: String!
+}
 
 input EnvironmentCreateInput {
   """
@@ -927,6 +1825,7 @@ type EnvironmentPatch implements Node {
 enum EnvironmentPatchStatus {
   APPLYING
   COMMITTED
+  FAILED
   STAGED
 }
 
@@ -987,6 +1886,12 @@ type EstimatedUsage {
 
 type Event implements Node {
   action: String!
+
+  """
+  Minimal event payload for activity feed list rendering. Avoids returning large
+  deployment payload fields like commit messages.
+  """
+  activityPayload: JSON
   createdAt: DateTime!
   environment: Environment
   environmentId: String
@@ -1025,7 +1930,7 @@ input ExplicitOwnerInput {
 }
 
 type ExternalWorkspace {
-  allowDeprecatedRegions: Boolean
+  allowDeprecatedRegions: Boolean @deprecated(reason: "Deprecated regions are no longer supported.")
   avatar: String
   banReason: String
   createdAt: DateTime!
@@ -1047,7 +1952,6 @@ type ExternalWorkspace {
   projects: [Project!]!
   redactedDueTo2FAPending: Boolean!
   subscriptionPlanLimit: SubscriptionPlanLimit
-  supportTierOverride: String
   teamId: String
 }
 
@@ -1105,6 +2009,11 @@ type GitHubPRInfo {
   title: String!
 }
 
+type GitHubPRInfoResult {
+  error: String
+  prInfo: GitHubPRInfo
+}
+
 type GitHubRepo {
   defaultBranch: String!
   description: String
@@ -1145,6 +2054,17 @@ type GitHubSshKey {
   title: String!
 }
 
+type Group implements Node {
+  color: String
+  groupId: String
+  icon: String
+  id: ID!
+  isCollapsed: Boolean
+  name: String
+  project: Project!
+  projectId: String!
+}
+
 type HerokuApp {
   id: String!
   name: String!
@@ -1155,6 +2075,15 @@ input HerokuImportVariablesInput {
   herokuAppId: String!
   projectId: String!
   serviceId: String!
+}
+
+input HistoryFilterInput {
+  actions: [String!]
+  objects: [String!]
+
+  """Any of '', 'applied', 'failed'."""
+  outcomes: [String!]
+  serviceIds: [String!]
 }
 
 """The result of an HTTP duration metrics query."""
@@ -1246,6 +2175,13 @@ type HttpLog {
   upstreamRqDuration: Int!
 }
 
+"""Which HTTP metric an HTTP_METRICS_ITEM widget renders."""
+enum HttpMetricKind {
+  LATENCY
+  REQUESTS
+  STATUS_RATIO
+}
+
 """HTTP metrics grouped by status code."""
 type HttpMetricsByStatusResult {
   """The samples of HTTP metrics for this status code."""
@@ -1272,7 +2208,16 @@ type HttpMetricsSample {
   value: Float!
 }
 
+type IacPartialOwnershipResult {
+  """Resource addresses whose ownership changed."""
+  affectedResources: [String!]!
+
+  """The environment's complete ownership map after the change."""
+  iacPartials: JSON!
+}
+
 type Incident {
+  createdAt: DateTime
   id: String!
   message: String!
   status: IncidentStatus!
@@ -1393,6 +2338,13 @@ type LogTags {
   snapshotId: String
 }
 
+type MaintainerWorkspace {
+  avatar: String
+  id: String!
+  name: String!
+  partnerProfile: PartnerProfile
+}
+
 type Maintenance {
   id: String!
   message: String!
@@ -1420,6 +2372,11 @@ type Metric {
 
 """A thing that can be measured on Railway."""
 enum MetricMeasurement {
+  AGENT_CACHE_READ_TOKENS
+  AGENT_CACHE_WRITE_TOKENS
+  AGENT_INPUT_TOKENS
+  AGENT_OUTPUT_TOKENS
+  AGENT_SPEND_USD
   BACKUP_USAGE_GB
   CPU_LIMIT
   CPU_USAGE
@@ -1450,18 +2407,23 @@ type MetricsResult {
 
 """A property that can be used to group metrics."""
 enum MetricTag {
+  BILLABLE
   DEPLOYMENT_ID
   DEPLOYMENT_INSTANCE_ID
   ENVIRONMENT_ID
+  FEATURE
   HOST_TYPE
   KEY_UNSPECIFIED
+  MODEL
   PLUGIN_ID
   PROJECT_ID
   REGION
   SERVICE_ID
   UNRECOGNIZED
+  VM_ID
   VOLUME_ID
   VOLUME_INSTANCE_ID
+  WORKLOAD_KIND
 }
 
 """The tags that were used to group the metric."""
@@ -1500,6 +2462,30 @@ type MonitorThresholdConfig {
 }
 
 type Mutation {
+  """Create an access group in a workspace."""
+  accessGroupCreate(input: AccessGroupCreateInput!): AccessGroup!
+
+  """Delete an access group."""
+  accessGroupDelete(id: String!): Boolean!
+
+  """Add a workspace member to an access group."""
+  accessGroupMemberAdd(input: AccessGroupMemberInput!): AccessGroupMember!
+
+  """Remove a member from an access group."""
+  accessGroupMemberRemove(input: AccessGroupMemberInput!): Boolean!
+
+  """Attach a project to an access group."""
+  accessGroupProjectAttach(input: AccessGroupProjectInput!): AccessGroupProject!
+
+  """Detach a project from an access group."""
+  accessGroupProjectDetach(input: AccessGroupProjectInput!): Boolean!
+
+  """Update an access group's name or role."""
+  accessGroupUpdate(id: String!, input: AccessGroupUpdateInput!): AccessGroup!
+
+  """Set agent usage limit for a workspace"""
+  agentUsageLimitSet(input: AgentUsageLimitSetInput!): Boolean!
+
   """Creates a new API token."""
   apiTokenCreate(input: ApiTokenCreateInput!): String!
 
@@ -1509,28 +2495,140 @@ type Mutation {
   """Sets the base environment override for a deployment trigger."""
   baseEnvironmentOverride(id: String!, input: BaseEnvironmentOverrideInput!): Boolean!
 
+  """
+  Remove a Railway agent chat binding. Requires admin on the binding's workspace.
+  """
+  botScopeBindingRemove(id: String!): Boolean!
+
   """Create a bucket in a project"""
   bucketCreate(input: BucketCreateInput!): Bucket!
 
   """Reset the credentials for a bucket in an environment"""
-  bucketCredentialsReset(bucketId: String!, environmentId: String!, projectId: String!): BucketS3CompatibleCredentials!
+  bucketCredentialsReset(bucketId: String!, environmentId: String!, projectId: String!, redeployDependents: Boolean): BucketS3CompatibleCredentials!
 
   """Updates a bucket."""
   bucketUpdate(id: String!, input: BucketUpdateInput!): Bucket!
+
+  """
+  Cancels an in-progress PITR enable/disable rollout on an HA database cluster
+  and resets its progress so the UI re-reads from the live cluster. No-ops when
+  nothing is running.
+  """
+  cancelPitrHaWorkflow(environmentId: String!, rootServiceId: String!): Boolean!
 
   """
   Merge a canvas layout from one environment into another. Re-computes the merge from current state and applies mutations.
   """
   canvasViewMerge(sourceEnvironmentId: String!, targetEnvironmentId: String!): Boolean!
 
+  """
+  Clears the recorded progress of a finished PITR enable/disable rollout so the
+  Backups page starts fresh. A rollout still in progress cannot be cleared.
+  """
+  clearPitrHaWorkflowProgress(environmentId: String!, rootServiceId: String!): Boolean!
+
+  """
+  Creates a Railway Authentication token for a project's protected services and
+  returns it once. Requires a workspace admin and the workspace's Railway
+  Authentication entitlement.
+  """
+  clearanceTokenCreate(input: ClearanceTokenCreateInput!): ClearanceTokenCreatePayload!
+
+  """
+  Revokes a Railway Authentication token. Requires a workspace admin; works
+  without the entitlement. Revoking a revoked token succeeds.
+  """
+  clearanceTokenRevoke(id: String!): Boolean!
+
+  """Track CLI authentication-attempt outcomes (signup / sign-in funnel)"""
+  cliAuthEventTrack(input: CliAuthEventTrackInput!): Boolean!
+
   """Track events from the Railway CLI"""
   cliEventTrack(input: CliEventTrackInput!): Boolean!
+
+  """
+  Checkpoint the agent's disk. Poll cloudAgentCheckpoint until SUCCEEDED.
+  """
+  cloudAgentCheckpointCreate(id: ID!, name: String): CloudAgentCheckpoint!
+
+  """Delete a checkpoint."""
+  cloudAgentCheckpointDelete(id: ID!): Boolean!
+
+  """Create a cloud agent."""
+  cloudAgentCreate(input: CloudAgentCreateInput!): CloudAgent!
+
+  """Delete a cloud agent."""
+  cloudAgentDelete(id: ID!): Boolean!
+
+  """
+  Build the agent's code inside its own VM and deploy it. Creates the named
+  service (default: the agent's name) or reuses it. Needs an agent booted with the builder.
+  """
+  cloudAgentDeploy(
+    id: ID!
+    path: String
+
+    """
+    Replicas per region, e.g. { "us-west2": 3 }. Saved on the service; omit to keep its current regions.
+    """
+    regions: JSON
+    serviceName: String
+  ): CloudAgentDeployResult!
+
+  """
+  Send lightweight agent feedback to Railway. Returns the report ID after delivery.
+  """
+  cloudAgentFeedbackCreate(input: CloudAgentFeedbackInput!): String!
+
+  """Duplicate a running cloud agent."""
+  cloudAgentFork(id: ID!, name: String, variables: JSON): CloudAgent!
+
+  """
+  Mint a short-lived (5m) JWT for the agent's harness WebSocket (see
+  agentWsUrl). The in-VM gate verifies signature/exp/aud and pins it to this
+  agent. Mint one per dial; the token only has to survive the upgrade.
+  """
+  cloudAgentHarnessToken(environmentId: String!, id: ID!): String!
+
+  """
+  Sleep a running cloud agent, keeping its volume. Processes on the machine are terminated; waking re-runs its entrypoint.
+  """
+  cloudAgentSleep(id: ID!): CloudAgent!
+
+  """Report the current coding-agent session state."""
+  cloudAgentStateReport(input: CloudAgentStateReportInput!): Boolean!
+
+  """
+  Stop a task. Before its prompt is sent it never starts; after, only its own
+  run is aborted. The task ends failed with "The task was cancelled". A finished
+  task is left as is.
+  """
+  cloudAgentTaskCancel(taskId: String!): CloudAgentTaskCancelResult!
+
+  """
+  Start a task and return its handle. Creates a fresh agent by default; replyToTaskId continues the original conversation.
+  """
+  cloudAgentTaskDispatch(input: CloudAgentTaskDispatchInput!): CloudAgentTaskHandle!
+
+  """Recover the latest task response from the agent. May wake the VM."""
+  cloudAgentTaskRecover(cloudAgentId: String!, sessionId: String!): CloudAgentTaskResult!
+
+  """
+  Answer a question the task is waiting on. Never wakes the VM; poll cloudAgentTask for the outcome.
+  """
+  cloudAgentTaskRespond(input: CloudAgentTaskRespondInput!): CloudAgentTaskRespondResult!
+
+  """Wake a sleeping cloud agent."""
+  cloudAgentWake(id: ID!): CloudAgent!
 
   """Creates a new custom domain."""
   customDomainCreate(input: CustomDomainCreateInput!): CustomDomain!
 
   """Deletes a custom domain."""
   customDomainDelete(id: String!): Boolean!
+
+  """Issues a new certificate"""
+  customDomainIssueCertificate(id: String!): Boolean!
 
   """Updates a custom domain."""
   customDomainUpdate(environmentId: String!, id: String!, targetPort: Int): Boolean!
@@ -1574,6 +2672,26 @@ type Mutation {
   """Updates a deployment trigger."""
   deploymentTriggerUpdate(id: String!, input: DeploymentTriggerUpdateInput!): DeploymentTrigger!
 
+  """
+  Forget the box `ssh dev.new` lands you in; the next connection creates a new one.
+  """
+  devNewLandingTargetClear: Boolean!
+
+  """
+  Make this cloud agent the box `ssh dev.new` lands you in. Replaces any previous choice.
+  """
+  devNewLandingTargetSet(cloudAgentId: ID!): CloudAgent!
+
+  """
+  Disables point-in-time recovery on an HA database cluster with the same
+  rolling rollout as enable. The backup bucket is left intact, so existing
+  backup history is preserved.
+  """
+  disablePitrForHaCluster(input: DisablePitrForHaClusterInput!): TemplateDeployPayload!
+
+  """Disables CDN for a service, soft-deleting the edge config."""
+  disableServiceCdn(input: DisableServiceCdnInput!): Boolean!
+
   """Create services and volumes from docker compose"""
   dockerComposeImport(environmentId: String!, projectId: String!, skipStagingPatch: Boolean, yaml: String!): DockerComposeImport!
 
@@ -1584,6 +2702,23 @@ type Mutation {
   egressGatewayAssociationsClear(input: EgressGatewayServiceTargetInput!): Boolean!
 
   """
+  Preview the HA static egress IPs that would be assigned, without applying
+  them. Set allEnvironments to cover all of the service's environments.
+  """
+  egressGatewayHAMigrationPreview(input: EgressGatewayServiceTargetInput!): EgressMigrationResult!
+
+  """
+  Switch a service from HA static egress IPs back to a standard static IP. Set
+  allEnvironments to apply to all of the service's environments.
+  """
+  egressGatewayRollbackFromHA(input: EgressGatewayServiceTargetInput!): [EgressGateway!]!
+
+  """
+  Enable HA static egress IPs for a service. Set allEnvironments to apply to all of the service's environments.
+  """
+  egressGatewayUpgradeToHA(input: EgressGatewayServiceTargetInput!): [EgressGateway!]!
+
+  """
   Change the User's account email if there is a valid change email request.
   """
   emailChangeConfirm(nonce: String!): Boolean!
@@ -1591,14 +2726,112 @@ type Mutation {
   """Initiate an email change request for a user"""
   emailChangeInitiate(newEmail: String!): Boolean!
 
+  """
+  Enables point-in-time recovery on an HA database cluster (Postgres HA, MySQL
+  HA) with a rolling, near-zero-downtime rollout across its members. Safe to retry.
+  """
+  enablePitrForHaCluster(input: EnablePitrForHaClusterInput!): TemplateDeployPayload!
+
+  """
+  Enables CDN for a service, creating an edge config and attaching all live domains.
+  """
+  enableServiceCdn(input: EnableServiceCdnInput!): EdgeConfig!
+
+  """
+  Experimental: applies an intent-level RailwayChangeSet and returns operation results.
+  """
+  environmentApplyChangeSet(
+    """
+    Snapshot token from Environment.configEtag the plan was computed against.
+    When set, the apply is rejected if the environment has changed since.
+    """
+    baseConfigEtag: String
+    commitMessage: String
+    environmentId: String!
+    input: JSON!
+
+    """
+    Defaults to true for compatibility. Async-capable clients set false and poll environmentChangeSetApply.
+    """
+    waitForCompletion: Boolean
+  ): ChangeSetApplyResult!
+
+  """
+  Sets whether Railway Authentication protects an environment's services that
+  have no setting of their own, and pushes it to them. Requires a workspace
+  admin; turning it on also requires the workspace's Railway Authentication
+  entitlement. Services with edge caching on that it protects have their caching turned off.
+  """
+  environmentClearanceDefaultUpdate(input: EnvironmentClearanceDefaultUpdateInput!): Boolean!
+
+  """
+  Posts or updates a `railway config plan` comment on a GitHub pull request
+  under the Railway app identity. The caller proves it runs in the target repo
+  with a GitHub Actions OIDC token; the comment body is composed server-side
+  from the structured plan.
+  """
+  environmentConfigPlanCommentUpsert(input: EnvironmentConfigPlanCommentUpsertInput!): EnvironmentConfigPlanCommentUpsertResult!
+
   """Creates a new environment."""
   environmentCreate(input: EnvironmentCreateInput!): Environment!
 
   """Deletes an environment."""
   environmentDelete(id: String!): Boolean!
 
+  """
+  Release resources from a named IaC partial without deleting, redeploying, or
+  changing them. Omit resources to release the entire partial. Whole-project
+  management is possible once no named partials remain. A later named-partial
+  apply can claim released resources again.
+  """
+  environmentIacPartialRelease(
+    """
+    Snapshot token from Environment.configEtag the ownership preview was
+    computed against. When set, the release is rejected if the environment has changed since.
+    """
+    baseConfigEtag: String
+    environmentId: String!
+    partial: String!
+
+    """
+    Resource addresses to release (for example service.api). Every address must
+    belong to the named partial. Omit to release all of its resources; an empty
+    list is rejected.
+    """
+    resources: [String!]
+  ): IacPartialOwnershipResult!
+
+  """
+  Transfer resources between named IaC partials without deleting, redeploying,
+  or changing them. Omit resources to transfer the entire source partial. The
+  destination may be a new or existing partial.
+  """
+  environmentIacPartialTransfer(
+    """
+    Snapshot token from Environment.configEtag the ownership preview was
+    computed against. When set, the transfer is rejected if the environment has changed since.
+    """
+    baseConfigEtag: String
+    environmentId: String!
+    fromPartial: String!
+
+    """
+    Resource addresses to transfer (for example service.api). Every address must
+    belong to fromPartial. Omit to transfer all of its resources; an empty list is rejected.
+    """
+    resources: [String!]
+    toPartial: String!
+  ): IacPartialOwnershipResult!
+
   """Commit the provided patch to the environment."""
-  environmentPatchCommit(commitMessage: String, environmentId: String!, patch: EnvironmentConfig): String!
+  environmentPatchCommit(
+    commitMessage: String
+    environmentId: String!
+    patch: EnvironmentConfig
+
+    """Skip deploys for services affected by this patch."""
+    skipDeploys: Boolean
+  ): String!
 
   """Commits the staged changes for a single environment."""
   environmentPatchCommitStaged(
@@ -1608,6 +2841,17 @@ type Mutation {
     """Skip deploys for services affected by this patch."""
     skipDeploys: Boolean
   ): String!
+
+  """
+  Copy a FAILED patch's changes into the environment's staged patch (creating
+  one if needed). The FAILED patch is left untouched.
+  """
+  environmentPatchRestage(patchId: String!): EnvironmentPatch!
+
+  """
+  Experimental: previews an intent-level RailwayChangeSet without side effects.
+  """
+  environmentPreviewChangeSet(environmentId: String!, input: JSON!): ChangeSetPreview!
 
   """Renames an environment."""
   environmentRename(id: String!, input: EnvironmentRenameInput!): Environment!
@@ -1625,7 +2869,7 @@ type Mutation {
   environmentTriggersDeploy(input: EnvironmentTriggersDeployInput!): Boolean!
 
   """
-  Unskip a service in a PR environment, deploying it and its transitive dependencies.
+  Deploy a service that was skipped when its environment was created, along with its skipped transitive dependencies.
   """
   environmentUnskipService(environmentId: String!, serviceId: String!): Boolean!
 
@@ -1637,6 +2881,11 @@ type Mutation {
 
   """Remove a feature flag for a user"""
   featureFlagRemove(input: FeatureFlagToggleInput!): Boolean!
+
+  """
+  Mints a 5-minute JWT for opening a browser WS session against tcp-proxy.
+  """
+  generateShellToken(input: ShellTokenInput!): String!
 
   """Deploys a GitHub repo"""
   githubRepoDeploy(input: GitHubRepoDeployInput!): String!
@@ -1727,29 +2976,50 @@ type Mutation {
   """Update the email preferences for a user"""
   preferencesUpdate(input: PreferencesUpdateData!): Preferences!
 
-  """Create or get a private network."""
-  privateNetworkCreateOrGet(input: PrivateNetworkCreateOrGetInput!): PrivateNetwork!
+  """
+  Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.
+  """
+  privateNetworkCreateOrGet(input: PrivateNetworkCreateOrGetInput!): PrivateNetwork! @deprecated(reason: "Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.")
 
-  """Create or get a private network endpoint."""
-  privateNetworkEndpointCreateOrGet(input: PrivateNetworkEndpointCreateOrGetInput!): PrivateNetworkEndpoint!
+  """
+  Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.
+  """
+  privateNetworkEndpointCreateOrGet(input: PrivateNetworkEndpointCreateOrGetInput!): PrivateNetworkEndpoint! @deprecated(reason: "Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.")
 
-  """Delete a private network endpoint."""
-  privateNetworkEndpointDelete(id: String!): Boolean!
+  """
+  Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.
+  """
+  privateNetworkEndpointDelete(id: String!): Boolean! @deprecated(reason: "Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.")
 
   """Rename a private network endpoint."""
   privateNetworkEndpointRename(dnsName: String!, id: String!, privateNetworkId: String!): Boolean!
 
-  """Delete all private networks for an environment."""
-  privateNetworksForEnvironmentDelete(environmentId: String!): Boolean!
+  """
+  Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.
+  """
+  privateNetworksForEnvironmentDelete(environmentId: String!): Boolean! @deprecated(reason: "Removed. Private networks and endpoints are managed by the platform; enable private networking on the environment instead.")
 
   """Claims a project."""
   projectClaim(id: String!, workspaceId: String!): Project!
+
+  """
+  Sets whether environments created from now on start with Railway
+  Authentication protecting services that have no setting of their own. Existing
+  environments are unchanged. Requires a workspace admin; turning it on also
+  requires the workspace's Railway Authentication entitlement.
+  """
+  projectClearanceDefaultUpdate(input: ProjectClearanceDefaultUpdateInput!): Boolean!
 
   """Creates a new project."""
   projectCreate(input: ProjectCreateInput!): Project!
 
   """Deletes a project."""
   projectDelete(id: String!): Boolean!
+
+  """
+  Star or unstar a project for the authenticated user. Returns the resulting state.
+  """
+  projectFavoriteSet(favorite: Boolean!, projectId: String!): Boolean!
 
   """Add a feature flag for a project"""
   projectFeatureFlagAdd(input: ProjectFeatureFlagToggleInput!): Boolean!
@@ -1821,6 +3091,50 @@ type Mutation {
   """Deletes a ProviderAuth."""
   providerAuthRemove(id: String!): Boolean!
 
+  """
+  Purges the CDN cache for a service. Bumps the edge config's purge epoch so
+  every edge node treats prior cached entries as stale on next request.
+  Idempotent; returns true even if CDN is disabled for the service.
+  """
+  purgeServiceCache(input: PurgeServiceCacheInput!): Boolean!
+
+  """Create a DNS record for a Railway domain"""
+  railwayDomainDnsRecordCreate(input: RailwayDomainDnsRecordCreateInput!): RailwayDomainDnsRecord!
+
+  """Delete a DNS record for a Railway domain"""
+  railwayDomainDnsRecordDelete(input: RailwayDomainDnsRecordDeleteInput!): Boolean!
+
+  """Update a DNS record for a Railway domain"""
+  railwayDomainDnsRecordUpdate(input: RailwayDomainDnsRecordUpdateInput!): RailwayDomainDnsRecord!
+
+  """
+  Stop forwarding every address on this domain, and remove the mail records that delivered them
+  """
+  railwayDomainEmailForwardingRemoveAll(input: RailwayDomainEmailForwardingRemoveAllInput!): RailwayDomainEmailForwardingTeardown!
+
+  """Forward an address on this domain to an external inbox"""
+  railwayDomainEmailForwardingRuleCreate(input: RailwayDomainEmailForwardingRuleCreateInput!): RailwayDomainEmailForwardingRule!
+
+  """Stop forwarding an address on this domain"""
+  railwayDomainEmailForwardingRuleDelete(input: RailwayDomainEmailForwardingRuleDeleteInput!): Boolean!
+
+  """
+  Send a message to a forwarded address so the customer can confirm it delivers.
+  """
+  railwayDomainEmailForwardingRuleSendTest(input: RailwayDomainEmailForwardingRuleTestInput!): RailwayDomainEmailForwardingRule!
+
+  """Change where a forwarded address delivers"""
+  railwayDomainEmailForwardingRuleUpdate(input: RailwayDomainEmailForwardingRuleUpdateInput!): RailwayDomainEmailForwardingRule!
+
+  """
+  Delegate the domain's authoritative nameservers to an external DNS provider,
+  or reset to Railway defaults by passing an empty list.
+  """
+  railwayDomainNameserversSet(input: RailwayDomainNameserversSetInput!): RailwayDomainNameservers!
+
+  """Update a Railway domain's settings"""
+  railwayDomainUpdate(input: RailwayDomainUpdateInput!): RailwayDomain!
+
   """Generates a new set of recovery codes for the authenticated user."""
   recoveryCodeGenerate: RecoveryCodes!
 
@@ -1829,6 +3143,33 @@ type Mutation {
 
   """Updates the ReferralInfo for the authenticated user."""
   referralInfoUpdate(input: ReferralInfoUpdateInput!): ReferralInfo!
+
+  """
+  Capture a running sandbox's current disk into a reusable, named checkpoint.
+  Synchronous: the checkpoint is ready when this returns.
+  """
+  sandboxCheckpointCreate(environmentId: String!, name: String!, sandboxId: String!): SandboxCheckpoint!
+
+  """Delete a sandbox checkpoint."""
+  sandboxCheckpointDelete(environmentId: String!, id: ID!): Boolean!
+
+  """Rename a sandbox checkpoint."""
+  sandboxCheckpointRename(environmentId: String!, id: ID!, name: String!): SandboxCheckpoint!
+
+  """Create a sandbox in an environment."""
+  sandboxCreate(input: SandboxCreateInput!): Sandbox!
+
+  """Destroy a sandbox."""
+  sandboxDestroy(environmentId: String!, id: String!): Sandbox
+
+  """Execute a command inside a running sandbox."""
+  sandboxExec(command: String!, environmentId: String!, id: String!, timeoutSec: Int): SandboxExecResult!
+
+  """Extend a sandbox's lifetime."""
+  sandboxHeartbeat(environmentId: String!, id: String!): Sandbox
+
+  """Build a sandbox template into a bootable checkpoint."""
+  sandboxTemplateBuild(environmentId: String!, input: SandboxTemplateInput!): SandboxTemplateBuild!
 
   """Connect a service to a source"""
   serviceConnect(id: String!, input: ServiceConnectInput!): Service!
@@ -1839,9 +3180,10 @@ type Mutation {
   """Deletes a service."""
   serviceDelete(
     """
-    [Experimental] Environment ID. If the environment is a forked environment,
-    the service will only be deleted in the specified environment, otherwise it
-    will deleted in all environments that are not forks of other environments
+    Environment ID. When set, the service is deleted only in that environment;
+    the service itself is deleted once no instances remain in any environment.
+    When omitted, the service is deleted in every environment that is not a fork
+    of another environment.
     """
     environmentId: String
     id: String!
@@ -1870,6 +3212,53 @@ type Mutation {
   """Remove a feature flag for a service"""
   serviceFeatureFlagRemove(input: ServiceFeatureFlagToggleInput!): Boolean!
 
+  """Enables or disables auto-deploy for a service instance."""
+  serviceInstanceAutoDeployUpdate(input: ServiceInstanceAutoDeployUpdateInput!): ServiceInstanceAutoDeployUpdateResult!
+
+  """
+  Update the auto-update maintenance window for a service instance, applied
+  immediately (no config staging, no redeploy). Only the schedule changes — the
+  update policy is untouched.
+  """
+  serviceInstanceAutoUpdateScheduleUpdate(
+    environmentId: String!
+
+    """
+    The full replacement set of weekly UTC maintenance windows (at least one)
+    """
+    schedule: [AutoUpdateScheduleWindowInput!]!
+    serviceId: String!
+  ): Boolean!
+
+  """
+  Skip the next scheduled auto-update occurrence for a service instance, applied
+  immediately (no config staging, no redeploy). The recurring maintenance window
+  and update policy are untouched — this only delays the next fire.
+  """
+  serviceInstanceAutoUpdateSnooze(
+    environmentId: String!
+    serviceId: String!
+
+    """
+    How many days to skip, from now (default 7 — covers any weekly schedule shape). Between 1 and 14.
+    """
+    snoozeDays: Int
+  ): Boolean!
+
+  """
+  Undo an active auto-update skip for a service instance, applied immediately
+  (no config staging, no redeploy). The recurring maintenance window and update
+  policy are untouched — the next scheduled occurrence fires normally again.
+  """
+  serviceInstanceAutoUpdateSnoozeClear(environmentId: String!, serviceId: String!): Boolean!
+
+  """
+  Sets a service instance's own Railway Authentication setting: on, off, or none
+  (follow the environment's default). Requires a workspace admin; ending up on
+  also requires the workspace's Railway Authentication entitlement and edge caching off.
+  """
+  serviceInstanceClearanceUpdate(input: ServiceInstanceClearanceUpdateInput!): Boolean!
+
   """Deploy a service instance"""
   serviceInstanceDeploy(commitSha: String, environmentId: String!, latestCommit: Boolean, serviceId: String!): Boolean!
 
@@ -1894,6 +3283,16 @@ type Mutation {
     serviceId: String!
   ): Boolean!
 
+  """
+  Dismiss a platform-armed database security update notice and stand down the scheduled redeploy
+  """
+  serviceInstanceVulnRemediationDismiss(environmentId: String!, serviceId: String!): Boolean!
+
+  """
+  Immediately apply a platform-armed database security update (backup + redeploy). Returns the new deployment id.
+  """
+  serviceInstanceVulnRemediationPatchNow(environmentId: String!, serviceId: String!): String!
+
   """Remove the upstream URL from all service instances for this service"""
   serviceRemoveUpstreamUrl(id: String!): Service!
 
@@ -1903,14 +3302,66 @@ type Mutation {
   """Deletes a session."""
   sessionDelete(id: String!): Boolean!
 
+  """
+  Enables or disables Under Attack Mode for a service. While enabled, the edge
+  serves a browser challenge to unverified visitors of the service's edge-routed
+  domains; non-browser clients (APIs, webhooks) without a clearance cookie are
+  rejected with a 429. Optionally time-boxed via durationSeconds, after which
+  the mode disarms automatically.
+  """
+  setServiceUnderAttackMode(input: SetServiceUnderAttackModeInput!): EdgeConfig!
+
+  """Track setup agent lifecycle events from the Railway CLI"""
+  setupAgentEventTrack(input: SetupAgentEventTrackInput!): Boolean!
+
   """Configure a shared variable."""
   sharedVariableConfigure(input: SharedVariableConfigureInput!): Variable!
 
-  """Creates a new SSH public key for the authenticated user."""
+  """Register a new signal for an owner scope."""
+  signalCreate(input: SignalCreateInput!): Signal!
+
+  """Change a signal's canonical default (production floor)."""
+  signalDefaultSet(input: SignalDefaultSetInput!): Signal!
+
+  """Delete a signal and its audit log."""
+  signalDelete(input: SignalDeleteInput!): Signal!
+
+  """
+  Replace a signal's type and default, clearing all rules. Destructive — intended for CLI --force re-type.
+  """
+  signalReplace(input: SignalReplaceInput!): Signal!
+
+  """
+  Restore a signal to the snapshot captured before a change (reads prevState from the target change row).
+  """
+  signalRollback(input: SignalRollbackInput!): Signal!
+
+  """
+  Attach or replace a rule on a signal. Matching rules must agree at resolution time or the default is returned.
+  """
+  signalRuleSet(input: SignalRuleSetInput!): Signal!
+
+  """Remove a rule from a signal."""
+  signalRuleUnset(input: SignalRuleUnsetInput!): Signal!
+
+  """
+  Creates a new SSH public key. When workspaceId is provided (or omitted under a
+  workspace-scoped API token, in which case it defaults to the token's
+  workspace), the key is owned by the workspace and can be used by anyone
+  authenticating as that workspace via native SSH; requires workspace ADMIN
+  access. Otherwise the key is owned by the authenticated user.
+  """
   sshPublicKeyCreate(input: SshPublicKeyCreateInput!): SshPublicKey!
 
   """Deletes an SSH public key."""
   sshPublicKeyDelete(id: String!): Boolean!
+
+  """
+  Approve an SSH signup: register the offered SSH key on the authenticated
+  account so the agent is recognized. When the key owns an anonymous trial box,
+  claims that trial into workspaceId and re-owns the key.
+  """
+  sshSignupApprove(code: String!, workspaceId: String): Boolean!
 
   """Creates a new TCP proxy for a service instance."""
   tcpProxyCreate(input: TCPProxyCreateInput!): TCPProxy! @deprecated(reason: "Use staged changes and apply them. Creating a TCP proxy with this endpoint requires you to redeploy the service for it to be active.")
@@ -1937,12 +3388,26 @@ type Mutation {
   templatePublish(id: String!, input: TemplatePublishInput!): Template!
 
   """
+  Reverts an HA cluster to standalone mode using template metadata to derive variables to remove
+  """
+  templateRevert(input: TemplateRevertInput!): TemplateDeployPayload!
+
+  """
   Ejects a service from the template and creates a new repo in the provided org.
   """
   templateServiceSourceEject(input: TemplateServiceSourceEjectInput!): Boolean!
 
   """Unpublishes a template."""
   templateUnpublish(id: String!): Boolean!
+
+  """
+  Sets the default size (in MB) for a volume mount in a template's config. New
+  volumes created when the template is deployed are provisioned at this size,
+  clamped to the deployer's plan maximum. Pass sizeMB: null to clear the
+  pre-size and fall back to the plan default. Editing a template requires
+  maintainer access.
+  """
+  templateVolumeUpdate(serviceId: String!, sizeMB: Int, templateId: String!, volumeId: String!): Template!
 
   """Create a new trusted domain for this workspace"""
   trustedDomainCreate(input: WorkspaceTrustedDomainCreateInput!): TrustedDomain!
@@ -1952,6 +3417,9 @@ type Mutation {
 
   """Retrigger verification for a failed trusted domain"""
   trustedDomainRetriggerVerification(id: String!): TrustedDomain
+
+  """Update the role of a trusted domain"""
+  trustedDomainUpdate(input: WorkspaceTrustedDomainUpdateInput!): TrustedDomain!
 
   """Setup 2FA authorization for authenticated user."""
   twoFactorInfoCreate(input: TwoFactorInfoCreateInput!): RecoveryCodes!
@@ -1964,6 +3432,19 @@ type Mutation {
 
   """Validates the token for a 2FA action or for a login request."""
   twoFactorInfoValidate(input: TwoFactorInfoValidateInput!): Boolean!
+
+  """Updates the edge config (caching settings) for a service."""
+  updateServiceEdgeConfig(input: UpdateServiceEdgeConfigInput!): EdgeConfig!
+
+  """
+  Replaces the service's edge rules (whole-section replace; null clears). Rules
+  are boolean expressions over request attributes plus one action
+  (block/allow/challenge/redirect/cache_override), evaluated at the edge before
+  requests reach the service. The ruleset is validated server-side; invalid
+  rulesets are rejected with per-rule diagnostics and nothing is written. Rules
+  without an id get a server-assigned stable `rul_` id.
+  """
+  updateServiceEdgeRules(input: UpdateServiceEdgeRulesInput!): EdgeConfig!
 
   """Generate a Slack channel for a workspace"""
   upsertSlackChannel(workspaceId: String!): Boolean!
@@ -2041,11 +3522,21 @@ type Mutation {
 
   """Restore a volume instance from a backup"""
   volumeInstanceBackupRestore(
+    """
+    Optional: for HA cluster restores, service IDs of replicas that should also receive the backup
+    """
+    replicaServiceIds: [String!]
+
     """The id of the backup to be restored from"""
     volumeInstanceBackupId: String!
 
     """The id of the volume instance to be restored from"""
     volumeInstanceId: String!
+
+    """
+    Service IDs whose volumes should be wiped (replaced with fresh empty volumes) as part of this restore
+    """
+    wipeServiceIds: [String!]
   ): WorkflowId!
 
   """Manage schedule for backups of a volume instance"""
@@ -2056,6 +3547,32 @@ type Mutation {
     """The id of the volume instance to create a backup of"""
     volumeInstanceId: String!
   ): Boolean!
+
+  """
+  Point-in-time restore. Creates a brand-new database service in the project,
+  recovered to the target timestamp from the source service's backup history.
+  The source service stays online and untouched.
+  """
+  volumeInstancePITRRestore(
+    """
+    Optional name for the new restored service. Defaults to '<source>-restored-YYYYMMDD-HHMM'.
+    """
+    newServiceName: String
+
+    """
+    Opaque identifier for one archive history, from the multi-history picker
+    when the source bucket holds more than one. It scopes both the
+    restore-window pre-check and the restored fork's archive source, treating
+    the selected history as frozen. Pass null to restore the source's current history.
+    """
+    sourceRepoPath: String
+
+    """Point-in-time target. Must be within the available restore window."""
+    targetTimestamp: DateTime!
+
+    """The id of the volume instance to restore from"""
+    volumeInstanceId: String!
+  ): WorkflowId!
 
   """
   Update a volume instance. If no environmentId is provided, all volume instances for the volume will be updated.
@@ -2076,8 +3593,10 @@ type Mutation {
 
   """
   Test a webhook URL by sending a sample payload. Returns the HTTP status code.
+  Custom headers come from `headers`, plus the stored headers of
+  `notificationRuleId` for names not passed.
   """
-  webhookTest(payload: String!, url: String!): Int!
+  webhookTest(headers: [WebhookHeaderInput!], notificationRuleId: String, payload: String!, url: String!): Int!
 
   """Delete a workspace and all data associated with it"""
   workspaceDelete(id: String!): Boolean!
@@ -2094,8 +3613,19 @@ type Mutation {
   """Changes a user workspace permissions."""
   workspacePermissionChange(input: WorkspacePermissionChangeInput!): Boolean!
 
+  """Add a deploy source to a workspace policy allowlist."""
+  workspacePolicyDeploySourceAllowlistAdd(sourceId: String!, sourceType: WorkspacePolicyDeploySourceType!, workspaceId: String!): WorkspacePolicyDeploySourceAllowlist!
+
+  """Remove a deploy source from a workspace policy allowlist."""
+  workspacePolicyDeploySourceAllowlistRemove(id: String!): Boolean!
+
   """Enable or disable a workspace policy. Enterprise workspaces only."""
   workspacePolicyItemUpdate(enabled: Boolean, input: WorkspacePolicyItemUpdateInput, policy: WorkspacePolicyName, workspaceId: String!): Boolean!
+
+  """
+  Control whether non-admin project visibility is restricted to access groups and direct project permissions.
+  """
+  workspaceSetRestrictProjectVisibilityToGroups(enabled: Boolean!, workspaceId: String!): Boolean!
 
   """Enable or disable 2FA enforcement for a workspace"""
   workspaceTwoFactorEnforcementUpdate(enabled: Boolean!, workspaceId: String!): Boolean!
@@ -2113,11 +3643,115 @@ type Mutation {
   workspaceUserRemove(input: WorkspaceUserRemoveInput!, workspaceId: String!): Boolean!
 }
 
+type MysqlPitrRestorableWindow {
+  archiveConfigured: Boolean!
+  ceilingAt: String
+  fetchedAt: String!
+  floorAt: String
+  fullBackupCount: Int!
+  fullBackupsTakenAt: [String!]!
+  lineageCount: Int!
+  listingTruncated: Boolean!
+}
+
+"""The direction of a network flow relative to the service"""
+enum NetworkFlowDirection {
+  egress
+  ingress
+}
+
+"""The layer 4 protocol of a network flow"""
+enum NetworkFlowL4Protocol {
+  icmp
+  icmpv6
+  tcp
+  udp
+  unknown
+}
+
+"""A single network flow log entry"""
+type NetworkFlowLog {
+  """Number of bytes transferred"""
+  byteCount: Int!
+
+  """When the flow capture ended (ISO timestamp)"""
+  captureEnd: String!
+
+  """When the flow capture started (ISO timestamp)"""
+  captureStart: String!
+
+  """The deployment ID"""
+  deploymentId: String!
+
+  """The deployment instance ID"""
+  deploymentInstanceId: String!
+
+  """Traffic direction (ingress or egress)"""
+  direction: NetworkFlowDirection!
+
+  """If packets were dropped, the reason"""
+  dropCause: String
+
+  """Destination IP address"""
+  dstAddr: String!
+
+  """Destination port number"""
+  dstPort: Int!
+
+  """Unique identifier for the flow"""
+  flowId: String!
+
+  """Whether the flow is partial or complete"""
+  flowState: NetworkFlowState!
+
+  """Layer 4 latency in milliseconds"""
+  l4LatencyMs: Float!
+
+  """Layer 4 protocol (TCP, UDP, ICMP, etc)"""
+  l4Protocol: NetworkFlowL4Protocol!
+
+  """Number of packets transferred"""
+  packetCount: Int!
+
+  """Type of peer (service, internet, DNS, etc)"""
+  peerKind: NetworkFlowPeerKind!
+
+  """Service instance ID of the peer (for service-to-service flows)"""
+  peerServiceId: String
+
+  """The service ID this flow belongs to"""
+  serviceId: String!
+
+  """Source IP address"""
+  srcAddr: String!
+
+  """Source port number"""
+  srcPort: Int!
+}
+
+"""The type of peer in a network flow"""
+enum NetworkFlowPeerKind {
+  edge_proxy
+  internet
+  local_dns
+  service
+  unknown
+}
+
+"""The state of a network flow"""
+enum NetworkFlowState {
+  complete
+  partial
+}
+
 interface Node {
   id: ID!
 }
 
 type NotificationChannel implements Node {
+  """
+  Webhook header values are write-only: the read side carries header names with null values.
+  """
   config: NotificationChannelConfig!
   createdAt: DateTime!
   id: ID!
@@ -2250,6 +3884,7 @@ type ObservabilityDashboardItem implements Node {
 }
 
 type ObservabilityDashboardItemConfig {
+  httpMetric: HttpMetricKind
   logsFilter: String
   measurements: [MetricMeasurement!]
   projectUsageProperties: [ProjectUsageProperty!]
@@ -2257,6 +3892,7 @@ type ObservabilityDashboardItemConfig {
 }
 
 input ObservabilityDashboardItemConfigInput {
+  httpMetric: HttpMetricKind
   logsFilter: String
   measurements: [MetricMeasurement!]
   projectUsageProperties: [ProjectUsageProperty!]
@@ -2278,6 +3914,10 @@ type ObservabilityDashboardItemInstance implements Node {
 }
 
 enum ObservabilityDashboardItemType {
+  DNS_LOGS_ITEM
+  HTTP_LOGS_ITEM
+  HTTP_METRICS_ITEM
+  NETWORK_LOGS_ITEM
   PROJECT_USAGE_ITEM
   SERVICE_LOGS_ITEM
   SERVICE_METRICS_ITEM
@@ -2298,6 +3938,13 @@ input ObservabilityDashboardUpdateInput {
   dashboardItem: ObservabilityDashboardItemCreateInput!
   displayConfig: DisplayConfig!
   id: String!
+}
+
+enum OperationStatus {
+  applied
+  applying
+  failed
+  staged
 }
 
 type PageInfo {
@@ -2347,6 +3994,99 @@ type PaymentMethodCard {
   last4: String!
 }
 
+"""
+Live replication health of an HA database cluster's members. Used to gate the
+Enable/Disable PITR buttons on the same 'caught up' definition the rollout enforces.
+"""
+type PitrHaClusterReplicationHealth {
+  allHealthy: Boolean!
+  checkedAt: String!
+  environmentId: String!
+  members: [PitrHaMemberReplicationHealth!]!
+  reachable: Boolean!
+  rootServiceId: String!
+}
+
+type PitrHaMemberReplicationHealth {
+  healthy: Boolean!
+  isLeader: Boolean!
+  lagMb: Int
+  patroniName: String
+  serviceId: String!
+  serviceName: String!
+  state: String
+}
+
+enum PitrHaWorkflowDirection {
+  DISABLE
+  ENABLE
+}
+
+type PitrHaWorkflowMemberProgress {
+  isLeader: Boolean!
+  serviceId: String!
+  serviceName: String!
+  status: PitrHaWorkflowMemberStatus!
+}
+
+enum PitrHaWorkflowMemberStatus {
+  HEALTHY
+  PENDING
+  RESTARTING
+  SKIPPED
+}
+
+enum PitrHaWorkflowPhase {
+  CREATING_BUCKET
+  DONE
+  FAILED
+  PATCHING_DCS
+  PLANNING
+  REMOVING_VARIABLES
+  ROLLING_EX_LEADER
+  ROLLING_REPLICAS
+  SWITCHING_OVER
+  VERIFYING
+  WRITING_VARIABLES
+}
+
+"""
+Progress of an in-flight or recently completed PITR enable/disable rollout on an HA database cluster.
+"""
+type PitrHaWorkflowProgress {
+  clusterMutated: Boolean!
+  completedAt: String
+  currentMemberServiceId: String
+  direction: PitrHaWorkflowDirection!
+  engine: String
+  environmentId: String!
+  errorMessage: String
+  failedAtPhase: PitrHaWorkflowPhase
+  members: [PitrHaWorkflowMemberProgress!]!
+  newLeaderServiceId: String
+  phase: PitrHaWorkflowPhase!
+  projectId: String!
+  rootServiceId: String!
+  startedAt: String!
+  updatedAt: String!
+  workflowId: String!
+}
+
+"""
+Estimated destination-volume scratch a PITR restore to a target needs: the base
+backup's data plus every WAL segment replayed from that backup to the target
+(Postgres holds replayed WAL in pg_wal faster than restartpoints recycle it). A
+conservative over-estimate for a non-blocking pre-restore warning — not a gate.
+"""
+type PitrRestoreScratchEstimate {
+  baseBackupLabel: String!
+  dataMB: Int!
+  estimatedScratchMB: Int!
+  likelyToFit: Boolean!
+  planMaxSizeMB: Int!
+  walMB: Int!
+}
+
 enum Plan {
   FREE
   HOBBY
@@ -2359,37 +4099,61 @@ type PlanLimitOverride implements Node {
 }
 
 enum PlatformFeatureFlag {
-  AGENT_USAGE_BILLING
-  ALLOW_REPLICA_METRICS
-  ARCHIVER_V2_ROLLOUT
-  BUILDER_V3_ROLLOUT_EXISTING_SERVICES
-  BUILDER_V3_ROLLOUT_EXISTING_SERVICES_PRO
-  BUILDER_V3_ROLLOUT_NEW_SERVICES
-  BUILDER_V3_ROLLOUT_NEW_SERVICES_PRO
-  COMPARE_CLICKHOUSE_METRICS
+  AGENT_USAGE_CH_INGEST
+  ALERT_SUS_USERS_CRON_KILLSWITCH
+  BLOCK_TRIAL_RESTRICTION_APPEALS
+  BUILDER_V4_ROLLOUT
+  BUILD_DEPLOY_QUEUE_V2
+  CAC_T0_KILLSWITCH
+  CANVAS_CROSS_ENV_GUARD_ENFORCE
+  CHAT_SANDBOX
+  CLICKHOUSE_WORKSPACE_LIMIT_ENFORCE
+  CS_MCP
+  CS_MCP_EXPRESS
   CTRD_IMAGE_STORE_ROLLOUT
+  DEFAULT_USAGE_ALERTS
   DEMO_PERCENTAGE_ROLLOUT
-  DISABLE_OAUTH_ACCESS_TOKENS
-  ENABLE_RAW_SQL_QUERIES
-  FOCUSED_PR_ENVIRONMENTS
-  GITHUB_PERMISSION_NOTIFICATION_ROLLOUT
-  INLINE_NOTIFICATION_PROCESSING
+  DEPLOYMENT_DIAGNOSIS_KILLSWITCH
+  DEPLOY_SUPERSEDE_ON_PUSH
+  DEV_STUDIO
+  DEV_STUDIO_ANON_PROVISIONS
+  DOMAIN_RECONCILE_KILLSWITCH
+  EMAIL_FORWARDING_KILLSWITCH
   IN_DASHBOARD_SUPPORT
-  KAFKA_DEPLOYMENT_STATUS_CHANGES
+  KAFKA_EPHEMERAL_ENVIRONMENT_UPDATES
+  LOGS_LONG_WINDOW_CHUNKING
+  MCP_OAUTH_AUDIENCE_ENFORCE
+  MCP_OAUTH_CIMD
+  MCP_OAUTH_SCOPE_CHALLENGES
+  MCP_OAUTH_TOKEN_ROUTE_FENCE
+  NEW_PROJECT_PAGE
   NEW_STRIPE_WEBHOOK_VERSION_ROLLOUT
+  NUDGES
+  NUDGE_BACKUP_SCHEDULE_MISSING
+  NUDGE_FIRST_DEPLOY_FAILED
+  NUDGE_PUBLIC_DB_URL_WITHIN_PROJECT
+  NUDGE_RESUBSCRIBE_AFTER_DEAD_INVOICE
+  NUDGE_UPGRADE_TO_PRO
   OAUTH_DCR_KILLSWITCH
-  OAUTH_DEVICE_FLOW_KILLSWITCH
-  RADAR_AUTO_EVALUATE
+  PRE_DEPLOY_TIMEOUT_KILLSWITCH
+  PROJECT_HISTORY_DUAL_WRITE
+  RADAR_HTTP_PATTERN_DETECTION
+  RELAY_SPEND_RESERVATION_KILLSWITCH
+  REMOVE_DEPLOYMENT_COMPACT
   SERVICEINSTANCE_DATALOADER_FOR_STATIC_URL
   SPLIT_USAGE_QUERIES
+  SSH_ANON_PROVISIONING
+  SSH_TRIAL_GUEST_IDLE_SLEEP
+  STRIPE_INTERACTIVE_SUBSCRIPTION_ON_SESSION
   STRIPE_METERS_NEW_ACCOUNTS
   STRIPE_METERS_SHADOW_ENABLED
-  UNIFIED_SNAPSHOT_AND_BUILD
-  UNIFIED_SNAPSHOT_AND_BUILD_HOBBY
+  STRIPE_WEBHOOK_DISPUTE_CANCELLATION
+  TRIAL_RELAY_MODEL_ALLOWLIST_KILLSWITCH
   UPDATED_VM_QUERIES
-  USE_CLICKHOUSE_METRICS
-  USE_GH_WEBHOOKS_FOR_CHANGE_DETECTION
-  VM_TIME_RANGE_QUERY
+  USAGE_CH_READS
+  VM_COUPON_MIGRATION
+  VM_USAGE_CH_INGEST
+  WORKSPACE_MCP_KILLSWITCH
 }
 
 type PlatformFeatureFlagStatus {
@@ -2554,6 +4318,18 @@ type Project implements Node {
   baseEnvironmentId: String
   botPrEnvironments: Boolean!
   buckets(after: String, before: String, first: Int, last: Int): ProjectBucketsConnection!
+
+  """
+  Whether environments created from now on start with Railway Authentication
+  protecting services that have no setting of their own. Existing environments
+  keep their own default.
+  """
+  clearanceDefaultForNewEnvironments: Boolean!
+
+  """
+  The project's Railway Authentication tokens that still work (not revoked, not expired), newest first.
+  """
+  clearanceTokens: [ClearanceToken!]!
   createdAt: DateTime!
   deletedAt: DateTime
   deploymentTriggers(after: String, before: String, first: Int, last: Int): ProjectDeploymentTriggersConnection! @deprecated(reason: "Use environment.deploymentTriggers for properly scoped access control")
@@ -2571,13 +4347,28 @@ type Project implements Node {
   name: String!
   plugins(after: String, before: String, first: Int, last: Int): ProjectPluginsConnection! @deprecated(reason: "Plugins have been removed")
   prDeploys: Boolean!
+
+  """
+  The id of the oldest non-ephemeral environment for this project (typically
+  production). Used by the dashboard to render project cards without fetching
+  the full environments connection.
+  """
+  primaryEnvironmentId: String
   projectPermissions(after: String, before: String, first: Int, last: Int): ProjectProjectPermissionsConnection!
   services(after: String, before: String, first: Int, last: Int): ProjectServicesConnection!
   subscriptionPlanLimit: SubscriptionPlanLimit!
   subscriptionType: SubscriptionPlanType!
   team: Team @deprecated(reason: "Use workspace")
   teamId: String @deprecated(reason: "Use workspaceId")
+  tracingEnabled: Boolean! @deprecated(reason: "Tracing is set per service instance: read ServiceInstance.tracingEnabled. True when any instance in the project is traced.")
+  tracingSampleRate: Float @deprecated(reason: "The edge traces every client-facing request; there is no sample rate. Always null.")
   updatedAt: DateTime!
+
+  """
+  Highest project-scoped role the current user holds on this project, through a
+  direct project permission or an access group. Does not include the workspace role.
+  """
+  viewerRole: ProjectRole
   volumes(after: String, before: String, first: Int, last: Int): ProjectVolumesConnection!
   workspace: Workspace
   workspaceId: String
@@ -2591,6 +4382,11 @@ type ProjectBucketsConnection {
 type ProjectBucketsConnectionEdge {
   cursor: String!
   node: Bucket!
+}
+
+input ProjectClearanceDefaultUpdateInput {
+  enabled: Boolean!
+  projectId: String!
 }
 
 type ProjectComplianceInfo {
@@ -2666,6 +4462,53 @@ type ProjectGroupsConnection {
 
 type ProjectGroupsConnectionEdge {
   cursor: String!
+  node: Group!
+}
+
+type ProjectHistoryConnection {
+  edges: [ProjectHistoryEntryEdge!]!
+  pageInfo: ProjectHistoryPageInfo!
+}
+
+"""
+One settled change in an environment: a system event or a terminal operation (patch, deploy, …).
+"""
+type ProjectHistoryEntry {
+  action: String!
+
+  """
+  Minimal payload for activity feed list rendering. Same trimming as Event.activityPayload.
+  """
+  activityPayload: JSON
+  actor: ProjectOperationActor!
+  changes: JSON!
+
+  """When the change settled."""
+  createdAt: DateTime!
+  id: String!
+  object: String!
+
+  """'' for a plain event; e.g. 'patch', 'deploy' for operations."""
+  operationKind: String!
+
+  """'' for a plain event; 'applied' or 'failed' for operations."""
+  outcome: String!
+  parentRef: String
+  payload: JSON
+  serviceIds: [String!]!
+  severity: EventSeverity!
+  source: String!
+  workflowId: String
+}
+
+type ProjectHistoryEntryEdge {
+  cursor: String!
+  node: ProjectHistoryEntry!
+}
+
+type ProjectHistoryPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
 }
 
 type ProjectInvitation {
@@ -2732,6 +4575,28 @@ input ProjectMemberUpdateInput {
   userId: String!
 }
 
+type ProjectOperation {
+  actor: ProjectOperationActor!
+  changes: JSON!
+
+  """In-flight child operations (e.g. deployments created by this patch)."""
+  children: [ProjectOperation!]!
+  environmentId: String!
+  finishedAt: DateTime
+  id: String!
+  kind: String!
+  parentRef: String
+  startedAt: DateTime!
+  status: OperationStatus!
+  workflowId: String
+}
+
+type ProjectOperationActor {
+  onBehalfOf: String
+  principal: String
+  surface: String
+}
+
 type ProjectPermission implements Node {
   id: ID!
   projectId: String!
@@ -2765,6 +4630,7 @@ type ProjectResourceAccess {
   deployment: AccessRule!
   environment: AccessRule!
   plugin: AccessRule! @deprecated(reason: "Plugins have been removed")
+  sandbox: AccessRule!
 }
 
 enum ProjectRole {
@@ -2781,6 +4647,22 @@ type ProjectServicesConnection {
 type ProjectServicesConnectionEdge {
   cursor: String!
   node: Service!
+}
+
+type ProjectServiceUsagePage {
+  pageInfo: ProjectServiceUsagePageInfo!
+  usage: [AggregatedUsage!]!
+}
+
+type ProjectServiceUsagePageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+}
+
+enum ProjectsOrderBy {
+  CREATED_AT_DESC
+  NAME_ASC
+  UPDATED_AT_DESC
 }
 
 type ProjectToken implements Node {
@@ -2902,9 +4784,29 @@ type PublicStats {
   totalUsers: Int!
 }
 
+enum PurgeCacheScope {
+  ALL
+  HTML
+}
+
+enum PurgeOnDeploy {
+  ALL
+  HTML
+  OFF
+}
+
+input PurgeServiceCacheInput {
+  environmentId: String!
+  scope: PurgeCacheScope!
+  serviceId: String!
+}
+
 type Query {
   """Get all volume instances for a given volume"""
   adminVolumeInstancesForVolume(volumeId: String!): [VolumeInstance!]!
+
+  """Get unified AI usage for a workspace"""
+  agentUsage(workspaceId: String!): AgentUsageSummary!
 
   """Returns the platform feature flags enabled for the current user"""
   allPlatformFeatureFlags: [PlatformFeatureFlagStatus!]!
@@ -2929,6 +4831,11 @@ type Query {
 
   """Gets audit logs for a workspace."""
   auditLogs(after: String, before: String, filter: AuditLogFilterInput, first: Int, last: Int, sort: SortOrder, workspaceId: String!): QueryAuditLogsConnection!
+
+  """
+  Railway agent chat bindings (Slack/Discord scope → workspace) across the caller's workspaces.
+  """
+  botScopeBindings: [BotScopeBindingInfo!]!
 
   """Get the S3-compatible credentials for a bucket"""
   bucketInstanceDetails(bucketId: String!, environmentId: String!): BucketInstanceDetails
@@ -2957,6 +4864,59 @@ type Query {
 
   """Gets the image URL for a Notion image block"""
   changelogBlockImage(id: String!): String!
+
+  """
+  A cloud agent by ID, within an environment. Null when the agent belongs to
+  another one, so a caller cannot render an agent it has switched away from.
+  """
+  cloudAgent(environmentId: ID!, id: ID!): CloudAgent
+
+  """A cloud agent checkpoint by ID."""
+  cloudAgentCheckpoint(id: ID!): CloudAgentCheckpoint!
+
+  """Cloud agent checkpoints in an environment, newest first."""
+  cloudAgentCheckpoints(after: String, before: String, environmentId: ID!, first: Int, last: Int): QueryCloudAgentCheckpointsConnection!
+
+  """
+  Shell and exec sessions running on a cloud agent's VM that you can reconnect to. Null if the agent has no running machine.
+  """
+  cloudAgentConsoleSessions(after: String, before: String, cloudAgentId: ID!, first: Int, last: Int): QueryCloudAgentConsoleSessionsConnection
+
+  """
+  Read a task turn without waking the VM: the latest on the agent/session, or taskId's.
+  """
+  cloudAgentTask(
+    cloudAgentId: String!
+    sessionId: String!
+
+    """An earlier turn on this session; default the latest."""
+    taskId: String
+  ): CloudAgentTaskResult!
+
+  """
+  List task records in an environment, newest first. Filter to one agent, or with sessionId to one session's turns.
+  """
+  cloudAgentTasks(
+    cloudAgentId: String
+    cursor: String
+    environmentId: String!
+    limit: Int
+
+    """Requires cloudAgentId."""
+    sessionId: String
+    status: CloudAgentTaskStatus
+  ): CloudAgentTaskPage!
+
+  """Cloud agents in an environment."""
+  cloudAgents(
+    environmentId: ID!
+
+    """
+    Return only the agents that belong to you. By default every agent in the
+    environment is returned, including your teammates'.
+    """
+    mine: Boolean
+  ): [CloudAgent!]!
 
   """
   Get compliance agreements for a workspace including HIPAA BAA and GDPR DPA status.
@@ -3000,17 +4960,77 @@ type Query {
   """Get all deployments"""
   deployments(after: String, before: String, first: Int, input: DeploymentListInput!, last: Int): QueryDeploymentsConnection!
 
+  """
+  The cloud agent `ssh dev.new` lands you in, or null when the next connection will create one.
+  """
+  devNewLandingTarget: CloudAgent
+
+  """Fetch individual DNS query logs for an environment"""
+  dnsQueryLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit logs returned before the anchor"""
+    beforeLimit: Int
+
+    """Filter by deployment instance / sandbox ID (optional)"""
+    deploymentInstanceId: String
+    environmentId: String!
+
+    """
+    Filter expression (e.g., @rcode:NXDOMAIN @qtype:A @domain:example.com
+    @status:failed). Prefix a term with - to exclude it; repeat a key to match
+    any of its values
+    """
+    filter: String
+
+    """Filter by service ID (optional)"""
+    serviceId: String
+  ): [DnsQueryLog!]!
+
   """Domain with status"""
   domainStatus(id: String!, projectId: String!): DomainWithStatus! @deprecated(reason: "Use the `status` field within the `domain` query instead")
 
   """All domains for a service instance"""
   domains(environmentId: String!, projectId: String!, serviceId: String!): AllDomains!
 
+  """Preview HA static egress IPs that would be assigned without persisting"""
+  egressGatewayHAPreview(environmentId: String!, serviceId: String!): [EgressGateway!]!
+
+  """
+  Preview legacy static egress IP that would be assigned without persisting
+  """
+  egressGatewayLegacyPreview(environmentId: String!, serviceId: String!): [EgressGateway!]!
+
   """All egress gateways assigned to a service instance"""
   egressGateways(environmentId: String!, serviceId: String!): [EgressGateway!]!
 
   """Find a single environment"""
   environment(id: String!, projectId: String): Environment!
+
+  """
+  Returns the status or completed result of an asynchronous RailwayChangeSet apply.
+  """
+  environmentChangeSetApply(environmentId: String!, id: String!): ChangeSetApplyResult!
+
+  """
+  Whether any service in the environment is on legacy static egress (not HA). Used to surface the HA migration banner.
+  """
+  environmentHasLegacyStaticEgress(environmentId: String!): Boolean!
+
+  """
+  Settled history for an environment (system events + terminal operations), newest first. Cursor-paginated.
+  """
+  environmentHistory(after: String, environmentId: String!, filter: HistoryFilterInput, first: Int): ProjectHistoryConnection!
 
   """
   Fetch logs for a project environment. Build logs are excluded unless a snapshot ID is explicitly provided in the filter
@@ -3041,6 +5061,13 @@ type Query {
 
   """Get the patches for an environment"""
   environmentPatches(after: String, before: String, environmentId: String!, first: Int, last: Int): QueryEnvironmentPatchesConnection!
+
+  """
+  Pending project-mutating work for an environment. Unions registered
+  OperationSources (patches, standalone deploys) and returns parent rows only —
+  not a stored inbox.
+  """
+  environmentPendingWork(environmentId: String!): [ProjectOperation!]!
 
   """Get the latest staged commit for a single environment."""
   environmentStagedChanges(environmentId: String!): EnvironmentPatch!
@@ -3086,6 +5113,9 @@ type Query {
 
   """Get info for a GitHub pull request"""
   githubPRInfo(prNumber: Int!, serviceId: String!): GitHubPRInfo
+
+  """Get info for a GitHub pull request, including fetch errors"""
+  githubPRInfoResult(prNumber: Int!, serviceId: String!): GitHubPRInfoResult!
 
   """Checks if user has access to GitHub repository"""
   githubRepo(fullRepoName: String!): GitHubRepoWithoutInstallation!
@@ -3149,14 +5179,12 @@ type Query {
     """Limit the number of logs returned before the anchor"""
     beforeLimit: Int
     deploymentId: String!
-    endDate: String
 
     """Filter logs using a query syntax"""
     filter: String
 
     """Limit the number of logs returned (defaults 100, max 5000)"""
     limit: Int
-    startDate: String
   ): [HttpLog!]!
 
   """Get HTTP request metrics for a service"""
@@ -3260,8 +5288,57 @@ type Query {
     workspaceId: String
   ): [MetricsResult!]!
 
+  """
+  Cloud agents you own, across every project and environment you can reach.
+  Answers "where are my agents" in one request; `cloudAgents` needs one call per
+  environment. Machine fields (`status`, `domain`, `domains`) read the last
+  observed state in batched queries, so selecting them across many environments is fine.
+  """
+  myCloudAgents: [CloudAgent!]!
+
+  """
+  The point-in-time window a MySQL service's binlog archive can restore to,
+  resolved from the archive bucket: the oldest full backup (floor), the newest
+  shipped binlog (ceiling) and every full backup's timestamp. archiveConfigured
+  is false when the service carries no complete BINLOG_ARCHIVE_* contract.
+  """
+  mysqlPitrRestorableWindow(environmentId: String!, serviceId: String!): MysqlPitrRestorableWindow!
+
+  """Fetch individual network flow logs for an environment"""
+  networkFlowLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit logs returned before the anchor"""
+    beforeLimit: Int
+
+    """Filter by deployment instance / sandbox ID (optional)"""
+    deploymentInstanceId: String
+    environmentId: String!
+
+    """
+    Filter expression (e.g., @protocol:tcp @direction:egress @dropped:true)
+    """
+    filter: String
+
+    """Filter by service ID (optional)"""
+    serviceId: String
+  ): [NetworkFlowLog!]!
+
   """Gets notification deliveries for the authenticated user"""
   notificationDeliveries(after: String, before: String, filter: NotificationDeliveryFilterInput, first: Int, last: Int): QueryNotificationDeliveriesConnection!
+
+  """Gets a notification delivery by ID for the authenticated user"""
+  notificationDelivery(id: String!): NotificationDelivery
 
   """Get all notification rules for a workspace and project"""
   notificationRules(projectId: String, workspaceId: String!): [NotificationRule!]!
@@ -3271,6 +5348,20 @@ type Query {
 
   """Gets all passkeys for the authenticated user"""
   passkeys(after: String, before: String, first: Int, last: Int): QueryPasskeysConnection!
+
+  """
+  Live replication health for an HA database cluster (Postgres HA, MySQL HA).
+  Use it to gate the Enable/Disable PITR buttons so a rollout can't start while
+  a member is too far behind to rejoin. Returns null when the service isn't an HA root.
+  """
+  pitrHaClusterReplicationHealth(environmentId: String!, rootServiceId: String!): PitrHaClusterReplicationHealth
+
+  """
+  One-shot read of the current progress of a PITR enable/disable rollout on an
+  HA database cluster. Use it to rehydrate state on page load, then poll this
+  field for updates. Returns null when no rollout has run recently.
+  """
+  pitrHaWorkflowProgress(environmentId: String!, rootServiceId: String!): PitrHaWorkflowProgress
 
   """Get the current status of the platform"""
   platformStatus: PlatformStatus!
@@ -3314,6 +5405,12 @@ type Query {
   """
   projectCompliance(projectId: String!): ProjectComplianceInfo!
 
+  """
+  The authenticated user's favorited project ids in a workspace, in the order
+  the Favorites row should render them. Defaults to the order they were starred in.
+  """
+  projectFavorites(orderBy: ProjectsOrderBy, workspaceId: String!): [String!]!
+
   """Get a project invitation by code"""
   projectInvitation(code: String!): PublicProjectInvitation!
 
@@ -3329,6 +5426,22 @@ type Query {
   """Get resource access rules for project-specific actions"""
   projectResourceAccess(projectId: String!): ProjectResourceAccess!
 
+  """Get paginated usage grouped by project and service for a workspace."""
+  projectServiceUsage(
+    """Project ID cursor returned from the previous page."""
+    after: String
+    endDate: DateTime!
+
+    """Number of projects to include in this page. Max 50."""
+    first: Int
+
+    """Whether to include deleted projects in usage."""
+    includeDeleted: Boolean
+    measurements: [MetricMeasurement!]!
+    startDate: DateTime!
+    workspaceId: String!
+  ): ProjectServiceUsagePage!
+
   """Get a single project token by the value in the header"""
   projectToken: ProjectToken!
 
@@ -3339,10 +5452,44 @@ type Query {
   projectWorkspaceMembers(projectId: String!): ProjectWorkspaceMembersResponse!
 
   """Gets all projects for a user or workspace."""
-  projects(after: String, before: String, first: Int, includeDeleted: Boolean, last: Int, userId: String, workspaceId: String): QueryProjectsConnection!
+  projects(after: String, before: String, first: Int, includeDeleted: Boolean, last: Int, orderBy: ProjectsOrderBy, userId: String, workspaceId: String): QueryProjectsConnection!
+
+  """
+  Fetch multiple projects by id. Skips ids the caller cannot access (does not
+  throw on partial denial). Intended for batched dashboard hydration of a small
+  viewport-sized set of cards.
+  """
+  projectsByIds(ids: [String!]!): [Project!]!
 
   """Get public Railway stats."""
   publicStats: PublicStats!
+
+  """Get a Railway domain by ID"""
+  railwayDomain(id: String!): RailwayDomain!
+
+  """Get a Railway domain by its domain name within a workspace"""
+  railwayDomainByName(domain: String!, workspaceId: String!): RailwayDomain!
+
+  """List DNS records for a Railway domain"""
+  railwayDomainDnsRecords(domain: String!, workspaceId: String!): [RailwayDomainDnsRecord!]!
+
+  """
+  Whether email forwarding can be offered on this domain, or why it can't.
+  """
+  railwayDomainEmailForwardingEligibility(domain: String!, workspaceId: String!): RailwayDomainEmailForwardingEligibility!
+
+  """
+  Caps the forwarding UI surfaces before a rule is rejected server-side. Pass
+  workspaceId for that workspace's alias allowance; without it the highest
+  plan's is returned.
+  """
+  railwayDomainEmailForwardingLimits(workspaceId: String): RailwayDomainEmailForwardingLimits!
+
+  """List email forwarding rules for a Railway domain"""
+  railwayDomainEmailForwardingRules(domain: String!, workspaceId: String!): [RailwayDomainEmailForwardingRule!]!
+
+  """Get Railway domains for a workspace"""
+  railwayDomains(status: RailwayDomainStatus, workspaceId: String!): [RailwayDomain!]!
 
   """Gets the ReferralInfo for the authenticated user."""
   referralInfo(workspaceId: String!): ReferralInfo!
@@ -3353,6 +5500,41 @@ type Query {
   """Get resource access for the current user or workspace"""
   resourceAccess(explicitResourceOwner: ExplicitOwnerInput!): ResourceAccess!
 
+  """Get a sandbox by id."""
+  sandbox(environmentId: String!, id: String!): Sandbox
+
+  """List named sandbox checkpoints in an environment."""
+  sandboxCheckpoints(environmentId: String!): [SandboxCheckpoint!]!
+
+  """
+  Resumable sessions inside a sandbox — interactive shells and one-off exec
+  commands, live or recently exited. Null when the sandbox can't report them
+  (e.g. its vm-init predates session listing).
+  """
+  sandboxSessions(after: String, before: String, environmentId: String!, first: Int, id: String!, last: Int): QuerySandboxSessionsConnection
+
+  """
+  Get a template's build state by id (the recipe content hash). READY once its
+  checkpoint exists; BUILDING/FAILED reflect the build workflow.
+  """
+  sandboxTemplateBuild(environmentId: String!, id: ID!): SandboxTemplateBuild!
+
+  """
+  List sandboxes in an environment, newest first. Passing first/after paginates; omitting them returns the full list.
+  """
+  sandboxes(
+    """
+    true = live sandboxes only (excludes destroyed; FAILED and transitional
+    states are still included), false = destroyed only, omitted = all.
+    """
+    active: Boolean
+    after: String
+    before: String
+    environmentId: String!
+    first: Int
+    last: Int
+  ): QuerySandboxesConnection!
+
   """Get a service by ID"""
   service(id: String!): Service!
 
@@ -3361,6 +5543,11 @@ type Query {
 
   """Get a service instance belonging to a service and environment"""
   serviceInstance(environmentId: String!, serviceId: String!): ServiceInstance!
+
+  """
+  Returns the auto-deploy status for a service instance, including whether it can be enabled.
+  """
+  serviceInstanceAutoDeployStatus(environmentId: String!, projectId: String!, serviceId: String!): ServiceInstanceAutoDeployStatus!
 
   """Check if the upstream repo for a service has an update available"""
   serviceInstanceIsUpdatable(environmentId: String!, serviceId: String!): Boolean!
@@ -3378,8 +5565,33 @@ type Query {
   """Gets all sessions for authenticated user."""
   sessions(after: String, before: String, first: Int, last: Int): QuerySessionsConnection!
 
-  """Gets all SSH public keys for the authenticated user."""
-  sshPublicKeys(after: String, before: String, first: Int, last: Int): QuerySshPublicKeysConnection!
+  """Fetch a single signal by owner scope and name."""
+  signal(name: String!, owner: String): Signal
+
+  """Recent audit log entries for a signal."""
+  signalChanges(limit: Int = 50, name: String!, owner: String): [SignalChange!]!
+
+  """
+  Evaluate a signal against an evaluation context (pure resolution; does not mutate registry state).
+  """
+  signalEvaluate(context: JSON!, name: String!, owner: String): SignalEvaluation!
+
+  """List signals registered for an owner scope."""
+  signals(owner: String): [Signal!]!
+
+  """
+  Gets SSH public keys. If workspaceId is provided, returns the keys owned by
+  that workspace (requires workspace MEMBER access). Under a workspace-scoped
+  API token, workspaceId defaults to the token's workspace when omitted;
+  otherwise returns the authenticated user's personal keys.
+  """
+  sshPublicKeys(after: String, before: String, first: Int, last: Int, workspaceId: String): QuerySshPublicKeysConnection!
+
+  """
+  Details for an SSH signup confirm page: the SSH key fingerprint to verify
+  before binding it to the account, and the trial box it owns if any.
+  """
+  sshSignupInfo(code: String!): SSHSignupInfo!
 
   """All TCP proxies for a service instance"""
   tcpProxies(environmentId: String!, serviceId: String!): [TCPProxy!]!
@@ -3395,6 +5607,29 @@ type Query {
 
   """Get the metrics for a template."""
   templateMetrics(id: String!): TemplateMetrics!
+
+  """
+  Search published templates using the backend-ranked template search index.
+  """
+  templateSearch(
+    after: String
+    before: String
+
+    """If set, only templates in this category will be returned."""
+    category: String
+    first: Int
+    last: Int
+
+    """
+    Search term to filter templates. Empty query returns browse-style results.
+    """
+    query: String!
+
+    """
+    If set, only templates matching this verification state will be returned.
+    """
+    verified: Boolean
+  ): QueryTemplateSearchConnection!
 
   """Get the source template for a project."""
   templateSourceForProject(projectId: String!): Template
@@ -3415,6 +5650,53 @@ type Query {
 
   """Count all published templates."""
   templatesCount: Int!
+
+  """
+  The spans of one trace, oldest first. Only spans belonging to the environment are returned
+  """
+  trace(
+    environmentId: String!
+
+    """Spans returned (defaults 1000, max 2000)"""
+    maxSpans: Int
+
+    """W3C trace id, 32 hex characters"""
+    traceId: String!
+  ): [TraceSpan!]!
+
+  """
+  Traces of an environment with at least one span matching the filter, newest first
+  """
+  traces(
+    """Latest span start to consider (ISO); defaults to now"""
+    endDate: String
+    environmentId: String!
+
+    """
+    Filter expression over spans, e.g. @status:error @component:edge
+    @duration:>500 @http.route:/api/users. Built-in fields: trace, span, name,
+    serviceName, service, deployment, replica, component, kind, status, duration
+    (ms). Any other @key looks the key up in the span and resource attributes;
+    free text matches the span name. Prefix a term with - to exclude it.
+    """
+    filter: String
+
+    """Traces returned (defaults 100, max 500)"""
+    limit: Int
+
+    """Only traces with a span from this Railway service (optional)"""
+    serviceId: String
+
+    """
+    Oldest span start to consider (ISO). Clamped to the project's retention; defaults to one hour ago
+    """
+    startDate: String
+  ): [TraceSummary!]!
+
+  """
+  Span activity per service of an environment within retention; a service absent from the list has produced no spans at all
+  """
+  tracingStatus(environmentId: String!): [ServiceTracingStatus!]!
 
   """Get all trusted domains for a workspace"""
   trustedDomains(after: String, before: String, first: Int, last: Int, workspaceId: String!): QueryTrustedDomainsConnection!
@@ -3454,6 +5736,13 @@ type Query {
   userTemplates(after: String, before: String, first: Int, last: Int): QueryUserTemplatesConnection! @deprecated(reason: "Users don't have personal templates anymore, they belong to their team now")
 
   """
+  Validates an edge ruleset without writing it — returns the same diagnostics
+  updateServiceEdgeRules would reject with (empty list = valid). For live
+  feedback in rule editors.
+  """
+  validateServiceEdgeRules(input: ValidateServiceEdgeRulesInput!): [EdgeRuleDiagnostic!]!
+
+  """
   All variables by pluginId or serviceId. If neither are provided, all shared variables are returned.
   """
   variables(
@@ -3486,6 +5775,28 @@ type Query {
     volumeInstanceId: String!
   ): [VolumeInstanceBackupSchedule!]!
 
+  """
+  Estimated destination-volume scratch a PITR restore of this volume instance to
+  a target would need, and whether it fits the workspace plan's max volume size.
+  Read-only pre-check the restore dialog calls to warn before a restore that
+  would fill the disk mid-replay; returns null when no estimate can be formed
+  (non-pgBackRest source, incomplete archive creds, or a target before the
+  earliest backup).
+  """
+  volumeInstancePitrRestoreEstimate(
+    """
+    Multi-history picker's selected archive sub-prefix, matching the restore
+    mutation's argument. Pass null for the source's current history.
+    """
+    sourceRepoPath: String
+
+    """Point-in-time target the estimate is computed for"""
+    targetTimestamp: DateTime!
+
+    """The id of the source volume instance to restore from"""
+    volumeInstanceId: String!
+  ): PitrRestoreScratchEstimate
+
   """Gets the status of a workflow"""
   workflowStatus(workflowId: String!): WorkflowResult!
 
@@ -3501,8 +5812,26 @@ type Query {
   """Get the policies for a workspace"""
   workspacePolicy(workspaceId: String!): WorkspacePolicy
 
+  """List deploy sources that can be added to a workspace policy."""
+  workspacePolicySelectableDeploySources(sourceType: WorkspacePolicyDeploySourceType!, workspaceId: String!): [WorkspacePolicySelectableDeploySource!]!
+
   """Get all templates for a workspace."""
   workspaceTemplates(after: String, before: String, first: Int, last: Int, workspaceId: String!): QueryWorkspaceTemplatesConnection!
+
+  """
+  Workspace-wide SUM of the same UI usage rollup as `usage` grouped by project.
+  Use this for the usage-page header so it does not wait on per-project rows.
+  Deleted projects that still bill are included when `includeDeleted` is true.
+  """
+  workspaceUsageTotals(
+    endDate: DateTime
+
+    """Whether to include deleted projects in the usage."""
+    includeDeleted: Boolean
+    measurements: [MetricMeasurement!]!
+    startDate: DateTime
+    workspaceId: String
+  ): [AggregatedUsage!]!
 }
 
 type QueryApiTokensConnection {
@@ -3523,6 +5852,26 @@ type QueryAuditLogsConnection {
 type QueryAuditLogsConnectionEdge {
   cursor: String!
   node: AuditLog!
+}
+
+type QueryCloudAgentCheckpointsConnection {
+  edges: [QueryCloudAgentCheckpointsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryCloudAgentCheckpointsConnectionEdge {
+  cursor: String!
+  node: CloudAgentCheckpoint!
+}
+
+type QueryCloudAgentConsoleSessionsConnection {
+  edges: [QueryCloudAgentConsoleSessionsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryCloudAgentConsoleSessionsConnectionEdge {
+  cursor: String!
+  node: SandboxSession!
 }
 
 type QueryDeploymentEventsConnection {
@@ -3665,6 +6014,26 @@ type QueryProjectTokensConnectionEdge {
   node: ProjectToken!
 }
 
+type QuerySandboxesConnection {
+  edges: [QuerySandboxesConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QuerySandboxesConnectionEdge {
+  cursor: String!
+  node: Sandbox!
+}
+
+type QuerySandboxSessionsConnection {
+  edges: [QuerySandboxSessionsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QuerySandboxSessionsConnectionEdge {
+  cursor: String!
+  node: SandboxSession!
+}
+
 type QuerySessionsConnection {
   edges: [QuerySessionsConnectionEdge!]!
   pageInfo: PageInfo!
@@ -3703,6 +6072,16 @@ type QueryTemplatesConnection {
 type QueryTemplatesConnectionEdge {
   cursor: String!
   node: Template!
+}
+
+type QueryTemplateSearchConnection {
+  edges: [QueryTemplateSearchConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryTemplateSearchConnectionEdge {
+  cursor: String!
+  node: TemplateSearchResult!
 }
 
 type QueryTrustedDomainsConnection {
@@ -3747,6 +6126,166 @@ type QueryWorkspaceTemplatesConnectionEdge {
 
 scalar RailpackInfo
 
+type RailwayDomain {
+  autoRenewEnabled: Boolean!
+  connectedServiceInstances: [ConnectedServiceInstance!]!
+  createdAt: DateTime!
+  domain: String!
+  id: ID!
+
+  """
+  Authoritative nameservers currently delegated for this domain at the registrar.
+  """
+  nameservers: RailwayDomainNameservers!
+  nextBillingDate: DateTime
+  purchasePrice: Int!
+  registrationYears: Int!
+  renewalPrice: Int!
+  status: RailwayDomainStatus!
+  workspaceId: String!
+  workspaceName: String
+}
+
+type RailwayDomainDnsRecord {
+  answer: String!
+  domainName: String!
+  fqdn: String!
+  host: String!
+  id: Int!
+  priority: Int
+  ttl: Int!
+  type: RailwayDomainDnsRecordType!
+}
+
+input RailwayDomainDnsRecordCreateInput {
+  answer: String!
+  domain: String!
+  host: String!
+  priority: Int
+  ttl: Int
+  type: RailwayDomainDnsRecordType!
+  workspaceId: String!
+}
+
+input RailwayDomainDnsRecordDeleteInput {
+  domain: String!
+  recordId: Int!
+
+  """
+  Confirms that deleting a mail exchange may also remove every forwarding address and its sibling exchanges.
+  """
+  removeEmailForwarding: Boolean
+  workspaceId: String!
+}
+
+enum RailwayDomainDnsRecordType {
+  A
+  AAAA
+  ANAME
+  CNAME
+  MX
+  NS
+  SRV
+  TXT
+}
+
+input RailwayDomainDnsRecordUpdateInput {
+  answer: String!
+  domain: String!
+  host: String!
+  priority: Int
+  recordId: Int!
+  ttl: Int
+  type: RailwayDomainDnsRecordType!
+  workspaceId: String!
+}
+
+enum RailwayDomainEmailForwardingEligibility {
+  DELEGATED
+  ELIGIBLE
+  EXTERNAL_MAIL
+  UNKNOWN
+}
+
+type RailwayDomainEmailForwardingLimits {
+  maxAliases: Int!
+}
+
+input RailwayDomainEmailForwardingRemoveAllInput {
+  domain: String!
+  workspaceId: String!
+}
+
+type RailwayDomainEmailForwardingRule {
+  """Local part of the forwarded address, without the domain."""
+  alias: String!
+
+  """The external inbox mail for this alias is delivered to."""
+  destination: String!
+}
+
+input RailwayDomainEmailForwardingRuleCreateInput {
+  alias: String!
+  destination: String!
+  domain: String!
+  workspaceId: String!
+}
+
+input RailwayDomainEmailForwardingRuleDeleteInput {
+  alias: String!
+  domain: String!
+  workspaceId: String!
+}
+
+input RailwayDomainEmailForwardingRuleTestInput {
+  alias: String!
+  domain: String!
+  workspaceId: String!
+}
+
+input RailwayDomainEmailForwardingRuleUpdateInput {
+  alias: String!
+  destination: String!
+  domain: String!
+  workspaceId: String!
+}
+
+"""What removing forwarding took out of the zone."""
+type RailwayDomainEmailForwardingTeardown {
+  addressesRemoved: Int!
+  mailRecordsRemoved: Int!
+}
+
+type RailwayDomainNameservers {
+  """
+  True when the domain is delegated to Name.com's nameservers (Railway-managed DNS).
+  """
+  isDefault: Boolean!
+  nameservers: [String!]!
+}
+
+input RailwayDomainNameserversSetInput {
+  id: String!
+
+  """
+  Hostnames of the nameservers to delegate to (2-13). Pass an empty list to
+  reset to Name.com's account-level defaults for this domain.
+  """
+  nameservers: [String!]!
+}
+
+enum RailwayDomainStatus {
+  ACTIVE
+  EXPIRED
+  PURCHASING
+  REFUNDED
+}
+
+input RailwayDomainUpdateInput {
+  autoRenewEnabled: Boolean
+  id: String!
+}
+
 type RecoveryCodes {
   recoveryCodes: [String!]!
 }
@@ -3789,25 +6328,18 @@ type Region {
   """Region country"""
   country: String!
   deploymentConstraints: RegionDeploymentConstraints
+
+  """Region ID (airport code)"""
+  id: String
   location: String!
   name: String!
-
-  """Region is on Railway Metal"""
-  railwayMetal: Boolean
   region: String
   workspaceId: String
 }
 
 type RegionDeploymentConstraints {
-  """Admin only region"""
-  adminOnly: Boolean
-
   """Deprecation information for the region"""
   deprecationInfo: RegionDeprecationInfo
-  runtimeExclusivity: [String!]
-
-  """Staging only region"""
-  stagingOnly: Boolean
 }
 
 type RegionDeprecationInfo {
@@ -3857,6 +6389,33 @@ input ResetPluginInput {
   environmentId: String!
 }
 
+"""The repo config file as of the most recent deployment that read it."""
+type ResolvedFileConfig {
+  """Commit the config was read from."""
+  commitHash: String
+
+  """Path of the config file that was read, or null when the repo has none."""
+  configFile: String
+
+  """Deployment this config was read from."""
+  deploymentId: String!
+
+  """
+  Manifest parsed from the config file. Empty means the repo has no config file.
+  """
+  fileManifest: JSON!
+
+  """Manifest property path to its location within the config file."""
+  propertyFileMapping: JSON!
+  repo: String
+
+  """
+  When that deployment was created. Surface this when it is older than the
+  latest deployment, so a stale config is not presented as current.
+  """
+  resolvedAt: DateTime!
+}
+
 type ResourceAccess {
   deployment: AccessRule!
   project: AccessRule!
@@ -3872,6 +6431,241 @@ enum RestartPolicyType {
   ON_FAILURE
 }
 
+type Sandbox {
+  createdAt: DateTime!
+
+  """Railway-provided public HTTP domains whose routes have been published."""
+  domains: [SandboxDomain!]!
+  environmentId: String!
+  id: ID!
+
+  """
+  Minutes of inactivity before the sandbox is destroyed. 0 means it never idles
+  out; null means unknown, including for a destroyed sandbox.
+  """
+  idleTimeoutMinutes: Int
+  networkIsolation: SandboxNetworkIsolation!
+  region: String!
+  status: SandboxStatus!
+}
+
+"""
+A bootable snapshot of a sandbox's disk, scoped to an environment. Built from a
+template recipe or captured from a running sandbox.
+"""
+type SandboxCheckpoint {
+  createdAt: DateTime!
+  environmentId: String!
+  id: ID!
+
+  """
+  The checkpoint's identity within the environment (same as id): a recipe
+  content hash for a built template, or the user-given name for one captured
+  from a sandbox.
+  """
+  key: String!
+}
+
+input SandboxCreateInput {
+  environmentId: String!
+
+  """
+  Minutes of inactivity before the sandbox is destroyed. Any value <= 0 means
+  never idle out (plan-gated). Defaults to the plan's default idle timeout.
+  """
+  idleTimeoutMinutes: Int
+
+  """
+  Network access for the sandbox. Defaults to ISOLATED (no private network
+  access). Public domains require PRIVATE to be selected explicitly.
+  """
+  networkIsolation: SandboxNetworkIsolation
+
+  """
+  Railway-provided HTTP domains to publish, one per unique prefix and port.
+  Supports up to 10 and requires explicitly selecting PRIVATE networking. Domain
+  prefixes are generated when omitted.
+  """
+  publicDomains: [SandboxDomainInput!]
+
+  """
+  Region to place the sandbox in (e.g. us-west2, us-east4-eqdc4a). Defaults to the platform default region when omitted.
+  """
+  region: String
+
+  """
+  Creation-time CPU and memory, including for forks and checkpoint restores.
+  Each omitted or null field uses the workspace's sandbox default; explicit
+  values must not exceed its independent VM maximum.
+  """
+  resources: SandboxResourcesInput
+
+  """
+  Fork an existing running sandbox in this environment. Mutually exclusive with template.
+  """
+  sourceSandboxId: String
+  template: SandboxTemplateInput
+
+  """
+  Environment variables baked into the sandbox, available to every command.
+  Values may contain Railway variable references (e.g. ${{shared.FOO}},
+  ${{ServiceName.BAR}}), resolved at create time.
+  """
+  variables: EnvironmentVariables
+}
+
+"""One public domain on a sandbox."""
+type SandboxDomain {
+  """Resolved FQDN."""
+  domain: String!
+
+  """Target port on the sandbox this domain routes to."""
+  port: Int!
+
+  """Label prefix requested when the sandbox was created."""
+  prefix: String!
+}
+
+input SandboxDomainInput {
+  """Target port on the sandbox, from 1 through 65535."""
+  port: Int!
+
+  """
+  Optional DNS label prefix for the generated domain. When omitted, a prefix is
+  generated from the project name. Custom prefixes must be lowercase
+  alphanumeric with optional interior hyphens, up to 46 characters.
+  """
+  prefix: String
+}
+
+type SandboxExecResult {
+  exitCode: Int!
+  stderr: String!
+  stdout: String!
+  timedOut: Boolean!
+  truncated: Boolean!
+}
+
+"""Controls a sandbox's access to the environment's private network."""
+enum SandboxNetworkIsolation {
+  """
+  Peer-isolated with public NAT egress only; no access to the environment's private network. Default.
+  """
+  ISOLATED
+
+  """Joins the environment's private network."""
+  PRIVATE
+}
+
+input SandboxResourcesInput {
+  """
+  Positive vCPU for the new sandbox; fractional values are supported. Omitted or
+  null uses the workspace's sandbox default. Must not exceed its VM maximum.
+  """
+  cpu: Float
+
+  """
+  Memory in decimal GB (1 GB = 1,000,000,000 bytes), rounded to whole bytes.
+  Must be at least 1 byte and at most the workspace's VM maximum. Omitted or
+  null uses its sandbox default.
+  """
+  memoryGB: Float
+}
+
+"""
+A resumable session inside a sandbox: an interactive shell or a one-off exec command.
+"""
+type SandboxSession {
+  """Whether a client is currently connected."""
+  attached: Boolean!
+
+  """The command being run; empty for an interactive shell."""
+  command: String!
+  createdAt: DateTime
+
+  """
+  For an interactive shell, whether a foreground program currently holds the
+  terminal. Null otherwise, or when the runtime can't report it.
+  """
+  foregroundActive: Boolean
+  kind: SandboxSessionKind!
+
+  """Stable session name; reconnect/attach by this."""
+  name: String!
+  runState: SandboxSessionRunState!
+}
+
+"""Whether a session is an interactive shell or a one-off exec command."""
+enum SandboxSessionKind {
+  EXEC
+  SHELL
+}
+
+"""A session's process lifecycle."""
+type SandboxSessionRunState {
+  """Process exit code; only meaningful once running is false."""
+  exitCode: Int!
+
+  """When the process exited; null while running."""
+  exitedAt: DateTime
+
+  """Whether the process is still alive."""
+  running: Boolean!
+}
+
+enum SandboxStatus {
+  CREATING
+  DESTROYED
+  DESTROYING
+  FAILED
+  RUNNING
+}
+
+"""
+The state of a template build, derived from its workflow and the existence of
+its checkpoint. READY means the checkpoint exists and can be booted.
+"""
+type SandboxTemplateBuild {
+  environmentId: String!
+
+  """The template's resolved-content hash."""
+  id: ID!
+  status: SandboxTemplateBuildStatus!
+}
+
+enum SandboxTemplateBuildStatus {
+  BUILDING
+  FAILED
+  PENDING
+  READY
+}
+
+input SandboxTemplateInput {
+  """
+  Build a template by running these shell instructions on the base image. Mutually exclusive with name.
+  """
+  instructions: [String!]
+
+  """
+  Boot from a saved checkpoint with this name (one captured from a sandbox). Mutually exclusive with instructions.
+  """
+  name: String
+
+  """
+  Placement region for the build sandbox. The resulting checkpoint lives in this
+  region, and sandboxes created from the template boot there. Defaults to the
+  platform default; only the cold build consults it (a built template's own region wins).
+  """
+  region: String
+
+  """
+  Environment variables available to the template's build instructions. Values
+  may contain Railway variable references (e.g. ${{shared.FOO}},
+  ${{ServiceName.BAR}}), resolved at build time.
+  """
+  variables: EnvironmentVariables
+}
+
 """
 
 SerializedTemplateConfig is a custom scalar type that represents the serializedConfig for a template.
@@ -3881,10 +6675,12 @@ JSON Schema: https://backboard.railway.com/schema/template.schema.json
 scalar SerializedTemplateConfig
 
 type Service implements Node {
+  autoInstrumentationEnabled: Boolean! @deprecated(reason: "Set per service instance: read ServiceInstance.autoInstrumentationEnabled. Reports the production environment's instance.")
   createdAt: DateTime!
   deletedAt: DateTime
   deployments(after: String, before: String, first: Int, last: Int): ServiceDeploymentsConnection! @deprecated(reason: "Use environment.deployments for properly scoped access control")
   featureFlags: [ActiveServiceFeatureFlag!]!
+  groupId: String
 
   """
   Whether this service has hidden registry credentials from a template. When
@@ -3893,6 +6689,11 @@ type Service implements Node {
   hasHiddenRegistryCredentialsFromTemplate: Boolean!
   icon: String
   id: ID!
+
+  """
+  Whether this service has an active restriction that limits its capabilities.
+  """
+  isRestricted: Boolean!
   name: String!
   project: Project!
   projectId: String!
@@ -3901,6 +6702,7 @@ type Service implements Node {
   templateId: String
   templateServiceId: String
   templateThreadSlug: String
+  tracingEnabled: Boolean @deprecated(reason: "Tracing is set per service instance: read ServiceInstance.tracingEnabled. Reports the production environment's instance.")
   updatedAt: DateTime!
 }
 
@@ -3958,7 +6760,7 @@ type ServiceDeploymentsConnectionEdge {
 }
 
 type ServiceDomain implements Domain {
-  cdnMode: String
+  cdnMode: String @deprecated(reason: "Removed; always null.")
   createdAt: DateTime
   deletedAt: DateTime
   domain: String!
@@ -4008,15 +6810,41 @@ type ServiceInstance implements Node {
   All currently active (deployed and running) deployments for this service instance
   """
   activeDeployments: [Deployment!]!
+
+  """
+  Instrument the service's processes with eBPF (OBI) for supported runtimes, no
+  code changes. Only active while tracingEnabled is true.
+  """
+  autoInstrumentationEnabled: Boolean!
   buildCommand: String
   builder: Builder!
+
+  """
+  This service's own Railway Authentication setting. Null means no setting of
+  its own: it follows the environment's default (see clearanceEffective).
+  """
+  clearance: Boolean
+
+  """
+  Whether Railway Authentication protects this service's HTTP domains: its own setting, else its environment's default.
+  """
+  clearanceEffective: Boolean!
   createdAt: DateTime!
   cronSchedule: String
   deletedAt: DateTime
   dockerfilePath: String
   domains: AllDomains!
   drainingSeconds: Int
+  edgeConfig: EdgeConfig
   environmentId: String!
+
+  """
+  Whether any deployment was ever created for this service instance, including
+  deployments that have since been removed. Distinguishes a service that was
+  torn down (all deployments removed) from one that has never deployed —
+  latestDeployment and activeDeployments are null/empty for both.
+  """
+  hasEverDeployed: Boolean!
   healthcheckPath: String
   healthcheckTimeout: Int
   id: ID!
@@ -4030,9 +6858,20 @@ type ServiceInstance implements Node {
   numReplicas: Int
   overlapSeconds: Int
   preDeployCommand: JSON
+  preDeployTimeoutSeconds: Int
   railpackInfo: RailpackInfo
   railwayConfigFile: String
   region: String
+
+  """
+  Config read from the repo's config file, taken from the most recent deployment
+  that actually read it. Null when no deployment has resolved a config file yet.
+  An empty `fileManifest` is a real answer and means the repo has no config file
+  — do not read this off the latest deployment instead, since a deployment whose
+  snapshot never completed carries no file config at all and is not the same as
+  a repo without one.
+  """
+  resolvedFileConfig: ResolvedFileConfig
   restartPolicyMaxRetries: Int!
   restartPolicyType: RestartPolicyType!
   rootDirectory: String
@@ -4042,9 +6881,43 @@ type ServiceInstance implements Node {
   sleepApplication: Boolean
   source: ServiceSource
   startCommand: String
+
+  """
+  Trace requests to the service in this environment: the edge records a span per
+  client-facing request to its domains and the next deploy provides the
+  OpenTelemetry exporter variables.
+  """
+  tracingEnabled: Boolean!
   updatedAt: DateTime!
   upstreamUrl: String
   watchPatterns: [String!]!
+}
+
+type ServiceInstanceAutoDeployStatus {
+  canEnable: Boolean!
+  enabled: Boolean!
+  reason: String
+}
+
+input ServiceInstanceAutoDeployUpdateInput {
+  enabled: Boolean!
+  environmentId: String!
+  projectId: String!
+  serviceId: String!
+}
+
+type ServiceInstanceAutoDeployUpdateResult {
+  enabled: Boolean!
+}
+
+input ServiceInstanceClearanceUpdateInput {
+  """
+  On or off. Null (or omitted) removes the service's own setting so it follows the environment's default.
+  """
+  enabled: Boolean
+  environmentId: String!
+  projectId: String!
+  serviceId: String!
 }
 
 scalar ServiceInstanceLimit
@@ -4061,6 +6934,11 @@ input ServiceInstanceLimitsUpdateInput {
 }
 
 input ServiceInstanceUpdateInput {
+  """
+  Instrument the service's processes with eBPF (OBI) while its tracing is on.
+  Reaches running containers within about a minute, no redeploy needed.
+  """
+  autoInstrumentationEnabled: Boolean
   buildCommand: String
   builder: Builder
   cronSchedule: String
@@ -4074,6 +6952,7 @@ input ServiceInstanceUpdateInput {
   numReplicas: Int
   overlapSeconds: Int
   preDeployCommand: [String!]
+  preDeployTimeoutSeconds: Int
   railwayConfigFile: String
   region: String
   registryCredentials: RegistryCredentialsInput
@@ -4083,6 +6962,12 @@ input ServiceInstanceUpdateInput {
   sleepApplication: Boolean
   source: ServiceSourceInput
   startCommand: String
+
+  """
+  Trace requests to the service in this environment. Takes effect at the edge
+  within seconds and in the app on the next deploy.
+  """
+  tracingEnabled: Boolean
   watchPatterns: [String!]
 }
 
@@ -4116,6 +7001,23 @@ input ServiceSourceInput {
   repo: String
 }
 
+"""
+Whether a service's requests are producing spans, per exporting hop. The edge
+tracing a request says nothing about the app behind it.
+"""
+type ServiceTracingStatus {
+  """
+  When the edge last exported a span for a request to the service; null when it never has within retention
+  """
+  lastEdgeSpanAt: DateTime
+
+  """
+  When the service's own app last exported a span; null when it never has within retention
+  """
+  lastServiceSpanAt: DateTime
+  serviceId: String!
+}
+
 input ServiceUpdateInput {
   icon: String
   name: String
@@ -4137,12 +7039,141 @@ enum SessionType {
   FORUMS
 }
 
+input SetServiceUnderAttackModeInput {
+  durationSeconds: Int
+  enabled: Boolean!
+  environmentId: String!
+  serviceId: String!
+}
+
+input SetupAgentEventTrackInput {
+  agentSessionId: String
+  arch: String
+  caller: String
+  cliVersion: String
+  configuredClients: [String!]
+  errorMessage: String
+  installRequestId: String
+  isCi: Boolean
+  os: String
+  phase: String!
+  sessionId: String
+  success: Boolean
+}
+
 input SharedVariableConfigureInput {
   disabledServiceIds: [String!]!
   enabledServiceIds: [String!]!
   environmentId: String!
   name: String!
   projectId: String!
+}
+
+input ShellTokenInput {
+  environmentId: String!
+  instanceId: String!
+  kind: String
+  port: Int
+  scope: String!
+  serviceId: String
+}
+
+type Signal implements Node {
+  createdAt: DateTime!
+  createdBy: String
+  default: JSON!
+  id: ID!
+  name: String!
+  owner: String!
+  rules: JSON!
+  type: SignalType!
+  updatedAt: DateTime!
+  version: BigInt!
+  writableBy: [String!]!
+}
+
+type SignalChange implements Node {
+  authorId: String
+  createdAt: DateTime!
+  id: ID!
+  kind: SignalChangeKind!
+  payload: JSON!
+  prevState: JSON!
+  seq: BigInt!
+  signalId: String!
+}
+
+enum SignalChangeKind {
+  default_changed
+  replaced
+  rollback
+  set
+  unset
+}
+
+input SignalCreateInput {
+  default: JSON!
+  name: String!
+  owner: String!
+  type: SignalType!
+  writableBy: [String!]
+}
+
+input SignalDefaultSetInput {
+  default: JSON!
+  name: String!
+  owner: String!
+}
+
+input SignalDeleteInput {
+  name: String!
+  owner: String!
+}
+
+type SignalEvaluation {
+  reason: SignalEvaluationReason!
+  trace: JSON!
+  value: JSON!
+}
+
+enum SignalEvaluationReason {
+  DEFAULT
+  SPLIT
+  TARGETING_MATCH
+}
+
+input SignalReplaceInput {
+  default: JSON!
+  name: String!
+  owner: String!
+  type: SignalType!
+}
+
+input SignalRollbackInput {
+  name: String!
+  owner: String!
+  seq: BigInt!
+}
+
+input SignalRuleSetInput {
+  expression: JSON!
+  name: String!
+  owner: String!
+  ruleId: String!
+  value: JSON!
+}
+
+input SignalRuleUnsetInput {
+  name: String!
+  owner: String!
+  ruleId: String!
+}
+
+enum SignalType {
+  bool
+  json
+  number
+  string
 }
 
 type SimilarTemplate {
@@ -4181,11 +7212,43 @@ type SshPublicKey implements Node {
   name: String!
   publicKey: String!
   updatedAt: DateTime!
+  userId: String
+  workspaceId: String
 }
 
 input SshPublicKeyCreateInput {
   name: String!
   publicKey: String!
+  workspaceId: String
+}
+
+type SSHSignupClaimableWorkspace {
+  id: String!
+  name: String!
+}
+
+type SSHSignupInfo {
+  claimableWorkspaces: [SSHSignupClaimableWorkspace!]!
+  fingerprint: String!
+  trial: SSHSignupTrial
+}
+
+"""
+The anonymous trial box the offered SSH key currently owns; approving the signup claims it.
+"""
+type SSHSignupTrial {
+  buildExpiresAt: DateTime
+  cloudAgentId: String
+  projectId: String!
+  projectName: String!
+}
+
+type StaleWhileRevalidateConfig {
+  enabled: Boolean!
+}
+
+input StaleWhileRevalidateInput {
+  enabled: Boolean!
 }
 
 type Subscription {
@@ -4219,6 +7282,38 @@ type Subscription {
     """Limit the number of logs returned (defaults 100, max 5000)"""
     limit: Int
   ): [Log!]!
+
+  """Stream individual DNS query logs for an environment"""
+  dnsQueryLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit logs returned before the anchor"""
+    beforeLimit: Int
+
+    """Filter by deployment instance / sandbox ID (optional)"""
+    deploymentInstanceId: String
+    environmentId: String!
+
+    """
+    Filter expression (e.g., @rcode:NXDOMAIN @qtype:A @domain:example.com
+    @status:failed). Prefix a term with - to exclude it; repeat a key to match
+    any of its values
+    """
+    filter: String
+
+    """Filter by service ID (optional)"""
+    serviceId: String
+  ): [DnsQueryLog!]!
 
   """Stream logs for a project environment"""
   environmentLogs(
@@ -4266,6 +7361,36 @@ type Subscription {
     """Filter logs using a query syntax"""
     filter: String
   ): [HttpLog!]!
+
+  """Stream network flow logs for an environment"""
+  networkFlowLogs(
+    """Latest date to look for logs after the anchor"""
+    afterDate: String
+
+    """Limit logs returned after the anchor"""
+    afterLimit: Int
+
+    """Target date time to look for logs"""
+    anchorDate: String
+
+    """Oldest date to look for logs before the anchor"""
+    beforeDate: String
+
+    """Limit logs returned before the anchor"""
+    beforeLimit: Int
+
+    """Filter by deployment instance / sandbox ID (optional)"""
+    deploymentInstanceId: String
+    environmentId: String!
+
+    """
+    Filter expression (e.g., @protocol:tcp @direction:egress @dropped:true)
+    """
+    filter: String
+
+    """Filter by service ID (optional)"""
+    serviceId: String
+  ): [NetworkFlowLog!]!
 
   """
   Subscribe to notification delivery updates (created and resolved) for the authenticated user
@@ -4336,11 +7461,6 @@ Templates with aggregateHealth >= 80 qualify for support bonus (additional 10% k
 """
 scalar SupportHealthMetrics
 
-enum SupportTierOverride {
-  BUSINESS_CLASS
-  BUSINESS_CLASS_TRIAL
-}
-
 type TCPProxy {
   applicationPort: Int!
   createdAt: DateTime
@@ -4382,7 +7502,6 @@ type Team implements Node {
   preferredRegion: String @deprecated(reason: "Use workspace object instead")
   projects(after: String, before: String, first: Int, last: Int): TeamProjectsConnection! @deprecated(reason: "Use workspace object instead")
   slackChannelId: String @deprecated(reason: "Use workspace object instead")
-  supportTierOverride: SupportTierOverride @deprecated(reason: "Use workspace object instead")
   teamPermissions: [TeamPermission!]! @deprecated(reason: "Use workspace object instead")
   updatedAt: DateTime! @deprecated(reason: "Use workspace object instead")
   workspace: Workspace! @deprecated(reason: "Use workspace object instead")
@@ -4443,9 +7562,19 @@ type Template implements Node {
   isV2Template: Boolean!
   isVerified: Boolean!
   languages: [String!]
+  maintainer: MaintainerWorkspace
   metadata: TemplateMetadata! @deprecated(reason: "Deprecated in favor of listing the fields individually.")
   name: String!
   projects: Int!
+
+  """
+  The active restriction stopping this workspace publishing templates, so a
+  restricted author can be sent to the page that explains it and takes the
+  appeal. Null when publishing is not restricted, and for anyone but the
+  template's owner: the `template` query is public, and whether a workspace is
+  under an abuse restriction is not.
+  """
+  publishingRestrictionId: String
   readme: String
   recentProjects: Int!
   serializedConfig: SerializedTemplateConfig
@@ -4456,6 +7585,7 @@ type Template implements Node {
   tags: [String!]
   teamId: String @deprecated(reason: "Use workspaceId")
   totalPayout: Float!
+  updatedAt: DateTime!
   workspaceId: String
 }
 
@@ -4486,12 +7616,17 @@ input TemplateDeployInput {
 }
 
 type TemplateDeployPayload {
+  operationId: String
   projectId: String!
   workflowId: String
 }
 
 input TemplateDeployService {
   commit: String
+
+  """
+  Generate a service domain on the service's default port. Merged with serviceDomainPorts.
+  """
   hasDomain: Boolean
   healthcheckPath: String
   id: String!
@@ -4500,10 +7635,16 @@ input TemplateDeployService {
   owner: String
   preDeployCommand: [String!]
   rootDirectory: String
+
+  """Generate a service domain per target port, in addition to hasDomain."""
+  serviceDomainPorts: [Int!]
   serviceIcon: String
   serviceName: String!
   startCommand: String
+
+  """Merged with tcpProxyApplicationPorts."""
   tcpProxyApplicationPort: Int
+  tcpProxyApplicationPorts: [Int!]
   template: String!
   variables: EnvironmentVariables
   volumes: [TemplateVolume!]
@@ -4511,8 +7652,20 @@ input TemplateDeployService {
 
 input TemplateDeployV2Input {
   environmentId: String
+
+  """
+  Use an existing service as the cluster root instead of creating a new one. A
+  live cluster edge is resolved to the root it fronts. Used for HA cluster
+  conversion where an existing postgres becomes the primary.
+  """
+  existingRootServiceId: String
   projectId: String
   serializedConfig: SerializedTemplateConfig!
+
+  """
+  If true, create resources and patch but don't deploy. Returns patchId for later commit.
+  """
+  stageOnly: Boolean
   templateId: String!
   workspaceId: String
 }
@@ -4548,6 +7701,38 @@ input TemplatePublishInput {
   image: String
   readme: String!
   workspaceId: String
+}
+
+input TemplateRevertInput {
+  """The environment ID containing the cluster"""
+  environmentId: String!
+
+  """The group ID to delete when reverting"""
+  groupId: String
+
+  """The project ID containing the cluster"""
+  projectId: String!
+
+  """The root service ID of the HA cluster to revert"""
+  rootServiceId: String!
+
+  """If true, stage changes instead of deploying. Returns patchId."""
+  stageOnly: Boolean
+
+  """The template code to revert (e.g., 'ha-postgres')"""
+  templateCode: String!
+}
+
+type TemplateSearchResult {
+  code: String!
+  creatorName: String
+  deploymentCount: Int!
+  description: String
+  healthScore: Float
+  id: String!
+  image: String
+  isVerified: Boolean!
+  name: String!
 }
 
 type TemplateService implements Node {
@@ -4587,6 +7772,108 @@ enum TemplateStatus {
 }
 
 scalar TemplateVolume
+
+"""One span of a trace"""
+type TraceSpan {
+  """Which hop exported the span: edge, proxy or service"""
+  component: String!
+  deploymentId: String
+  deploymentInstanceId: String
+  durationMs: Float!
+  events: [TraceSpanEvent!]!
+
+  """INTERNAL, SERVER, CLIENT, PRODUCER, CONSUMER or UNSPECIFIED"""
+  kind: String!
+  links: [TraceSpanLink!]!
+  name: String!
+
+  """Absent on a root span"""
+  parentSpanId: String
+
+  """
+  Resource attributes as exported, without the railway.* keys Railway promotes into typed fields
+  """
+  resourceAttributes: JSON!
+
+  """Railway service the span belongs to, when known"""
+  serviceId: String
+
+  """The exporter's service.name resource attribute"""
+  serviceName: String!
+  spanAttributes: JSON!
+
+  """16 lower-case hex characters"""
+  spanId: String!
+
+  """ISO timestamp"""
+  startedAt: String!
+
+  """UNSET, OK or ERROR"""
+  statusCode: String!
+  statusMessage: String!
+  traceId: String!
+}
+
+"""A timestamped event on a span"""
+type TraceSpanEvent {
+  attributes: JSON!
+  name: String!
+  timestamp: String!
+}
+
+"""A link from a span to a span in another trace"""
+type TraceSpanLink {
+  spanId: String!
+  traceId: String!
+}
+
+"""
+One trace of an environment: the request as a whole, summarised from its spans
+"""
+type TraceSummary {
+  """From the earliest span start to the latest span end"""
+  durationMs: Float!
+
+  """Spans with an error status"""
+  errorCount: Int!
+
+  """Whether the edge exported any span of the trace"""
+  hasEdge: Boolean!
+
+  """
+  Which hop exported the root span: edge (hikari), proxy (tcp-proxy) or service
+  """
+  rootComponent: String!
+
+  """The root span's server.address, when it set one"""
+  rootServerAddress: String
+
+  """Railway service the root span belongs to"""
+  rootServiceId: String!
+
+  """The root span's service.name"""
+  rootServiceName: String!
+
+  """
+  Name of the root span, or of the earliest span when the root is missing
+  """
+  rootSpanName: String!
+
+  """The root span's url.path, when it set one"""
+  rootUrlPath: String
+
+  """
+  service.name of the earliest span a service exported; null when the request never reached one
+  """
+  serviceName: String
+  spanCount: Int!
+
+  """Start of the earliest span (ISO timestamp)"""
+  startedAt: String!
+
+  """W3C trace id, 32 lower-case hex characters"""
+  traceId: String!
+}
 
 type TrustedDomain {
   domainName: String!
@@ -4647,6 +7934,18 @@ input UpdateNotificationRuleInput {
   severities: [NotificationSeverity!]
 }
 
+input UpdateServiceEdgeConfigInput {
+  config: EdgeConfigInput!
+  environmentId: String!
+  serviceId: String!
+}
+
+input UpdateServiceEdgeRulesInput {
+  edgeRules: JSON
+  environmentId: String!
+  serviceId: String!
+}
+
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
@@ -4674,7 +7973,7 @@ type User implements Node {
   agreedFairUse: Boolean!
   apiTokenRateLimit: ApiTokenRateLimit
   avatar: String
-  banReason: String
+  banReason: String @deprecated(reason: "Resolve via the user's workspaces and check for an active BAN restriction. This field will be removed after the WorkspaceRestriction migration completes.")
   createdAt: DateTime!
   email: String!
   featureFlags: [ActiveFeatureFlag!]!
@@ -4730,16 +8029,13 @@ type UserProfile {
 type UserProfileResponse {
   avatar: String
   createdAt: DateTime!
-  customerId: String
   id: String!
-  isTrialing: Boolean
   name: String
   profile: UserProfile!
 
   """Gets all public projects for a user."""
   publicProjects(after: String, before: String, first: Int, last: Int): UserProfileResponsePublicProjectsConnection!
   publishedTemplates: [SimilarTemplate!]! @deprecated(reason: "There are no personal templates anymore, they all belong to a workspace")
-  state: String
   totalDeploys: Int!
   username: String
 }
@@ -4778,6 +8074,12 @@ type UserProviderAuthsConnection {
 type UserProviderAuthsConnectionEdge {
   cursor: String!
   node: ProviderAuth!
+}
+
+input ValidateServiceEdgeRulesInput {
+  edgeRules: JSON!
+  environmentId: String!
+  serviceId: String!
 }
 
 type Variable implements Node {
@@ -4883,10 +8185,12 @@ input VolumeCreateInput {
 type VolumeInstance implements Node {
   createdAt: DateTime!
   currentSizeMB: Float!
+  deletedAt: DateTime
   environment: Environment!
   environmentId: String!
   externalId: String
   id: ID!
+  isPendingDeletion: Boolean!
   mountPath: String!
   region: String
   service: Service!
@@ -5012,6 +8316,11 @@ type VolumeVolumeInstancesConnectionEdge {
   node: VolumeInstance!
 }
 
+input WebhookHeaderInput {
+  name: String!
+  value: String!
+}
+
 enum WithdrawalPlatformTypes {
   BMAC
   GITHUB
@@ -5020,6 +8329,16 @@ enum WithdrawalPlatformTypes {
 }
 
 type WorkflowId {
+  """
+  Why MySQL archive continuity could not be verified. The restore remains
+  allowed and its image performs the authoritative replay check.
+  """
+  archiveContinuityUnverifiedReason: String
+
+  """
+  For MySQL PITR restores, whether archive continuity was verified before the workflow started.
+  """
+  archiveContinuityVerified: Boolean
   workflowId: String
 }
 
@@ -5036,12 +8355,13 @@ enum WorkflowStatus {
 }
 
 type Workspace implements Node {
+  accessGroups(after: String, before: String, first: Int, last: Int): WorkspaceAccessGroupsConnection!
   adoptionHistory: [AdoptionInfo!]!
   adoptionLevel: Float!
-  allowDeprecatedRegions: Boolean
+  allowDeprecatedRegions: Boolean @deprecated(reason: "Deprecated regions are no longer supported.")
   apiTokenRateLimit: ApiTokenRateLimit
   avatar: String
-  banReason: String
+  banReason: String @deprecated(reason: "Use `workspace.restriction` and check for an active BAN restriction. This field will be removed after the WorkspaceRestriction migration completes.")
   createdAt: DateTime!
   customer: Customer!
   discordRole: String
@@ -5054,6 +8374,12 @@ type Workspace implements Node {
 
   """Whether this workspace has access to guardrails policies."""
   hasGuardrailsAccess: Boolean!
+
+  """
+  Whether this workspace has a signed HIPAA Business Associate Agreement, from
+  either the legacy hasBAA flag or the HIPAA_BAA spend commitment feature.
+  """
+  hasHipaaBAA: Boolean!
   hasSAML: Boolean!
   id: ID!
   identityProviders(after: String, before: String, first: Int, last: Int): WorkspaceIdentityProvidersConnection!
@@ -5062,6 +8388,12 @@ type Workspace implements Node {
   partnerProfile: PartnerProfile
   plan: Plan!
   preferredRegion: String
+
+  """
+  Total number of projects in this workspace. Used by the dashboard to show an
+  exact count without paginating through every project.
+  """
+  projectCount(includeDeleted: Boolean): Int!
   projects(after: String, before: String, first: Int, last: Int): WorkspaceProjectsConnection!
 
   """
@@ -5071,10 +8403,10 @@ type Workspace implements Node {
   """
   redactedDueTo2FAPending: Boolean!
   referredUsers: [ReferralUser!]!
+  restrictProjectVisibilityToGroups: Boolean!
   slackChannelId: String
   subscriptionModel: SubscriptionModel! @deprecated(reason: "Use plan field instead")
   subscriptionPlanLimit: SubscriptionPlanLimit
-  supportTierOverride: SupportTierOverride
   team: Team @deprecated(reason: "Teams are being removed from the system, don't use it")
   updatedAt: DateTime!
 
@@ -5083,6 +8415,16 @@ type Workspace implements Node {
   enabled. Returns an empty array if all users have 2FA enabled.
   """
   usersWithout2FA: [String!]!
+}
+
+type WorkspaceAccessGroupsConnection {
+  edges: [WorkspaceAccessGroupsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type WorkspaceAccessGroupsConnectionEdge {
+  cursor: String!
+  node: AccessGroup!
 }
 
 type WorkspaceIdentityProvider implements Node {
@@ -5145,9 +8487,35 @@ input WorkspacePermissionChangeInput {
 }
 
 type WorkspacePolicy implements Node {
+  deploySourceAllowlist(after: String, before: String, first: Int, last: Int): WorkspacePolicyDeploySourceAllowlistConnection!
   id: ID!
+  restrictDeploysToAllowedSources: Boolean!
   restrictPublicTcpProxies: Boolean!
   restrictRailwayDomainGeneration: Boolean!
+}
+
+type WorkspacePolicyDeploySourceAllowlist implements Node {
+  addedBy: User
+  createdAt: DateTime!
+  id: ID!
+  sourceIcon: String
+  sourceId: String!
+  sourceName: String!
+  sourceType: WorkspacePolicyDeploySourceType!
+}
+
+type WorkspacePolicyDeploySourceAllowlistConnection {
+  edges: [WorkspacePolicyDeploySourceAllowlistConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type WorkspacePolicyDeploySourceAllowlistConnectionEdge {
+  cursor: String!
+  node: WorkspacePolicyDeploySourceAllowlist!
+}
+
+enum WorkspacePolicyDeploySourceType {
+  GITHUB_ORG
 }
 
 input WorkspacePolicyItemUpdateInput {
@@ -5156,8 +8524,16 @@ input WorkspacePolicyItemUpdateInput {
 }
 
 enum WorkspacePolicyName {
+  RESTRICT_DEPLOYS_TO_ALLOWED_SOURCES
   RESTRICT_PUBLIC_TCP_PROXIES
   RESTRICT_RAILWAY_DOMAIN_GENERATION
+}
+
+type WorkspacePolicySelectableDeploySource {
+  sourceIcon: String
+  sourceId: String!
+  sourceName: String!
+  sourceType: WorkspacePolicyDeploySourceType!
 }
 
 type WorkspaceProjectsConnection {
@@ -5174,6 +8550,11 @@ input WorkspaceTrustedDomainCreateInput {
   domainName: String!
   role: String!
   workspaceId: String!
+}
+
+input WorkspaceTrustedDomainUpdateInput {
+  id: String!
+  role: String!
 }
 
 input WorkspaceUpdateInput {
