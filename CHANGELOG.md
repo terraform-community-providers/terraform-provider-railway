@@ -1,3 +1,8 @@
+## 0.6.3
+
+### Enhancements
+* Add support for `target_port` in `railway_service_domain` resource
+
 ## 0.6.2
 
 ### Enhancements

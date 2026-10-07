@@ -29,6 +29,10 @@ resource "railway_service_domain" "api" {
 - `service_id` (String) Identifier of the service the service domain belongs to.
 - `subdomain` (String) Subdomain of the service domain.
 
+### Optional
+
+- `target_port` (Number) Target port of the service for the service domain.
+
 ### Read-Only
 
 - `domain` (String) Full domain of the service domain.

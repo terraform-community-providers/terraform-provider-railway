@@ -18,6 +18,7 @@ func TestAccServiceDomainResourceDefault(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service_domain.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "subdomain", "terraform-tester"),
+					resource.TestCheckNoResourceAttr("railway_service_domain.test", "target_port"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "service_id", "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
@@ -38,6 +39,73 @@ func TestAccServiceDomainResourceDefault(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service_domain.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "subdomain", "terraform-tester"),
+					resource.TestCheckNoResourceAttr("railway_service_domain.test", "target_port"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "service_id", "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "domain", "terraform-tester.up.railway.app"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "suffix", "up.railway.app"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: testAccServiceDomainResourceConfigNonDefault("terraform-tester-2"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service_domain.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "subdomain", "terraform-tester-2"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "target_port", "3000"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "service_id", "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "domain", "terraform-tester-2.up.railway.app"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "suffix", "up.railway.app"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service_domain.test",
+				ImportState:       true,
+				ImportStateId:     "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703:staging:terraform-tester-2.up.railway.app",
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccServiceDomainResourceNonDefault(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: testAccServiceDomainResourceConfigNonDefault("terraform-tester"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service_domain.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "subdomain", "terraform-tester"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "target_port", "3000"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "service_id", "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "domain", "terraform-tester.up.railway.app"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "suffix", "up.railway.app"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service_domain.test",
+				ImportState:       true,
+				ImportStateId:     "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703:staging:terraform-tester.up.railway.app",
+				ImportStateVerify: true,
+			},
+			// Update with same values
+			{
+				Config: testAccServiceDomainResourceConfigNonDefault("terraform-tester"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service_domain.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "subdomain", "terraform-tester"),
+					resource.TestCheckResourceAttr("railway_service_domain.test", "target_port", "3000"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "service_id", "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
@@ -51,6 +119,7 @@ func TestAccServiceDomainResourceDefault(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service_domain.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "subdomain", "terraform-tester-2"),
+					resource.TestCheckNoResourceAttr("railway_service_domain.test", "target_port"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "service_id", "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"),
 					resource.TestCheckResourceAttr("railway_service_domain.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
@@ -76,6 +145,18 @@ resource "railway_service_domain" "test" {
   subdomain = "%s"
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
   service_id = "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"
+}
+`, name)
+}
+
+func testAccServiceDomainResourceConfigNonDefault(name string) string {
+	return fmt.Sprintf(`
+resource "railway_service_domain" "test" {
+  subdomain = "%s"
+  environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
+  service_id = "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"
+
+  target_port = 3000
 }
 `, name)
 }

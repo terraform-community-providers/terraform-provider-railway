@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Khan/genqlient/graphql"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -31,6 +32,7 @@ type ServiceDomainResource struct {
 type ServiceDomainResourceModel struct {
 	Id            types.String `tfsdk:"id"`
 	Subdomain     types.String `tfsdk:"subdomain"`
+	TargetPort    types.Int64  `tfsdk:"target_port"`
 	EnvironmentId types.String `tfsdk:"environment_id"`
 	ServiceId     types.String `tfsdk:"service_id"`
 	ProjectId     types.String `tfsdk:"project_id"`
@@ -55,6 +57,14 @@ func (r *ServiceDomainResource) Schema(ctx context.Context, req resource.SchemaR
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
+				},
+			},
+			"target_port": schema.Int64Attribute{
+				MarkdownDescription: "Target port of the service for the service domain.",
+				Optional:            true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+					int64validator.AtMost(65535),
 				},
 			},
 			"environment_id": schema.StringAttribute{
@@ -146,6 +156,11 @@ func (r *ServiceDomainResource) Create(ctx context.Context, req resource.CreateR
 		EnvironmentId:   data.EnvironmentId.ValueString(),
 	}
 
+	if !data.TargetPort.IsUnknown() {
+		value := int(data.TargetPort.ValueInt64())
+		updateInput.TargetPort = &value
+	}
+
 	updateResponse, err := updateServiceDomain(ctx, *r.client, updateInput)
 
 	if err != nil {
@@ -219,6 +234,20 @@ func (r *ServiceDomainResource) Update(ctx context.Context, req resource.UpdateR
 		Domain:          domainName,
 		ServiceId:       data.ServiceId.ValueString(),
 		EnvironmentId:   data.EnvironmentId.ValueString(),
+	}
+
+	if data.TargetPort.ValueInt64() != state.TargetPort.ValueInt64() {
+		if data.TargetPort.IsNull() || data.TargetPort.IsUnknown() {
+			// TODO: Railway doesn't seem to support removing the target port when set to null
+			// like how it does for custom domain
+			//
+			// updateInput.TargetPort = nil
+			zero := 0
+			updateInput.TargetPort = &zero
+		} else {
+			value := int(data.TargetPort.ValueInt64())
+			updateInput.TargetPort = &value
+		}
 	}
 
 	response, err := updateServiceDomain(ctx, *r.client, updateInput)
@@ -325,6 +354,12 @@ func getAndBuildServiceDomain(ctx context.Context, client graphql.Client, projec
 	data.ServiceId = types.StringValue(serviceDomain.ServiceId)
 	data.Suffix = types.StringValue(serviceDomain.Suffix)
 	data.Domain = types.StringValue(serviceDomain.Domain)
+
+	if serviceDomain.TargetPort == 0 {
+		data.TargetPort = types.Int64Null()
+	} else {
+		data.TargetPort = types.Int64Value(int64(serviceDomain.TargetPort))
+	}
 
 	data.Subdomain = types.StringValue(serviceDomain.Domain[:len(serviceDomain.Domain)-len(serviceDomain.Suffix)-1])
 	data.ProjectId = types.StringValue(projectId)

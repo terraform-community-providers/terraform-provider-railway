@@ -442,6 +442,7 @@ func (v *ServiceCreateInput) GetVariables() map[string]interface{} { return v.Va
 type ServiceDomain struct {
 	Id            string `json:"id"`
 	Domain        string `json:"domain"`
+	TargetPort    int    `json:"targetPort"`
 	Suffix        string `json:"suffix"`
 	EnvironmentId string `json:"environmentId"`
 	ServiceId     string `json:"serviceId"`
@@ -452,6 +453,9 @@ func (v *ServiceDomain) GetId() string { return v.Id }
 
 // GetDomain returns ServiceDomain.Domain, and is useful for accessing the field via an interface.
 func (v *ServiceDomain) GetDomain() string { return v.Domain }
+
+// GetTargetPort returns ServiceDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *ServiceDomain) GetTargetPort() int { return v.TargetPort }
 
 // GetSuffix returns ServiceDomain.Suffix, and is useful for accessing the field via an interface.
 func (v *ServiceDomain) GetSuffix() string { return v.Suffix }
@@ -482,7 +486,7 @@ type ServiceDomainUpdateInput struct {
 	EnvironmentId   string `json:"environmentId"`
 	ServiceDomainId string `json:"serviceDomainId"`
 	ServiceId       string `json:"serviceId"`
-	TargetPort      int    `json:"targetPort"`
+	TargetPort      *int   `json:"targetPort"`
 }
 
 // GetDomain returns ServiceDomainUpdateInput.Domain, and is useful for accessing the field via an interface.
@@ -498,7 +502,7 @@ func (v *ServiceDomainUpdateInput) GetServiceDomainId() string { return v.Servic
 func (v *ServiceDomainUpdateInput) GetServiceId() string { return v.ServiceId }
 
 // GetTargetPort returns ServiceDomainUpdateInput.TargetPort, and is useful for accessing the field via an interface.
-func (v *ServiceDomainUpdateInput) GetTargetPort() int { return v.TargetPort }
+func (v *ServiceDomainUpdateInput) GetTargetPort() *int { return v.TargetPort }
 
 type ServiceInstanceUpdateInput struct {
 	// Instrument the service's processes with eBPF (OBI) while its tracing is on.
@@ -1688,6 +1692,11 @@ func (v *createServiceDomainServiceDomainCreateServiceDomain) GetDomain() string
 	return v.ServiceDomain.Domain
 }
 
+// GetTargetPort returns createServiceDomainServiceDomainCreateServiceDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *createServiceDomainServiceDomainCreateServiceDomain) GetTargetPort() int {
+	return v.ServiceDomain.TargetPort
+}
+
 // GetSuffix returns createServiceDomainServiceDomainCreateServiceDomain.Suffix, and is useful for accessing the field via an interface.
 func (v *createServiceDomainServiceDomainCreateServiceDomain) GetSuffix() string {
 	return v.ServiceDomain.Suffix
@@ -1733,6 +1742,8 @@ type __premarshalcreateServiceDomainServiceDomainCreateServiceDomain struct {
 
 	Domain string `json:"domain"`
 
+	TargetPort int `json:"targetPort"`
+
 	Suffix string `json:"suffix"`
 
 	EnvironmentId string `json:"environmentId"`
@@ -1753,6 +1764,7 @@ func (v *createServiceDomainServiceDomainCreateServiceDomain) __premarshalJSON()
 
 	retval.Id = v.ServiceDomain.Id
 	retval.Domain = v.ServiceDomain.Domain
+	retval.TargetPort = v.ServiceDomain.TargetPort
 	retval.Suffix = v.ServiceDomain.Suffix
 	retval.EnvironmentId = v.ServiceDomain.EnvironmentId
 	retval.ServiceId = v.ServiceDomain.ServiceId
@@ -2967,6 +2979,11 @@ func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetDoma
 	return v.ServiceDomain.Domain
 }
 
+// GetTargetPort returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.TargetPort, and is useful for accessing the field via an interface.
+func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetTargetPort() int {
+	return v.ServiceDomain.TargetPort
+}
+
 // GetSuffix returns listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain.Suffix, and is useful for accessing the field via an interface.
 func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) GetSuffix() string {
 	return v.ServiceDomain.Suffix
@@ -3012,6 +3029,8 @@ type __premarshallistServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain 
 
 	Domain string `json:"domain"`
 
+	TargetPort int `json:"targetPort"`
+
 	Suffix string `json:"suffix"`
 
 	EnvironmentId string `json:"environmentId"`
@@ -3032,6 +3051,7 @@ func (v *listServiceDomainsDomainsAllDomainsServiceDomainsServiceDomain) __prema
 
 	retval.Id = v.ServiceDomain.Id
 	retval.Domain = v.ServiceDomain.Domain
+	retval.TargetPort = v.ServiceDomain.TargetPort
 	retval.Suffix = v.ServiceDomain.Suffix
 	retval.EnvironmentId = v.ServiceDomain.EnvironmentId
 	retval.ServiceId = v.ServiceDomain.ServiceId
@@ -3601,6 +3621,7 @@ mutation createServiceDomain ($input: ServiceDomainCreateInput!) {
 fragment ServiceDomain on ServiceDomain {
 	id
 	domain
+	targetPort
 	suffix
 	environmentId
 	serviceId
@@ -4507,6 +4528,7 @@ query listServiceDomains ($environmentId: String!, $serviceId: String!, $project
 fragment ServiceDomain on ServiceDomain {
 	id
 	domain
+	targetPort
 	suffix
 	environmentId
 	serviceId
