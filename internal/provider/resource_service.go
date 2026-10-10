@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"reflect"
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -18,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -225,6 +227,9 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				MarkdownDescription: "Regions with replicas to deploy service in.",
 				Optional:            true,
 				Computed:            true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 				Validators: []validator.List{
 					listvalidator.SizeAtLeast(1),
 				},
@@ -478,7 +483,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	var state *ServiceResourceModel
 	var volumeState *ServiceResourceVolumeModel
-	// var regionsState *[]ServiceResourceRegionModel
+	var regionsState *[]ServiceResourceRegionModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -486,7 +491,19 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	resp.Diagnostics.Append(data.Regions.ElementsAs(ctx, &regionsData, true)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(state.Regions.ElementsAs(ctx, &regionsState, true)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -513,7 +530,13 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		data.ProjectId = types.StringValue(service.ProjectId)
 	}
 
-	instanceInput := buildServiceInstanceInput(data, regionsData)
+	var instanceInput ServiceInstanceUpdateInput
+
+	if reflect.DeepEqual(regionsData, regionsState) {
+		instanceInput = buildServiceInstanceInput(data, nil)
+	} else {
+		instanceInput = buildServiceInstanceInput(data, regionsData)
+	}
 
 	_, err := updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
 

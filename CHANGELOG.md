@@ -3,6 +3,9 @@
 ### Enhancements
 * Add support for `target_port` in `railway_service_domain` resource
 
+### Bug fixes
+* Fixes issue with `regions` in `railway_service` not being updated correctly
+
 ## 0.6.2
 
 ### Enhancements
