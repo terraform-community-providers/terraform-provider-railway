@@ -513,24 +513,24 @@ type ServiceInstanceUpdateInput struct {
 	CronSchedule               *string                   `json:"cronSchedule"`
 	DockerfilePath             *string                   `json:"dockerfilePath,omitempty"`
 	DrainingSeconds            *int                      `json:"drainingSeconds,omitempty"`
-	HealthcheckPath            *string                   `json:"healthcheckPath,omitempty"`
-	HealthcheckTimeout         *int                      `json:"healthcheckTimeout,omitempty"`
+	HealthcheckPath            *string                   `json:"healthcheckPath"`
+	HealthcheckTimeout         *int                      `json:"healthcheckTimeout"`
 	Ipv6EgressEnabled          *bool                     `json:"ipv6EgressEnabled,omitempty"`
 	MultiRegionConfig          *map[string]interface{}   `json:"multiRegionConfig,omitempty"`
 	NixpacksPlan               *map[string]interface{}   `json:"nixpacksPlan,omitempty"`
 	NumReplicas                *int                      `json:"numReplicas,omitempty"`
 	OverlapSeconds             *int                      `json:"overlapSeconds,omitempty"`
-	PreDeployCommand           *[]string                 `json:"preDeployCommand,omitempty"`
-	PreDeployTimeoutSeconds    *int                      `json:"preDeployTimeoutSeconds,omitempty"`
+	PreDeployCommand           *[]string                 `json:"preDeployCommand"`
+	PreDeployTimeoutSeconds    *int                      `json:"preDeployTimeoutSeconds"`
 	RailwayConfigFile          *string                   `json:"railwayConfigFile,omitempty"`
 	Region                     *string                   `json:"region,omitempty"`
 	RegistryCredentials        *RegistryCredentialsInput `json:"registryCredentials,omitempty"`
-	RestartPolicyMaxRetries    *int                      `json:"restartPolicyMaxRetries,omitempty"`
-	RestartPolicyType          *RestartPolicyType        `json:"restartPolicyType,omitempty"`
+	RestartPolicyMaxRetries    int                       `json:"restartPolicyMaxRetries"`
+	RestartPolicyType          RestartPolicyType         `json:"restartPolicyType"`
 	RootDirectory              *string                   `json:"rootDirectory,omitempty"`
-	SleepApplication           *bool                     `json:"sleepApplication,omitempty"`
+	SleepApplication           bool                      `json:"sleepApplication"`
 	Source                     *ServiceSourceInput       `json:"source,omitempty"`
-	StartCommand               *string                   `json:"startCommand,omitempty"`
+	StartCommand               *string                   `json:"startCommand"`
 	// Trace requests to the service in this environment. Takes effect at the edge
 	// within seconds and in the app on the next deploy.
 	TracingEnabled *bool     `json:"tracingEnabled,omitempty"`
@@ -600,12 +600,12 @@ func (v *ServiceInstanceUpdateInput) GetRegistryCredentials() *RegistryCredentia
 }
 
 // GetRestartPolicyMaxRetries returns ServiceInstanceUpdateInput.RestartPolicyMaxRetries, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRestartPolicyMaxRetries() *int {
+func (v *ServiceInstanceUpdateInput) GetRestartPolicyMaxRetries() int {
 	return v.RestartPolicyMaxRetries
 }
 
 // GetRestartPolicyType returns ServiceInstanceUpdateInput.RestartPolicyType, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetRestartPolicyType() *RestartPolicyType {
+func (v *ServiceInstanceUpdateInput) GetRestartPolicyType() RestartPolicyType {
 	return v.RestartPolicyType
 }
 
@@ -613,7 +613,7 @@ func (v *ServiceInstanceUpdateInput) GetRestartPolicyType() *RestartPolicyType {
 func (v *ServiceInstanceUpdateInput) GetRootDirectory() *string { return v.RootDirectory }
 
 // GetSleepApplication returns ServiceInstanceUpdateInput.SleepApplication, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetSleepApplication() *bool { return v.SleepApplication }
+func (v *ServiceInstanceUpdateInput) GetSleepApplication() bool { return v.SleepApplication }
 
 // GetSource returns ServiceInstanceUpdateInput.Source, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetSource() *ServiceSourceInput { return v.Source }
@@ -2397,10 +2397,18 @@ func (v *getServiceInstanceResponse) GetServiceInstance() getServiceInstanceServ
 
 // getServiceInstanceServiceInstance includes the requested fields of the GraphQL type ServiceInstance.
 type getServiceInstanceServiceInstance struct {
-	Source            *getServiceInstanceServiceInstanceSourceServiceSource `json:"source"`
-	RootDirectory     *string                                               `json:"rootDirectory"`
-	RailwayConfigFile *string                                               `json:"railwayConfigFile"`
-	CronSchedule      *string                                               `json:"cronSchedule"`
+	Source                  *getServiceInstanceServiceInstanceSourceServiceSource `json:"source"`
+	RootDirectory           *string                                               `json:"rootDirectory"`
+	RailwayConfigFile       *string                                               `json:"railwayConfigFile"`
+	CronSchedule            *string                                               `json:"cronSchedule"`
+	PreDeployCommand        *[]string                                             `json:"preDeployCommand"`
+	PreDeployTimeoutSeconds *int                                                  `json:"preDeployTimeoutSeconds"`
+	StartCommand            *string                                               `json:"startCommand"`
+	HealthcheckPath         *string                                               `json:"healthcheckPath"`
+	HealthcheckTimeout      *int                                                  `json:"healthcheckTimeout"`
+	RestartPolicyType       RestartPolicyType                                     `json:"restartPolicyType"`
+	RestartPolicyMaxRetries int                                                   `json:"restartPolicyMaxRetries"`
+	SleepApplication        bool                                                  `json:"sleepApplication"`
 	// The most recent deployment for this service instance
 	LatestDeployment getServiceInstanceServiceInstanceLatestDeployment `json:"latestDeployment"`
 }
@@ -2420,6 +2428,38 @@ func (v *getServiceInstanceServiceInstance) GetRailwayConfigFile() *string {
 
 // GetCronSchedule returns getServiceInstanceServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetCronSchedule() *string { return v.CronSchedule }
+
+// GetPreDeployCommand returns getServiceInstanceServiceInstance.PreDeployCommand, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetPreDeployCommand() *[]string {
+	return v.PreDeployCommand
+}
+
+// GetPreDeployTimeoutSeconds returns getServiceInstanceServiceInstance.PreDeployTimeoutSeconds, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetPreDeployTimeoutSeconds() *int {
+	return v.PreDeployTimeoutSeconds
+}
+
+// GetStartCommand returns getServiceInstanceServiceInstance.StartCommand, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetStartCommand() *string { return v.StartCommand }
+
+// GetHealthcheckPath returns getServiceInstanceServiceInstance.HealthcheckPath, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetHealthcheckPath() *string { return v.HealthcheckPath }
+
+// GetHealthcheckTimeout returns getServiceInstanceServiceInstance.HealthcheckTimeout, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetHealthcheckTimeout() *int { return v.HealthcheckTimeout }
+
+// GetRestartPolicyType returns getServiceInstanceServiceInstance.RestartPolicyType, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetRestartPolicyType() RestartPolicyType {
+	return v.RestartPolicyType
+}
+
+// GetRestartPolicyMaxRetries returns getServiceInstanceServiceInstance.RestartPolicyMaxRetries, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetRestartPolicyMaxRetries() int {
+	return v.RestartPolicyMaxRetries
+}
+
+// GetSleepApplication returns getServiceInstanceServiceInstance.SleepApplication, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetSleepApplication() bool { return v.SleepApplication }
 
 // GetLatestDeployment returns getServiceInstanceServiceInstance.LatestDeployment, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetLatestDeployment() getServiceInstanceServiceInstanceLatestDeployment {
@@ -4188,6 +4228,14 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 		rootDirectory
 		railwayConfigFile
 		cronSchedule
+		preDeployCommand
+		preDeployTimeoutSeconds
+		startCommand
+		healthcheckPath
+		healthcheckTimeout
+		restartPolicyType
+		restartPolicyMaxRetries
+		sleepApplication
 		latestDeployment {
 			meta
 		}

@@ -42,6 +42,11 @@ mutation updateService(
 # @genqlient(for: "ServiceInstance.source", pointer: true)
 # @genqlient(for: "ServiceSource.image", pointer: true)
 # @genqlient(for: "ServiceSource.repo", pointer: true)
+# @genqlient(for: "ServiceInstance.preDeployCommand", bind: "*[]string")
+# @genqlient(for: "ServiceInstance.preDeployTimeoutSeconds", pointer: true)
+# @genqlient(for: "ServiceInstance.startCommand", pointer: true)
+# @genqlient(for: "ServiceInstance.healthcheckPath", pointer: true)
+# @genqlient(for: "ServiceInstance.healthcheckTimeout", pointer: true)
 query getServiceInstance(
   $environmentId: String!
   $serviceId: String!
@@ -54,6 +59,14 @@ query getServiceInstance(
     rootDirectory
     railwayConfigFile
     cronSchedule
+    preDeployCommand
+    preDeployTimeoutSeconds
+    startCommand
+    healthcheckPath
+    healthcheckTimeout
+    restartPolicyType
+    restartPolicyMaxRetries
+    sleepApplication
     latestDeployment {
       meta
     }
@@ -84,18 +97,15 @@ query getServiceInstances(
 # @genqlient(for: "ServiceInstanceUpdateInput.multiRegionConfig", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.region", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.numReplicas", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.builder", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.preDeployCommand", bind: "*[]string", omitempty: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.preDeployTimeoutSeconds", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.startCommand", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.healthcheckPath", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.healthcheckTimeout", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.restartPolicyType", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.restartPolicyMaxRetries", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.sleepApplication", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.dockerfilePath", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.preDeployCommand", bind: "*[]string")
+# @genqlient(for: "ServiceInstanceUpdateInput.preDeployTimeoutSeconds", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.startCommand", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.healthcheckPath", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.healthcheckTimeout", pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.drainingSeconds", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.overlapSeconds", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.ipv6EgressEnabled", omitempty: true, pointer: true)

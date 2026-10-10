@@ -9,7 +9,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -80,6 +82,14 @@ type ServiceResourceModel struct {
 	SourceRepoBranch                   types.String `tfsdk:"source_repo_branch"`
 	RootDirectory                      types.String `tfsdk:"root_directory"`
 	ConfigPath                         types.String `tfsdk:"config_path"`
+	PredeployCommand                   types.String `tfsdk:"predeploy_command"`
+	PredeployTimeout                   types.Int64  `tfsdk:"predeploy_timeout"`
+	StartCommand                       types.String `tfsdk:"start_command"`
+	HealthcheckPath                    types.String `tfsdk:"healthcheck_path"`
+	HealthcheckTimeout                 types.Int64  `tfsdk:"healthcheck_timeout"`
+	RestartPolicyType                  types.String `tfsdk:"restart_policy_type"`
+	RestartPolicyMaxRetries            types.Int64  `tfsdk:"restart_policy_max_retries"`
+	Serverless                         types.Bool   `tfsdk:"serverless"`
 	Volume                             types.Object `tfsdk:"volume"`
 	Regions                            types.List   `tfsdk:"regions"`
 }
@@ -90,7 +100,7 @@ func (r *ServiceResource) Metadata(ctx context.Context, req resource.MetadataReq
 
 func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway service.\n\n> ⚠️ **NOTE:** All the other settings not specified here are recommended to be specified in the Railway config file.",
+		MarkdownDescription: "Railway service.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the service.",
@@ -188,6 +198,65 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
 				},
+			},
+			"predeploy_command": schema.StringAttribute{
+				MarkdownDescription: "Command to run before deploying the service. Combine multiple commands with `&&`.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+				},
+			},
+			"predeploy_timeout": schema.Int64Attribute{
+				MarkdownDescription: "Maximum time in seconds to wait for the predeploy command to succeed.",
+				Optional:            true,
+				Validators: []validator.Int64{
+					int64validator.Between(1, 3600),
+				},
+			},
+			"start_command": schema.StringAttribute{
+				MarkdownDescription: "Command to start the service.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+				},
+			},
+			"healthcheck_path": schema.StringAttribute{
+				MarkdownDescription: "HTTP path used to check deployment health.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+				},
+			},
+			"healthcheck_timeout": schema.Int64Attribute{
+				MarkdownDescription: "Maximum time in seconds to wait for the health check to succeed.",
+				Optional:            true,
+				Validators: []validator.Int64{
+					int64validator.Between(1, 3600),
+				},
+			},
+			"restart_policy_type": schema.StringAttribute{
+				MarkdownDescription: "Restart policy: `ALWAYS`, `NEVER`, or `ON_FAILURE`. **Default** `ON_FAILURE`.",
+				Optional:            true,
+				Computed:            true,
+				Validators: []validator.String{
+					stringvalidator.OneOf("ALWAYS", "NEVER", "ON_FAILURE"),
+				},
+				Default: stringdefault.StaticString("ON_FAILURE"),
+			},
+			"restart_policy_max_retries": schema.Int64Attribute{
+				MarkdownDescription: "Maximum restart retries for the `ON_FAILURE` policy. **Default** `10`. Must be specified if `restart_policy_type` is `ON_FAILURE`.",
+				Optional:            true,
+				Computed:            true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+				},
+				Default: int64default.StaticInt64(10),
+			},
+			"serverless": schema.BoolAttribute{
+				MarkdownDescription: "Allow the service to sleep when inactive. **Default** `false`.",
+				Optional:            true,
+				Computed:            true,
+				Default:             booldefault.StaticBool(false),
 			},
 			"volume": schema.SingleNestedAttribute{
 				MarkdownDescription: "Volume connected to the service.",
@@ -727,6 +796,41 @@ func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]Servic
 		instanceInput.RailwayConfigFile = data.ConfigPath.ValueStringPointer()
 	}
 
+	// Railway uses empty commands and paths to clear these overrides, not null.
+	if !data.PredeployCommand.IsUnknown() {
+		commands := []string{}
+
+		if !data.PredeployCommand.IsNull() {
+			commands = append(commands, data.PredeployCommand.ValueString())
+		}
+
+		instanceInput.PreDeployCommand = &commands
+	}
+
+	if !data.PredeployTimeout.IsNull() && !data.PredeployTimeout.IsUnknown() {
+		timeout := int(data.PredeployTimeout.ValueInt64())
+		instanceInput.PreDeployTimeoutSeconds = &timeout
+	}
+
+	if !data.StartCommand.IsUnknown() {
+		command := data.StartCommand.ValueString()
+		instanceInput.StartCommand = &command
+	}
+
+	if !data.HealthcheckPath.IsUnknown() {
+		command := data.HealthcheckPath.ValueString()
+		instanceInput.HealthcheckPath = &command
+	}
+
+	if !data.HealthcheckTimeout.IsNull() && !data.HealthcheckTimeout.IsUnknown() {
+		timeout := int(data.HealthcheckTimeout.ValueInt64())
+		instanceInput.HealthcheckTimeout = &timeout
+	}
+
+	instanceInput.RestartPolicyType = RestartPolicyType(data.RestartPolicyType.ValueString())
+	instanceInput.RestartPolicyMaxRetries = int(data.RestartPolicyMaxRetries.ValueInt64())
+	instanceInput.SleepApplication = data.Serverless.ValueBool()
+
 	if regionsData != nil {
 		multiRegionConfig := make(map[string]interface{})
 
@@ -770,17 +874,44 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 		return err
 	}
 
-	if response.ServiceInstance.CronSchedule != nil {
-		data.CronSchedule = types.StringValue(*response.ServiceInstance.CronSchedule)
+	instance := response.ServiceInstance
+
+	if instance.CronSchedule != nil {
+		data.CronSchedule = types.StringValue(*instance.CronSchedule)
 	}
 
-	if response.ServiceInstance.RootDirectory != nil && len(*response.ServiceInstance.RootDirectory) != 0 {
-		data.RootDirectory = types.StringValue(*response.ServiceInstance.RootDirectory)
+	if instance.RootDirectory != nil && len(*instance.RootDirectory) != 0 {
+		data.RootDirectory = types.StringValue(*instance.RootDirectory)
 	}
 
-	if response.ServiceInstance.RailwayConfigFile != nil && len(*response.ServiceInstance.RailwayConfigFile) != 0 {
-		data.ConfigPath = types.StringValue(*response.ServiceInstance.RailwayConfigFile)
+	if instance.RailwayConfigFile != nil && len(*instance.RailwayConfigFile) != 0 {
+		data.ConfigPath = types.StringValue(*instance.RailwayConfigFile)
 	}
+
+	if instance.PreDeployCommand != nil && len(*instance.PreDeployCommand) > 0 && len((*instance.PreDeployCommand)[0]) != 0 {
+		data.PredeployCommand = types.StringValue((*instance.PreDeployCommand)[0])
+	}
+
+	if instance.PreDeployTimeoutSeconds != nil {
+		data.PredeployTimeout = types.Int64Value(int64(*instance.PreDeployTimeoutSeconds))
+	}
+
+	if instance.StartCommand != nil && len(*instance.StartCommand) != 0 {
+		data.StartCommand = types.StringValue(*instance.StartCommand)
+	}
+
+	if instance.HealthcheckPath != nil && len(*instance.HealthcheckPath) != 0 {
+		data.HealthcheckPath = types.StringValue(*instance.HealthcheckPath)
+	}
+
+	if instance.HealthcheckTimeout != nil {
+		data.HealthcheckTimeout = types.Int64Value(int64(*instance.HealthcheckTimeout))
+	}
+
+	data.RestartPolicyType = types.StringValue(string(instance.RestartPolicyType))
+	data.RestartPolicyMaxRetries = types.Int64Value(int64(instance.RestartPolicyMaxRetries))
+
+	data.Serverless = types.BoolValue(instance.SleepApplication)
 
 	if response.ServiceInstance.Source != nil {
 		if response.ServiceInstance.Source.Image != nil {

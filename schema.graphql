@@ -112,16 +112,17 @@ enum ActiveFeatureFlag {
   HA_FOR_MONGO
   IN_DASHBOARD_SUPPORT
   MAGIC_CONFIG
-  MYSQL_PITR
   PRIORITY_BOARDING
   RAILWAY_AGENT_DASHBOARD
   RAILWAY_AGENT_FEED
+  RAILWAY_AUTOMATIONS
   TRACING
   USAGE_INSIGHTS
   VM_STORAGE_TRACES
 }
 
 enum ActivePlatformFlag {
+  AGENT_CACHE_TOKEN_BILLING
   AGENT_USAGE_CH_INGEST
   ALERT_SUS_USERS_CRON_KILLSWITCH
   BLOCK_TRIAL_RESTRICTION_APPEALS
@@ -180,6 +181,7 @@ enum ActivePlatformFlag {
 }
 
 enum ActiveProjectFeatureFlag {
+  LEGACY_CONFIG_AS_CODE
   PLACEHOLDER
   RBS_VOLUMES
 }
@@ -608,6 +610,13 @@ type CloudAgent {
   environmentId: String!
   id: ID!
   name: String!
+
+  """
+  Hostname on the environment's private network, e.g. <name>.railway.internal,
+  reachable on any port from services in that environment. Null when the VM is
+  isolated or its private endpoint isn't registered yet.
+  """
+  privateDomain: String
   project: Project!
   projectId: String!
 
@@ -617,8 +626,8 @@ type CloudAgent {
   region: String
 
   """
-  Live coding-agent sessions, one entry per session. Retained for 24h after the
-  last report, so a sleeping agent still shows what it was last doing.
+  Coding-agent sessions, one entry per session, newest first. Kept while the
+  agent sleeps, so it still lists what it was doing.
   """
   sessions: [CloudAgentSnapshot!]!
 
@@ -632,12 +641,17 @@ type CloudAgent {
 """A checkpoint of a cloud agent's disk."""
 type CloudAgentCheckpoint {
   createdAt: DateTime!
-  environmentId: String!
+
+  """
+  Set when the checkpoint boots only in this environment. Null boots anywhere in the project.
+  """
+  environmentId: String
 
   """Why the capture failed."""
   failureReason: String
   id: ID!
   name: String
+  projectId: String!
 
   """Region the checkpoint was captured in."""
   region: String!
@@ -832,6 +846,8 @@ enum CloudAgentStatus {
 Task lifecycle and correlation. Read cloudAgentTask for the latest session response.
 """
 type CloudAgentTask {
+  """Files the agent linked in this turn's result."""
+  attachments: [CloudAgentTaskAttachment!]!
   cloudAgentId: ID
   completedAt: DateTime
   createdAt: DateTime!
@@ -840,7 +856,11 @@ type CloudAgentTask {
   externalRef: String
   id: ID!
   metadata: JSON
+
+  """The model the turn ran on, once it was submitted."""
+  model: String
   promptPreview: String
+  reasoningEffort: String
   requestedByUserId: ID
   sessionId: String
   startedAt: DateTime
@@ -849,6 +869,19 @@ type CloudAgentTask {
 
   """The turn's closing text, once it has finished."""
   text: String
+}
+
+"""
+A file the agent published and linked in its result. The URL rechecks access on
+every request and stays valid until expiresAt.
+"""
+type CloudAgentTaskAttachment {
+  bytes: Int
+  contentType: String!
+  expiresAt: String!
+  filename: String!
+  id: ID!
+  url: String!
 }
 
 type CloudAgentTaskCancelResult {
@@ -864,16 +897,49 @@ input CloudAgentTaskDispatchInput {
 
   """Explicit agent reuse. Omit all targets to create a fresh agent."""
   cloudAgentId: String
+
+  """
+  Up to 32 entries of {type, text?, ...scalar attributes} the model reads beside
+  the prompt as background, not instructions: earlier messages, the page a user
+  was on, a log excerpt. On a continued conversation, send only what is new
+  since the last task: earlier turns are already in the session.
+  """
+  context: JSON
+
+  """
+  Your conversation's id (e.g. linear:DEMO-1). The first task starts an agent;
+  later tasks with the same key continue its session, each waiting for the one
+  before it to finish. Mutually exclusive with replyToTaskId and
+  cloudAgentId/sessionId.
+  """
+  conversationKey: String
   environmentId: String!
   externalRef: String
   idempotencyKey: String
+
+  """
+  Up to 4 images the model sees with the prompt (screenshots, mockups), 5 MiB in total. Kept as the agent's attachments.
+  """
+  images: [CloudAgentTaskImageInput!]
   metadata: JSON
   mode: CloudAgentTaskMode
+
+  """
+  A model id from cloudAgentTaskModels. Applies when the task starts a
+  conversation; a later turn may repeat it but not change it. Defaults to your
+  agent model setting.
+  """
+  model: String
 
   """JSON Schema object for structured output; requires PROMPT mode."""
   outputSchema: JSON
   projectId: String!
   prompt: String!
+
+  """
+  One of the model's reasoningEfforts. May change between turns in PROMPT mode.
+  """
+  reasoningEffort: String
 
   """
   Continue this task's original agent/session. Mutually exclusive with cloudAgentId/sessionId.
@@ -898,6 +964,25 @@ type CloudAgentTaskHandle {
   sessionId: String!
   status: CloudAgentTaskStatus!
   taskId: ID!
+}
+
+"""
+An image the model sees with the prompt: PNG, JPEG, or WebP. Send data or url, not both.
+"""
+input CloudAgentTaskImageInput {
+  """
+  Base64 bytes, or a data: URL. Shares the request's 1 MB body limit; send larger images by url.
+  """
+  data: String
+  filename: String
+
+  """Optional; checked against the bytes."""
+  mediaType: String
+
+  """
+  A public HTTPS URL Railway fetches when the task is dispatched, up to 5 MiB.
+  """
+  url: String
 }
 
 """
@@ -938,6 +1023,26 @@ enum CloudAgentTaskMode {
   STEER
 }
 
+type CloudAgentTaskModel {
+  displayName: String!
+
+  """Pass as the dispatch's model."""
+  id: ID!
+
+  """A new conversation runs on it when the task names none."""
+  isDefault: Boolean!
+  provider: String!
+
+  """Empty when the model takes no reasoning effort."""
+  reasoningEfforts: [String!]!
+}
+
+type CloudAgentTaskModels {
+  defaultModel: String!
+  defaultReasoningEffort: String
+  models: [CloudAgentTaskModel!]!
+}
+
 type CloudAgentTaskPage {
   nextCursor: String
   tasks: [CloudAgentTask!]!
@@ -975,15 +1080,21 @@ type CloudAgentTaskRespondResult {
 }
 
 type CloudAgentTaskResult {
+  """Files the agent linked in its result, once it ends."""
+  attachments: [CloudAgentTaskAttachment!]!
   cloudAgentId: ID!
   completedAt: String
   error: String
   externalRef: String
   metadata: JSON
 
+  """The model the turn ran on, once it was submitted."""
+  model: String
+
   """Answer these with cloudAgentTaskRespond."""
   pendingInteractions: [CloudAgentTaskInteraction!]!
   progress: CloudAgentTaskProgress
+  reasoningEffort: String
   sessionId: String!
   sessionState: String
   status: CloudAgentTaskStatus!
@@ -1431,7 +1542,7 @@ input DisablePitrForHaClusterInput {
   """Project containing the cluster (returned in payload)"""
   projectId: String!
 
-  """Root service of the HA Postgres cluster"""
+  """The cluster's primary service (Postgres HA or MySQL HA)."""
   rootServiceId: String!
 }
 
@@ -1644,7 +1755,7 @@ input EnablePitrForHaClusterInput {
   """Project containing the cluster (returned in payload)"""
   projectId: String!
 
-  """Root service of the HA Postgres cluster"""
+  """The cluster's primary service (Postgres HA or MySQL HA)."""
   rootServiceId: String!
 }
 
@@ -2883,7 +2994,7 @@ type Mutation {
   featureFlagRemove(input: FeatureFlagToggleInput!): Boolean!
 
   """
-  Mints a 5-minute JWT for opening a browser WS session against tcp-proxy.
+  Creates a short-lived (5-minute) token for opening a shell, file, or network session to a running deployment.
   """
   generateShellToken(input: ShellTokenInput!): String!
 
@@ -3231,9 +3342,9 @@ type Mutation {
   ): Boolean!
 
   """
-  Skip the next scheduled auto-update occurrence for a service instance, applied
-  immediately (no config staging, no redeploy). The recurring maintenance window
-  and update policy are untouched — this only delays the next fire.
+  Skip the next scheduled auto-update for a service instance. Takes effect
+  immediately, with no staged change and no redeploy. The maintenance window and
+  update policy stay as they are. This only delays the next scheduled update.
   """
   serviceInstanceAutoUpdateSnooze(
     environmentId: String!
@@ -3284,12 +3395,12 @@ type Mutation {
   ): Boolean!
 
   """
-  Dismiss a platform-armed database security update notice and stand down the scheduled redeploy
+  Dismiss a pending database security update and cancel its scheduled redeploy.
   """
   serviceInstanceVulnRemediationDismiss(environmentId: String!, serviceId: String!): Boolean!
 
   """
-  Immediately apply a platform-armed database security update (backup + redeploy). Returns the new deployment id.
+  Apply a pending database security update now (backup, then redeploy). Returns the new deployment id.
   """
   serviceInstanceVulnRemediationPatchNow(environmentId: String!, serviceId: String!): String!
 
@@ -3560,10 +3671,8 @@ type Mutation {
     newServiceName: String
 
     """
-    Opaque identifier for one archive history, from the multi-history picker
-    when the source bucket holds more than one. It scopes both the
-    restore-window pre-check and the restored fork's archive source, treating
-    the selected history as frozen. Pass null to restore the source's current history.
+    One of the source's backup histories, as listed by the backup history
+    picker. Pass null to use the source's current history.
     """
     sourceRepoPath: String
 
@@ -4073,10 +4182,9 @@ type PitrHaWorkflowProgress {
 }
 
 """
-Estimated destination-volume scratch a PITR restore to a target needs: the base
-backup's data plus every WAL segment replayed from that backup to the target
-(Postgres holds replayed WAL in pg_wal faster than restartpoints recycle it). A
-conservative over-estimate for a non-blocking pre-restore warning — not a gate.
+Estimated disk space a point-in-time restore to a target needs, and whether it
+fits your plan's largest volume. A conservative estimate for the restore
+dialog's warning.
 """
 type PitrRestoreScratchEstimate {
   baseBackupLabel: String!
@@ -4099,6 +4207,7 @@ type PlanLimitOverride implements Node {
 }
 
 enum PlatformFeatureFlag {
+  AGENT_CACHE_TOKEN_BILLING
   AGENT_USAGE_CH_INGEST
   ALERT_SUS_USERS_CRON_KILLSWITCH
   BLOCK_TRIAL_RESTRICTION_APPEALS
@@ -4892,6 +5001,11 @@ type Query {
     """An earlier turn on this session; default the latest."""
     taskId: String
   ): CloudAgentTaskResult!
+
+  """
+  The models a task in this environment can run on, and the default a new conversation starts on.
+  """
+  cloudAgentTaskModels(environmentId: String!, projectId: String!): CloudAgentTaskModels!
 
   """
   List task records in an environment, newest first. Filter to one agent, or with sessionId to one session's turns.
@@ -5776,17 +5890,13 @@ type Query {
   ): [VolumeInstanceBackupSchedule!]!
 
   """
-  Estimated destination-volume scratch a PITR restore of this volume instance to
-  a target would need, and whether it fits the workspace plan's max volume size.
-  Read-only pre-check the restore dialog calls to warn before a restore that
-  would fill the disk mid-replay; returns null when no estimate can be formed
-  (non-pgBackRest source, incomplete archive creds, or a target before the
-  earliest backup).
+  Estimated disk space a point-in-time restore to this target needs, and whether
+  it fits your plan's largest volume. Returns null when no estimate is available.
   """
   volumeInstancePitrRestoreEstimate(
     """
-    Multi-history picker's selected archive sub-prefix, matching the restore
-    mutation's argument. Pass null for the source's current history.
+    One of the source's backup histories, as listed by the backup history
+    picker. Pass null to use the source's current history.
     """
     sourceRepoPath: String
 
@@ -6445,6 +6555,13 @@ type Sandbox {
   """
   idleTimeoutMinutes: Int
   networkIsolation: SandboxNetworkIsolation!
+
+  """
+  Hostname on the environment's private network, e.g. <name>.railway.internal,
+  reachable on any port from services in that environment. Null when the VM is
+  isolated or its private endpoint isn't registered yet.
+  """
+  privateDomain: String
   region: String!
   status: SandboxStatus!
 }
@@ -7559,6 +7676,7 @@ type Template implements Node {
   id: ID!
   image: String
   isApproved: Boolean!
+  isOuterEdge: Boolean!
   isV2Template: Boolean!
   isVerified: Boolean!
   languages: [String!]
@@ -7654,9 +7772,7 @@ input TemplateDeployV2Input {
   environmentId: String
 
   """
-  Use an existing service as the cluster root instead of creating a new one. A
-  live cluster edge is resolved to the root it fronts. Used for HA cluster
-  conversion where an existing postgres becomes the primary.
+  An existing database service to convert. If you pass a cluster's proxy service, Railway uses the database behind it.
   """
   existingRootServiceId: String
   projectId: String

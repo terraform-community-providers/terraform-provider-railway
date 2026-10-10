@@ -4,14 +4,11 @@ page_title: "railway_service Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
   Railway service.
-  ⚠️ NOTE: All the other settings not specified here are recommended to be specified in the Railway config file.
 ---
 
 # railway_service (Resource)
 
 Railway service.
-
-> ⚠️ **NOTE:** All the other settings not specified here are recommended to be specified in the Railway config file.
 
 ## Example Usage
 
@@ -34,13 +31,21 @@ resource "railway_service" "example" {
 
 - `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
 - `cron_schedule` (String) Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.
+- `healthcheck_path` (String) HTTP path used to check deployment health.
+- `healthcheck_timeout` (Number) Maximum time in seconds to wait for the health check to succeed.
+- `predeploy_command` (String) Command to run before deploying the service. Combine multiple commands with `&&`.
+- `predeploy_timeout` (Number) Maximum time in seconds to wait for the predeploy command to succeed.
 - `regions` (Attributes List) Regions with replicas to deploy service in. (see [below for nested schema](#nestedatt--regions))
+- `restart_policy_max_retries` (Number) Maximum restart retries for the `ON_FAILURE` policy. **Default** `10`. Must be specified if `restart_policy_type` is `ON_FAILURE`.
+- `restart_policy_type` (String) Restart policy: `ALWAYS`, `NEVER`, or `ON_FAILURE`. **Default** `ON_FAILURE`.
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
+- `serverless` (Boolean) Allow the service to sleep when inactive. **Default** `false`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
 - `source_image_registry_password` (String, Sensitive) Private Docker registry credentials.
 - `source_image_registry_username` (String) Private Docker registry credentials.
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
 - `source_repo_branch` (String) Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.
+- `start_command` (String) Command to start the service.
 - `volume` (Attributes) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
 
 ### Read-Only
