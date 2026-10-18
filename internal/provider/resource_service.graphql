@@ -47,6 +47,8 @@ mutation updateService(
 # @genqlient(for: "ServiceInstance.startCommand", pointer: true)
 # @genqlient(for: "ServiceInstance.healthcheckPath", pointer: true)
 # @genqlient(for: "ServiceInstance.healthcheckTimeout", pointer: true)
+# @genqlient(for: "ServiceInstance.buildCommand", pointer: true)
+# @genqlient(for: "ServiceInstance.dockerfilePath", pointer: true)
 query getServiceInstance(
   $environmentId: String!
   $serviceId: String!
@@ -59,6 +61,9 @@ query getServiceInstance(
     rootDirectory
     railwayConfigFile
     cronSchedule
+    buildCommand
+    dockerfilePath
+    watchPatterns
     preDeployCommand
     preDeployTimeoutSeconds
     startCommand
@@ -91,16 +96,15 @@ query getServiceInstances(
 # @genqlient(for: "ServiceInstanceUpdateInput.rootDirectory", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.railwayConfigFile", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.cronSchedule", pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.watchPatterns", bind: "*[]string", omitempty: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.source", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.registryCredentials", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.multiRegionConfig", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.region", omitempty: true, pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.numReplicas", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.builder", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.builder", omitempty: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.nixpacksPlan", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.dockerfilePath", omitempty: true, pointer: true)
-# @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", omitempty: true, pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.buildCommand", pointer: true)
+# @genqlient(for: "ServiceInstanceUpdateInput.dockerfilePath", pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.preDeployCommand", bind: "*[]string")
 # @genqlient(for: "ServiceInstanceUpdateInput.preDeployTimeoutSeconds", pointer: true)
 # @genqlient(for: "ServiceInstanceUpdateInput.startCommand", pointer: true)

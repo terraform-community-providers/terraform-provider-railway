@@ -508,10 +508,10 @@ type ServiceInstanceUpdateInput struct {
 	// Instrument the service's processes with eBPF (OBI) while its tracing is on.
 	// Reaches running containers within about a minute, no redeploy needed.
 	AutoInstrumentationEnabled *bool                     `json:"autoInstrumentationEnabled,omitempty"`
-	BuildCommand               *string                   `json:"buildCommand,omitempty"`
-	Builder                    *Builder                  `json:"builder,omitempty"`
+	BuildCommand               *string                   `json:"buildCommand"`
+	Builder                    Builder                   `json:"builder,omitempty"`
 	CronSchedule               *string                   `json:"cronSchedule"`
-	DockerfilePath             *string                   `json:"dockerfilePath,omitempty"`
+	DockerfilePath             *string                   `json:"dockerfilePath"`
 	DrainingSeconds            *int                      `json:"drainingSeconds,omitempty"`
 	HealthcheckPath            *string                   `json:"healthcheckPath"`
 	HealthcheckTimeout         *int                      `json:"healthcheckTimeout"`
@@ -533,8 +533,8 @@ type ServiceInstanceUpdateInput struct {
 	StartCommand               *string                   `json:"startCommand"`
 	// Trace requests to the service in this environment. Takes effect at the edge
 	// within seconds and in the app on the next deploy.
-	TracingEnabled *bool     `json:"tracingEnabled,omitempty"`
-	WatchPatterns  *[]string `json:"watchPatterns,omitempty"`
+	TracingEnabled *bool    `json:"tracingEnabled,omitempty"`
+	WatchPatterns  []string `json:"watchPatterns"`
 }
 
 // GetAutoInstrumentationEnabled returns ServiceInstanceUpdateInput.AutoInstrumentationEnabled, and is useful for accessing the field via an interface.
@@ -546,7 +546,7 @@ func (v *ServiceInstanceUpdateInput) GetAutoInstrumentationEnabled() *bool {
 func (v *ServiceInstanceUpdateInput) GetBuildCommand() *string { return v.BuildCommand }
 
 // GetBuilder returns ServiceInstanceUpdateInput.Builder, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetBuilder() *Builder { return v.Builder }
+func (v *ServiceInstanceUpdateInput) GetBuilder() Builder { return v.Builder }
 
 // GetCronSchedule returns ServiceInstanceUpdateInput.CronSchedule, and is useful for accessing the field via an interface.
 func (v *ServiceInstanceUpdateInput) GetCronSchedule() *string { return v.CronSchedule }
@@ -625,7 +625,7 @@ func (v *ServiceInstanceUpdateInput) GetStartCommand() *string { return v.StartC
 func (v *ServiceInstanceUpdateInput) GetTracingEnabled() *bool { return v.TracingEnabled }
 
 // GetWatchPatterns returns ServiceInstanceUpdateInput.WatchPatterns, and is useful for accessing the field via an interface.
-func (v *ServiceInstanceUpdateInput) GetWatchPatterns() *[]string { return v.WatchPatterns }
+func (v *ServiceInstanceUpdateInput) GetWatchPatterns() []string { return v.WatchPatterns }
 
 type ServiceSourceInput struct {
 	Image *string `json:"image,omitempty"`
@@ -2401,6 +2401,9 @@ type getServiceInstanceServiceInstance struct {
 	RootDirectory           *string                                               `json:"rootDirectory"`
 	RailwayConfigFile       *string                                               `json:"railwayConfigFile"`
 	CronSchedule            *string                                               `json:"cronSchedule"`
+	BuildCommand            *string                                               `json:"buildCommand"`
+	DockerfilePath          *string                                               `json:"dockerfilePath"`
+	WatchPatterns           []string                                              `json:"watchPatterns"`
 	PreDeployCommand        *[]string                                             `json:"preDeployCommand"`
 	PreDeployTimeoutSeconds *int                                                  `json:"preDeployTimeoutSeconds"`
 	StartCommand            *string                                               `json:"startCommand"`
@@ -2428,6 +2431,15 @@ func (v *getServiceInstanceServiceInstance) GetRailwayConfigFile() *string {
 
 // GetCronSchedule returns getServiceInstanceServiceInstance.CronSchedule, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetCronSchedule() *string { return v.CronSchedule }
+
+// GetBuildCommand returns getServiceInstanceServiceInstance.BuildCommand, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetBuildCommand() *string { return v.BuildCommand }
+
+// GetDockerfilePath returns getServiceInstanceServiceInstance.DockerfilePath, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetDockerfilePath() *string { return v.DockerfilePath }
+
+// GetWatchPatterns returns getServiceInstanceServiceInstance.WatchPatterns, and is useful for accessing the field via an interface.
+func (v *getServiceInstanceServiceInstance) GetWatchPatterns() []string { return v.WatchPatterns }
 
 // GetPreDeployCommand returns getServiceInstanceServiceInstance.PreDeployCommand, and is useful for accessing the field via an interface.
 func (v *getServiceInstanceServiceInstance) GetPreDeployCommand() *[]string {
@@ -4228,6 +4240,9 @@ query getServiceInstance ($environmentId: String!, $serviceId: String!) {
 		rootDirectory
 		railwayConfigFile
 		cronSchedule
+		buildCommand
+		dockerfilePath
+		watchPatterns
 		preDeployCommand
 		preDeployTimeoutSeconds
 		startCommand

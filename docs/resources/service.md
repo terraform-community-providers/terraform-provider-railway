@@ -29,8 +29,10 @@ resource "railway_service" "example" {
 
 ### Optional
 
+- `build_command` (String) Command to run when building the service. Conflicts with `source_image` and `dockerfile_path`.
 - `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
 - `cron_schedule` (String) Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.
+- `dockerfile_path` (String) Path to a custom Dockerfile. Conflicts with `source_image` and `build_command`.
 - `healthcheck_path` (String) HTTP path used to check deployment health.
 - `healthcheck_timeout` (Number) Maximum time in seconds to wait for the health check to succeed.
 - `predeploy_command` (String) Command to run before deploying the service. Combine multiple commands with `&&`.
@@ -40,13 +42,14 @@ resource "railway_service" "example" {
 - `restart_policy_type` (String) Restart policy: `ALWAYS`, `NEVER`, or `ON_FAILURE`. **Default** `ON_FAILURE`.
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
 - `serverless` (Boolean) Allow the service to sleep when inactive. **Default** `false`.
-- `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.
+- `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory`, `config_path`, `build_command`, `dockerfile_path` and `watch_patterns`.
 - `source_image_registry_password` (String, Sensitive) Private Docker registry credentials.
 - `source_image_registry_username` (String) Private Docker registry credentials.
 - `source_repo` (String) Source repository of the service. Conflicts with `source_image`.
 - `source_repo_branch` (String) Source repository branch to be used with `source_repo`. Must be specified if `source_repo` is specified.
 - `start_command` (String) Command to start the service.
 - `volume` (Attributes) Volume connected to the service. (see [below for nested schema](#nestedatt--volume))
+- `watch_patterns` (List of String) Gitignore-style patterns used to trigger deployments when matching files change. Patterns are relative to the repository root, regardless of `root_directory`. Conflicts with `source_image`. **Default** `[]`.
 
 ### Read-Only
 

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 
 	"github.com/Khan/genqlient/graphql"
@@ -82,6 +83,9 @@ type ServiceResourceModel struct {
 	SourceRepoBranch                   types.String `tfsdk:"source_repo_branch"`
 	RootDirectory                      types.String `tfsdk:"root_directory"`
 	ConfigPath                         types.String `tfsdk:"config_path"`
+	BuildCommand                       types.String `tfsdk:"build_command"`
+	DockerfilePath                     types.String `tfsdk:"dockerfile_path"`
+	WatchPatterns                      types.List   `tfsdk:"watch_patterns"`
 	PredeployCommand                   types.String `tfsdk:"predeploy_command"`
 	PredeployTimeout                   types.Int64  `tfsdk:"predeploy_timeout"`
 	StartCommand                       types.String `tfsdk:"start_command"`
@@ -134,7 +138,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"source_image": schema.StringAttribute{
-				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory` and `config_path`.",
+				MarkdownDescription: "Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory`, `config_path`, `build_command`, `dockerfile_path` and `watch_patterns`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
@@ -142,6 +146,9 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringvalidator.ConflictsWith(path.MatchRoot("source_repo_branch")),
 					stringvalidator.ConflictsWith(path.MatchRoot("root_directory")),
 					stringvalidator.ConflictsWith(path.MatchRoot("config_path")),
+					stringvalidator.ConflictsWith(path.MatchRoot("build_command")),
+					stringvalidator.ConflictsWith(path.MatchRoot("dockerfile_path")),
+					stringvalidator.ConflictsWith(path.MatchRoot("watch_patterns")),
 				},
 			},
 			"source_image_registry_username": schema.StringAttribute{
@@ -153,6 +160,9 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringvalidator.ConflictsWith(path.MatchRoot("source_repo_branch")),
 					stringvalidator.ConflictsWith(path.MatchRoot("root_directory")),
 					stringvalidator.ConflictsWith(path.MatchRoot("config_path")),
+					stringvalidator.ConflictsWith(path.MatchRoot("build_command")),
+					stringvalidator.ConflictsWith(path.MatchRoot("dockerfile_path")),
+					stringvalidator.ConflictsWith(path.MatchRoot("watch_patterns")),
 					stringvalidator.AlsoRequires(path.MatchRoot("source_image_registry_password")),
 				},
 			},
@@ -166,6 +176,9 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringvalidator.ConflictsWith(path.MatchRoot("source_repo_branch")),
 					stringvalidator.ConflictsWith(path.MatchRoot("root_directory")),
 					stringvalidator.ConflictsWith(path.MatchRoot("config_path")),
+					stringvalidator.ConflictsWith(path.MatchRoot("build_command")),
+					stringvalidator.ConflictsWith(path.MatchRoot("dockerfile_path")),
+					stringvalidator.ConflictsWith(path.MatchRoot("watch_patterns")),
 					stringvalidator.AlsoRequires(path.MatchRoot("source_image_registry_username")),
 				},
 			},
@@ -197,6 +210,34 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(1),
+				},
+			},
+			"build_command": schema.StringAttribute{
+				MarkdownDescription: "Command to run when building the service. Conflicts with `source_image` and `dockerfile_path`.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_image")),
+					stringvalidator.ConflictsWith(path.MatchRoot("dockerfile_path")),
+				},
+			},
+			"dockerfile_path": schema.StringAttribute{
+				MarkdownDescription: "Path to a custom Dockerfile. Conflicts with `source_image` and `build_command`.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.UTF8LengthAtLeast(1),
+					stringvalidator.ConflictsWith(path.MatchRoot("source_image")),
+				},
+			},
+			"watch_patterns": schema.ListAttribute{
+				MarkdownDescription: "Gitignore-style patterns used to trigger deployments when matching files change. Patterns are relative to the repository root, regardless of `root_directory`. Conflicts with `source_image`. **Default** `[]`.",
+				Optional:            true,
+				Computed:            true,
+				Default:             listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})),
+				ElementType:         types.StringType,
+				Validators: []validator.List{
+					listvalidator.ValueStringsAre(stringvalidator.UTF8LengthAtLeast(1)),
+					listvalidator.ConflictsWith(path.MatchRoot("source_image")),
 				},
 			},
 			"predeploy_command": schema.StringAttribute{
@@ -796,6 +837,26 @@ func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]Servic
 		instanceInput.RailwayConfigFile = data.ConfigPath.ValueStringPointer()
 	}
 
+	if !data.BuildCommand.IsUnknown() {
+		command := data.BuildCommand.ValueString()
+		instanceInput.BuildCommand = &command
+	}
+
+	if !data.DockerfilePath.IsUnknown() {
+		path := data.DockerfilePath.ValueString()
+		instanceInput.DockerfilePath = &path
+	}
+
+	if !data.WatchPatterns.IsUnknown() {
+		patterns := []string{}
+
+		for _, pattern := range data.WatchPatterns.Elements() {
+			patterns = append(patterns, pattern.(types.String).ValueString())
+		}
+
+		instanceInput.WatchPatterns = patterns
+	}
+
 	// Railway uses empty commands and paths to clear these overrides, not null.
 	if !data.PredeployCommand.IsUnknown() {
 		commands := []string{}
@@ -887,6 +948,22 @@ func getAndBuildServiceInstance(ctx context.Context, client graphql.Client, proj
 	if instance.RailwayConfigFile != nil && len(*instance.RailwayConfigFile) != 0 {
 		data.ConfigPath = types.StringValue(*instance.RailwayConfigFile)
 	}
+
+	if instance.BuildCommand != nil && len(*instance.BuildCommand) != 0 {
+		data.BuildCommand = types.StringValue(*instance.BuildCommand)
+	}
+
+	if instance.DockerfilePath != nil && len(*instance.DockerfilePath) != 0 {
+		data.DockerfilePath = types.StringValue(*instance.DockerfilePath)
+	}
+
+	patterns, diags := types.ListValueFrom(ctx, types.StringType, instance.WatchPatterns)
+
+	if diags.HasError() {
+		return fmt.Errorf("unable to read watch patterns: %s", diags)
+	}
+
+	data.WatchPatterns = patterns
 
 	if instance.PreDeployCommand != nil && len(*instance.PreDeployCommand) > 0 && len((*instance.PreDeployCommand)[0]) != 0 {
 		data.PredeployCommand = types.StringValue((*instance.PreDeployCommand)[0])

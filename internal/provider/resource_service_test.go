@@ -29,6 +29,9 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -60,6 +63,9 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -85,6 +91,9 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -117,6 +126,9 @@ func TestAccServiceResourceDefault(t *testing.T) {
 			// 		resource.TestCheckResourceAttr("railway_service.test", "source_repo_branch", "main"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "root_directory", "blog"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "config_path", "blog/railway.yaml"),
+			// 		resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+			// 		resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+			// 		resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -149,6 +161,9 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -171,9 +186,83 @@ func TestAccServiceResourceDefault(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read testing settings
+			// Update and Read testing dockerfile build settings
 			{
-				Config: testAccServiceResourceConfigNonDefault("nue-todo-app"),
+				Config: testAccServiceResourceConfigNonDefaultBuildSettingsDockerfile("nue-todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckResourceAttr("railway_service.test", "dockerfile_path", "packages/api/Dockerfile"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "2"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.0", "packages/api/src/**"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.1", "!packages/api/src/**/*.md"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing command build settings
+			{
+				Config: testAccServiceResourceConfigNonDefaultBuildSettingsCommand("nue-todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "build_command", "pnpm --filter api build"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "2"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.0", "packages/api/src/**"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.1", "!packages/api/src/**/*.md"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
+					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing deploy settings
+			{
+				Config: testAccServiceResourceConfigNonDefaultDeploySettings("nue-todo-app"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
@@ -184,6 +273,9 @@ func TestAccServiceResourceDefault(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckResourceAttr("railway_service.test", "predeploy_command", "nginx -t"),
 					resource.TestCheckResourceAttr("railway_service.test", "predeploy_timeout", "30"),
 					resource.TestCheckResourceAttr("railway_service.test", "start_command", "nginx -g 'daemon off;'"),
@@ -226,6 +318,9 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -258,6 +353,9 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -284,6 +382,9 @@ func TestAccServiceResourceNonDefaultImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -326,6 +427,9 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 			// 		resource.TestCheckResourceAttr("railway_service.test", "source_repo_branch", "main"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "root_directory", "blog"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "config_path", "blog/railway.yaml"),
+			// 		resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+			// 		resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+			// 		resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -358,6 +462,9 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 			// 		resource.TestCheckResourceAttr("railway_service.test", "source_repo_branch", "main"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "root_directory", "blog"),
 			// 		resource.TestCheckResourceAttr("railway_service.test", "config_path", "blog/railway.yaml"),
+			// 		resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+			// 		resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+			// 		resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 			// 		resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -384,6 +491,9 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -407,14 +517,14 @@ func TestAccServiceResourceNonDefaultRepo(t *testing.T) {
 	})
 }
 
-func TestAccServiceResourceNonDefaultSettings(t *testing.T) {
+func TestAccServiceResourceNonDefaultDeploySettings(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccServiceResourceConfigNonDefault("todo-app"),
+				Config: testAccServiceResourceConfigNonDefaultDeploySettings("todo-app"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
@@ -425,6 +535,9 @@ func TestAccServiceResourceNonDefaultSettings(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckResourceAttr("railway_service.test", "predeploy_command", "nginx -t"),
 					resource.TestCheckResourceAttr("railway_service.test", "predeploy_timeout", "30"),
 					resource.TestCheckResourceAttr("railway_service.test", "start_command", "nginx -g 'daemon off;'"),
@@ -446,7 +559,7 @@ func TestAccServiceResourceNonDefaultSettings(t *testing.T) {
 			},
 			// Update with same values
 			{
-				Config: testAccServiceResourceConfigNonDefault("todo-app"),
+				Config: testAccServiceResourceConfigNonDefaultDeploySettings("todo-app"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
@@ -457,6 +570,9 @@ func TestAccServiceResourceNonDefaultSettings(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckResourceAttr("railway_service.test", "predeploy_command", "nginx -t"),
 					resource.TestCheckResourceAttr("railway_service.test", "predeploy_timeout", "30"),
 					resource.TestCheckResourceAttr("railway_service.test", "start_command", "nginx -g 'daemon off;'"),
@@ -469,6 +585,12 @@ func TestAccServiceResourceNonDefaultSettings(t *testing.T) {
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
 				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Update with null values
 			{
@@ -483,6 +605,9 @@ func TestAccServiceResourceNonDefaultSettings(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -494,6 +619,238 @@ func TestAccServiceResourceNonDefaultSettings(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.region", "asia-southeast1-eqsg3a"),
 					resource.TestCheckResourceAttr("railway_service.test", "regions.0.num_replicas", "1"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccServiceResourceNonDefaultBuildSettingsDockerfile(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: testAccServiceResourceConfigNonDefaultBuildSettingsDockerfile("todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckResourceAttr("railway_service.test", "dockerfile_path", "packages/api/Dockerfile"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "2"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.0", "packages/api/src/**"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.1", "!packages/api/src/**/*.md"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "regions"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update with same values
+			{
+				Config: testAccServiceResourceConfigNonDefaultBuildSettingsDockerfile("todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckResourceAttr("railway_service.test", "dockerfile_path", "packages/api/Dockerfile"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "2"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.0", "packages/api/src/**"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.1", "!packages/api/src/**/*.md"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "regions"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update with null values
+			{
+				Config: testAccServiceResourceConfigDefault("nue-todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "regions"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccServiceResourceNonDefaultBuildSettingsCommand(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: testAccServiceResourceConfigNonDefaultBuildSettingsCommand("todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "build_command", "pnpm --filter api build"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "2"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.0", "packages/api/src/**"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.1", "!packages/api/src/**/*.md"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "regions"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update with same values
+			{
+				Config: testAccServiceResourceConfigNonDefaultBuildSettingsCommand("todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "build_command", "pnpm --filter api build"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "2"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.0", "packages/api/src/**"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.1", "!packages/api/src/**/*.md"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "regions"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "railway_service.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update with null values
+			{
+				Config: testAccServiceResourceConfigDefault("nue-todo-app"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("railway_service.test", "id", uuidRegex()),
+					resource.TestCheckResourceAttr("railway_service.test", "name", "nue-todo-app"),
+					resource.TestCheckResourceAttr("railway_service.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "cron_schedule"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_image"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "healthcheck_timeout"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_type", "ON_FAILURE"),
+					resource.TestCheckResourceAttr("railway_service.test", "restart_policy_max_retries", "10"),
+					resource.TestCheckResourceAttr("railway_service.test", "serverless", "false"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "volume"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "regions"),
 				),
 			},
 			// ImportState testing
@@ -525,6 +882,9 @@ func TestAccServiceResourceNonDefaultRegionsImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -559,6 +919,9 @@ func TestAccServiceResourceNonDefaultRegionsImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -593,6 +956,9 @@ func TestAccServiceResourceNonDefaultRegionsImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -627,6 +993,9 @@ func TestAccServiceResourceNonDefaultRegionsImage(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -675,6 +1044,9 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -709,6 +1081,9 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -743,6 +1118,9 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -777,6 +1155,9 @@ func TestAccServiceResourceNonDefaultVolume(t *testing.T) {
 					resource.TestCheckNoResourceAttr("railway_service.test", "source_repo_branch"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "root_directory"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "config_path"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "build_command"),
+					resource.TestCheckNoResourceAttr("railway_service.test", "dockerfile_path"),
+					resource.TestCheckResourceAttr("railway_service.test", "watch_patterns.#", "0"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_command"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "predeploy_timeout"),
 					resource.TestCheckNoResourceAttr("railway_service.test", "start_command"),
@@ -835,7 +1216,39 @@ resource "railway_service" "test" {
 `, name)
 }
 
-func testAccServiceResourceConfigNonDefault(name string) string {
+func testAccServiceResourceConfigNonDefaultBuildSettingsDockerfile(name string) string {
+	return fmt.Sprintf(`
+resource "railway_service" "test" {
+  name = "%s"
+  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
+
+  dockerfile_path = "packages/api/Dockerfile"
+
+  watch_patterns = [
+    "packages/api/src/**",
+    "!packages/api/src/**/*.md"
+  ]
+}
+`, name)
+}
+
+func testAccServiceResourceConfigNonDefaultBuildSettingsCommand(name string) string {
+	return fmt.Sprintf(`
+resource "railway_service" "test" {
+  name = "%s"
+  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
+
+  build_command = "pnpm --filter api build"
+
+  watch_patterns = [
+    "packages/api/src/**",
+    "!packages/api/src/**/*.md"
+  ]
+}
+`, name)
+}
+
+func testAccServiceResourceConfigNonDefaultDeploySettings(name string) string {
 	return fmt.Sprintf(`
 resource "railway_service" "test" {
   name = "%s"
