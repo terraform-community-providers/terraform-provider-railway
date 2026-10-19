@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -29,9 +31,11 @@ type EnvironmentResource struct {
 }
 
 type EnvironmentResourceModel struct {
-	Id       types.String `tfsdk:"id"`
-	Name     types.String `tfsdk:"name"`
-	ProjecId types.String `tfsdk:"project_id"`
+	Id                  types.String `tfsdk:"id"`
+	Name                types.String `tfsdk:"name"`
+	ProjecId            types.String `tfsdk:"project_id"`
+	SourceEnvironmentId types.String `tfsdk:"source_environment_id"`
+	SkipInitialDeploys  types.Bool   `tfsdk:"skip_initial_deploys"`
 }
 
 func (r *EnvironmentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -40,7 +44,7 @@ func (r *EnvironmentResource) Metadata(ctx context.Context, req resource.Metadat
 
 func (r *EnvironmentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway environment.",
+		MarkdownDescription: "Railway environment. Railway does not expose the create-only cloning inputs after creation, so imports cannot recover `source_environment_id` or a true `skip_initial_deploys` value; configuring either on an imported environment requires replacement.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the environment.",
@@ -67,6 +71,25 @@ func (r *EnvironmentResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
+				},
+			},
+			"source_environment_id": schema.StringAttribute{
+				MarkdownDescription: "Identifier of an environment whose services, volumes, configuration, and variables are copied into this environment.",
+				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(uuidRegex(), "must be an id"),
+				},
+			},
+			"skip_initial_deploys": schema.BoolAttribute{
+				MarkdownDescription: "Whether deployments should be skipped while creating the environment. Commonly used with `source_environment_id` when cloning an environment.",
+				Optional:            true,
+				Computed:            true,
+				Default:             booldefault.StaticBool(false),
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
 				},
 			},
 		},
@@ -103,8 +126,10 @@ func (r *EnvironmentResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	input := EnvironmentCreateInput{
-		Name:      data.Name.ValueString(),
-		ProjectId: data.ProjecId.ValueString(),
+		Name:                data.Name.ValueString(),
+		ProjectId:           data.ProjecId.ValueString(),
+		SourceEnvironmentId: data.SourceEnvironmentId.ValueStringPointer(),
+		SkipInitialDeploys:  data.SkipInitialDeploys.ValueBool(),
 	}
 
 	response, err := createEnvironment(ctx, *r.client, input)
@@ -146,6 +171,9 @@ func (r *EnvironmentResource) Read(ctx context.Context, req resource.ReadRequest
 	data.Id = types.StringValue(environment.Id)
 	data.Name = types.StringValue(environment.Name)
 	data.ProjecId = types.StringValue(environment.ProjectId)
+	if data.SkipInitialDeploys.IsNull() || data.SkipInitialDeploys.IsUnknown() {
+		data.SkipInitialDeploys = types.BoolValue(false)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

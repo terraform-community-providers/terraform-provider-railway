@@ -3,12 +3,12 @@
 page_title: "railway_environment Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway environment.
+  Railway environment. Railway does not expose the create-only cloning inputs after creation, so imports cannot recover source_environment_id or a true skip_initial_deploys value; configuring either on an imported environment requires replacement.
 ---
 
 # railway_environment (Resource)
 
-Railway environment.
+Railway environment. Railway does not expose the create-only cloning inputs after creation, so imports cannot recover `source_environment_id` or a true `skip_initial_deploys` value; configuring either on an imported environment requires replacement.
 
 ## Example Usage
 
@@ -16,6 +16,13 @@ Railway environment.
 resource "railway_environment" "example" {
   name       = "staging"
   project_id = railway_project.example.id
+}
+
+resource "railway_environment" "cloned_preview" {
+  name                  = "preview"
+  project_id            = railway_project.example.id
+  source_environment_id = railway_project.example.default_environment.id
+  skip_initial_deploys  = true
 }
 ```
 
@@ -26,6 +33,11 @@ resource "railway_environment" "example" {
 
 - `name` (String) Name of the environment.
 - `project_id` (String) Identifier of the project the environment belongs to.
+
+### Optional
+
+- `skip_initial_deploys` (Boolean) Whether deployments should be skipped while creating the environment. Commonly used with `source_environment_id` when cloning an environment.
+- `source_environment_id` (String) Identifier of an environment whose services, volumes, configuration, and variables are copied into this environment.
 
 ### Read-Only
 
