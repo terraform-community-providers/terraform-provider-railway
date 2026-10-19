@@ -212,6 +212,11 @@ func (r *CustomDomainResource) Read(ctx context.Context, req resource.ReadReques
 	err := readCustomDomain(ctx, *r.client, data.EnvironmentId.ValueString(), data.ServiceId.ValueString(), data.ProjectId.ValueString(), data.Domain.ValueString(), data)
 
 	if err != nil {
+		if isNotFoundError(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read custom domain, got error: %s", err))
 		return
 	}
@@ -334,7 +339,7 @@ func readCustomDomain(ctx context.Context, client graphql.Client, environmentId 
 	}
 
 	if domain.Id == "" {
-		return fmt.Errorf("Unable to find custom domain")
+		return fmt.Errorf("custom domain %q: %w", domainHost, errNotFound)
 	}
 
 	data.Id = types.StringValue(domain.Id)
