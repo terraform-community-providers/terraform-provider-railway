@@ -6,13 +6,13 @@ import (
 	"maps"
 	"reflect"
 	"slices"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -33,6 +33,7 @@ import (
 
 var _ resource.Resource = &ServiceResource{}
 var _ resource.ResourceWithImportState = &ServiceResource{}
+var _ resource.ResourceWithModifyPlan = &ServiceResource{}
 
 func NewServiceResource() resource.Resource {
 	return &ServiceResource{}
@@ -131,10 +132,11 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"cron_schedule": schema.StringAttribute{
-				MarkdownDescription: "Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.",
+				MarkdownDescription: "Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`. Conflicts with `restart_policy_type` and `serverless`.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.UTF8LengthAtLeast(9),
+					stringvalidator.ConflictsWith(path.MatchRoot("serverless")),
 				},
 			},
 			"source_image": schema.StringAttribute{
@@ -276,16 +278,15 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"restart_policy_type": schema.StringAttribute{
-				MarkdownDescription: "Restart policy: `ALWAYS`, `NEVER`, or `ON_FAILURE`. **Default** `ON_FAILURE`.",
+				MarkdownDescription: "Restart policy: `ALWAYS`, `NEVER`, or `ON_FAILURE`. **Default** `NEVER` when `cron_schedule` is set, otherwise `ON_FAILURE`.",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("ALWAYS", "NEVER", "ON_FAILURE"),
 				},
-				Default: stringdefault.StaticString("ON_FAILURE"),
 			},
 			"restart_policy_max_retries": schema.Int64Attribute{
-				MarkdownDescription: "Maximum restart retries for the `ON_FAILURE` policy. **Default** `10`. Must be specified if `restart_policy_type` is `ON_FAILURE`.",
+				MarkdownDescription: "Maximum restart retries for the `ON_FAILURE` policy. **Default** `10`. Must be specified if `restart_policy_type` is `ON_FAILURE`. Conflicts with `cron_schedule`.",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.Int64{
@@ -294,7 +295,7 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Default: int64default.StaticInt64(10),
 			},
 			"serverless": schema.BoolAttribute{
-				MarkdownDescription: "Allow the service to sleep when inactive. **Default** `false`.",
+				MarkdownDescription: "Allow the service to sleep when inactive. **Default** `false`. Conflicts with `cron_schedule`.",
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(false),
@@ -364,6 +365,32 @@ func (r *ServiceResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
+}
+
+func (r *ServiceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var policy types.String
+	var cronSchedule types.String
+
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("restart_policy_type"), &policy)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("cron_schedule"), &cronSchedule)...)
+
+	if resp.Diagnostics.HasError() || !policy.IsNull() {
+		return
+	}
+
+	switch {
+	case cronSchedule.IsUnknown():
+	case cronSchedule.IsNull():
+		policy = types.StringValue("ON_FAILURE")
+	default:
+		policy = types.StringValue("NEVER")
+	}
+
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("restart_policy_type"), policy)...)
 }
 
 func (r *ServiceResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
@@ -537,7 +564,7 @@ func (r *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data, !data.Volume.IsNull())
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
@@ -576,7 +603,7 @@ func (r *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data, false)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
@@ -771,7 +798,7 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data)
+	err = getAndBuildVolumeInstance(ctx, *r.client, data.ProjectId.ValueString(), data.Id.ValueString(), data, !data.Volume.IsNull() && state.Volume.IsNull())
 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read volume settings, got error: %s", err))
@@ -1074,8 +1101,14 @@ func getRegionsFromLatestDeployment(latestDeployment getServiceInstanceServiceIn
 	return regions, nil
 }
 
-func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel) error {
-	data.Volume = types.ObjectNull(volumeAttrTypes)
+func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, projectId string, serviceId string, data *ServiceResourceModel, wait bool) error {
+	if wait {
+		var cancel context.CancelFunc
+
+		ctx, cancel = context.WithTimeout(ctx, 300*time.Second)
+
+		defer cancel()
+	}
 
 	// Read the service again to get the updated source attributes
 	_, environment, err := defaultEnvironmentForProject(ctx, client, projectId)
@@ -1084,29 +1117,46 @@ func getAndBuildVolumeInstance(ctx context.Context, client graphql.Client, proje
 		return err
 	}
 
-	response, err := getVolumeInstances(ctx, client, projectId)
+	for {
+		response, err := getVolumeInstances(ctx, client, projectId)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	for _, volume := range response.Project.Volumes.Edges {
-		for _, volumeInstance := range volume.Node.VolumeInstances.Edges {
-			if volumeInstance.Node.ServiceId == serviceId && volumeInstance.Node.EnvironmentId == environment.Id {
-				data.Volume = types.ObjectValueMust(
-					volumeAttrTypes,
-					map[string]attr.Value{
-						"id":         types.StringValue(volume.Node.Id),
-						"name":       types.StringValue(volume.Node.Name),
-						"mount_path": types.StringValue(volumeInstance.Node.MountPath),
-						"size":       types.Float64Value(float64(volumeInstance.Node.SizeMB)),
-					},
-				)
+		for _, volume := range response.Project.Volumes.Edges {
+			for _, volumeInstance := range volume.Node.VolumeInstances.Edges {
+				if volumeInstance.Node.ServiceId == serviceId && volumeInstance.Node.EnvironmentId == environment.Id {
+					data.Volume = types.ObjectValueMust(
+						volumeAttrTypes,
+						map[string]attr.Value{
+							"id":         types.StringValue(volume.Node.Id),
+							"name":       types.StringValue(volume.Node.Name),
+							"mount_path": types.StringValue(volumeInstance.Node.MountPath),
+							"size":       types.Float64Value(float64(volumeInstance.Node.SizeMB)),
+						},
+					)
+
+					return nil
+				}
 			}
 		}
-	}
 
-	return nil
+		if !wait {
+			data.Volume = types.ObjectNull(volumeAttrTypes)
+			return nil
+		}
+
+		// Railway may not expose a newly attached volume immediately after creation.
+		timer := time.NewTimer(time.Second)
+
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return fmt.Errorf("waiting for volume instance for service %s: %w", serviceId, ctx.Err())
+		case <-timer.C:
+		}
+	}
 }
 
 func updateServiceConnection(ctx context.Context, client graphql.Client, serviceId string, data *ServiceResourceModel, state *ServiceResourceModel) error {

@@ -31,17 +31,17 @@ resource "railway_service" "example" {
 
 - `build_command` (String) Command to run when building the service. Conflicts with `source_image` and `dockerfile_path`.
 - `config_path` (String) Path to the Railway config file. Conflicts with `source_image`.
-- `cron_schedule` (String) Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`.
+- `cron_schedule` (String) Cron schedule of the service. Only allowed when total number of replicas across all regions is `1`. Conflicts with `restart_policy_type` and `serverless`.
 - `dockerfile_path` (String) Path to a custom Dockerfile. Conflicts with `source_image` and `build_command`.
 - `healthcheck_path` (String) HTTP path used to check deployment health.
 - `healthcheck_timeout` (Number) Maximum time in seconds to wait for the health check to succeed.
 - `predeploy_command` (String) Command to run before deploying the service. Combine multiple commands with `&&`.
 - `predeploy_timeout` (Number) Maximum time in seconds to wait for the predeploy command to succeed.
 - `regions` (Attributes List) Regions with replicas to deploy service in. (see [below for nested schema](#nestedatt--regions))
-- `restart_policy_max_retries` (Number) Maximum restart retries for the `ON_FAILURE` policy. **Default** `10`. Must be specified if `restart_policy_type` is `ON_FAILURE`.
-- `restart_policy_type` (String) Restart policy: `ALWAYS`, `NEVER`, or `ON_FAILURE`. **Default** `ON_FAILURE`.
+- `restart_policy_max_retries` (Number) Maximum restart retries for the `ON_FAILURE` policy. **Default** `10`. Must be specified if `restart_policy_type` is `ON_FAILURE`. Conflicts with `cron_schedule`.
+- `restart_policy_type` (String) Restart policy: `ALWAYS`, `NEVER`, or `ON_FAILURE`. **Default** `NEVER` when `cron_schedule` is set, otherwise `ON_FAILURE`.
 - `root_directory` (String) Directory to user for the service. Conflicts with `source_image`.
-- `serverless` (Boolean) Allow the service to sleep when inactive. **Default** `false`.
+- `serverless` (Boolean) Allow the service to sleep when inactive. **Default** `false`. Conflicts with `cron_schedule`.
 - `source_image` (String) Source image of the service. Conflicts with `source_repo`, `source_repo_branch`, `root_directory`, `config_path`, `build_command`, `dockerfile_path` and `watch_patterns`.
 - `source_image_registry_password` (String, Sensitive) Private Docker registry credentials.
 - `source_image_registry_username` (String) Private Docker registry credentials.

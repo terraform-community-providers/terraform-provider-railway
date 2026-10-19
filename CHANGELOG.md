@@ -2,9 +2,11 @@
 
 ### Enhancements
 * Add support for `target_port` in `railway_service_domain` resource
+* Added build & deploy settings to `railway_service` resource
 
 ### Bug fixes
 * Fixes issue with `regions` in `railway_service` not being updated correctly
+* Fixes issue with reading a newly created volume in `railway_service` resource
 
 ## 0.6.2
 
