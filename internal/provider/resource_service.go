@@ -675,6 +675,12 @@ func (r *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 		instanceInput = buildServiceInstanceInput(data, regionsData)
 	}
 
+	// dockerfile_path was removed from the config: clear it.
+	if data.DockerfilePath.IsNull() && !state.DockerfilePath.IsNull() {
+		empty := ""
+		instanceInput.DockerfilePath = &empty
+	}
+
 	_, err := updateServiceInstance(ctx, *r.client, data.Id.ValueString(), instanceInput)
 
 	if err != nil {
@@ -869,7 +875,9 @@ func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]Servic
 		instanceInput.BuildCommand = &command
 	}
 
-	if !data.DockerfilePath.IsUnknown() {
+	// Only send a Dockerfile path the config sets: Railway treats any dockerfilePath,
+	// even "", as a switch to the Dockerfile builder. Update clears a removed one.
+	if !data.DockerfilePath.IsUnknown() && !data.DockerfilePath.IsNull() {
 		path := data.DockerfilePath.ValueString()
 		instanceInput.DockerfilePath = &path
 	}
