@@ -864,12 +864,12 @@ func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]Servic
 		instanceInput.RailwayConfigFile = data.ConfigPath.ValueStringPointer()
 	}
 
-	if !data.BuildCommand.IsUnknown() {
+	if !data.BuildCommand.IsNull() && !data.BuildCommand.IsUnknown() {
 		command := data.BuildCommand.ValueString()
 		instanceInput.BuildCommand = &command
 	}
 
-	if !data.DockerfilePath.IsUnknown() {
+	if !data.DockerfilePath.IsNull() && !data.DockerfilePath.IsUnknown() {
 		path := data.DockerfilePath.ValueString()
 		instanceInput.DockerfilePath = &path
 	}
@@ -900,12 +900,12 @@ func buildServiceInstanceInput(data *ServiceResourceModel, regionsData *[]Servic
 		instanceInput.PreDeployTimeoutSeconds = &timeout
 	}
 
-	if !data.StartCommand.IsUnknown() {
+	if !data.StartCommand.IsNull() && !data.StartCommand.IsUnknown() {
 		command := data.StartCommand.ValueString()
 		instanceInput.StartCommand = &command
 	}
 
-	if !data.HealthcheckPath.IsUnknown() {
+	if !data.HealthcheckPath.IsNull() && !data.HealthcheckPath.IsUnknown() {
 		command := data.HealthcheckPath.ValueString()
 		instanceInput.HealthcheckPath = &command
 	}
