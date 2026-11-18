@@ -1,3 +1,8 @@
+## Unreleased
+
+### Enhancements
+* Added `railway_project_token` resource
+
 ## 0.6.3
 
 ### Enhancements
