@@ -19,7 +19,7 @@ func TestAccProjectTokenResourceDefault(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("railway_project_token.test", "id", uuidRegex()),
 					resource.TestCheckResourceAttr("railway_project_token.test", "name", "test-token"),
-					resource.TestCheckResourceAttr("railway_project_token.test", "project_id", "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"),
+					resource.TestCheckResourceAttr("railway_project_token.test", "project_id", "0bb01547-570d-4109-a5e8-138691f6a2d1"),
 					resource.TestCheckResourceAttr("railway_project_token.test", "environment_id", "d0519b29-5d12-4857-a5dd-76fa7418336c"),
 					resource.TestCheckResourceAttrSet("railway_project_token.test", "token"),
 				),
@@ -50,7 +50,7 @@ func testAccProjectTokenResourceConfigDefault(name string) string {
 	return fmt.Sprintf(`
 resource "railway_project_token" "test" {
   name = "%s"
-  project_id = "e2bcf8de-5f7c-45d3-9f83-fad52a6b0703"
+  project_id = "0bb01547-570d-4109-a5e8-138691f6a2d1"
   environment_id = "d0519b29-5d12-4857-a5dd-76fa7418336c"
 }
 `, name)
