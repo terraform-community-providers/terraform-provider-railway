@@ -10,6 +10,74 @@ import (
 	"github.com/Khan/genqlient/graphql"
 )
 
+// AccessGroup includes the GraphQL fields of AccessGroup requested by the fragment AccessGroup.
+type AccessGroup struct {
+	Id          string      `json:"id"`
+	Name        string      `json:"name"`
+	Role        ProjectRole `json:"role"`
+	WorkspaceId string      `json:"workspaceId"`
+}
+
+// GetId returns AccessGroup.Id, and is useful for accessing the field via an interface.
+func (v *AccessGroup) GetId() string { return v.Id }
+
+// GetName returns AccessGroup.Name, and is useful for accessing the field via an interface.
+func (v *AccessGroup) GetName() string { return v.Name }
+
+// GetRole returns AccessGroup.Role, and is useful for accessing the field via an interface.
+func (v *AccessGroup) GetRole() ProjectRole { return v.Role }
+
+// GetWorkspaceId returns AccessGroup.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *AccessGroup) GetWorkspaceId() string { return v.WorkspaceId }
+
+type AccessGroupCreateInput struct {
+	Name        string      `json:"name"`
+	Role        ProjectRole `json:"role"`
+	WorkspaceId string      `json:"workspaceId"`
+}
+
+// GetName returns AccessGroupCreateInput.Name, and is useful for accessing the field via an interface.
+func (v *AccessGroupCreateInput) GetName() string { return v.Name }
+
+// GetRole returns AccessGroupCreateInput.Role, and is useful for accessing the field via an interface.
+func (v *AccessGroupCreateInput) GetRole() ProjectRole { return v.Role }
+
+// GetWorkspaceId returns AccessGroupCreateInput.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *AccessGroupCreateInput) GetWorkspaceId() string { return v.WorkspaceId }
+
+type AccessGroupMemberInput struct {
+	AccessGroupId string `json:"accessGroupId"`
+	UserId        string `json:"userId"`
+}
+
+// GetAccessGroupId returns AccessGroupMemberInput.AccessGroupId, and is useful for accessing the field via an interface.
+func (v *AccessGroupMemberInput) GetAccessGroupId() string { return v.AccessGroupId }
+
+// GetUserId returns AccessGroupMemberInput.UserId, and is useful for accessing the field via an interface.
+func (v *AccessGroupMemberInput) GetUserId() string { return v.UserId }
+
+type AccessGroupProjectInput struct {
+	AccessGroupId string `json:"accessGroupId"`
+	ProjectId     string `json:"projectId"`
+}
+
+// GetAccessGroupId returns AccessGroupProjectInput.AccessGroupId, and is useful for accessing the field via an interface.
+func (v *AccessGroupProjectInput) GetAccessGroupId() string { return v.AccessGroupId }
+
+// GetProjectId returns AccessGroupProjectInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *AccessGroupProjectInput) GetProjectId() string { return v.ProjectId }
+
+type AccessGroupUpdateInput struct {
+	Name string      `json:"name"`
+	Role ProjectRole `json:"role"`
+}
+
+// GetName returns AccessGroupUpdateInput.Name, and is useful for accessing the field via an interface.
+func (v *AccessGroupUpdateInput) GetName() string { return v.Name }
+
+// GetRole returns AccessGroupUpdateInput.Role, and is useful for accessing the field via an interface.
+func (v *AccessGroupUpdateInput) GetRole() ProjectRole { return v.Role }
+
 type Builder string
 
 const (
@@ -284,6 +352,14 @@ func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironment
 func (v *ProjectEnvironmentsProjectEnvironmentsConnectionEdgesProjectEnvironmentsConnectionEdgeNodeEnvironment) GetCreatedAt() time.Time {
 	return v.CreatedAt
 }
+
+type ProjectRole string
+
+const (
+	ProjectRoleAdmin  ProjectRole = "ADMIN"
+	ProjectRoleMember ProjectRole = "MEMBER"
+	ProjectRoleViewer ProjectRole = "VIEWER"
+)
 
 type ProjectUpdateInput struct {
 	BaseEnvironmentId *string `json:"baseEnvironmentId,omitempty"`
@@ -692,6 +768,14 @@ func (v *TCPProxyCreateInput) GetEnvironmentId() string { return v.EnvironmentId
 // GetServiceId returns TCPProxyCreateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *TCPProxyCreateInput) GetServiceId() string { return v.ServiceId }
 
+type TeamRole string
+
+const (
+	TeamRoleAdmin  TeamRole = "ADMIN"
+	TeamRoleMember TeamRole = "MEMBER"
+	TeamRoleViewer TeamRole = "VIEWER"
+)
+
 type VariableCollectionUpsertInput struct {
 	EnvironmentId string `json:"environmentId"`
 	ProjectId     string `json:"projectId"`
@@ -908,6 +992,22 @@ func (v *VolumeVolumeInstancesVolumeVolumeInstancesConnectionEdgesVolumeVolumeIn
 	return v.SizeMB
 }
 
+// __addAccessGroupMemberInput is used internally by genqlient
+type __addAccessGroupMemberInput struct {
+	Input AccessGroupMemberInput `json:"input"`
+}
+
+// GetInput returns __addAccessGroupMemberInput.Input, and is useful for accessing the field via an interface.
+func (v *__addAccessGroupMemberInput) GetInput() AccessGroupMemberInput { return v.Input }
+
+// __attachAccessGroupProjectInput is used internally by genqlient
+type __attachAccessGroupProjectInput struct {
+	Input AccessGroupProjectInput `json:"input"`
+}
+
+// GetInput returns __attachAccessGroupProjectInput.Input, and is useful for accessing the field via an interface.
+func (v *__attachAccessGroupProjectInput) GetInput() AccessGroupProjectInput { return v.Input }
+
 // __connectServiceInput is used internally by genqlient
 type __connectServiceInput struct {
 	Id    string              `json:"id"`
@@ -919,6 +1019,14 @@ func (v *__connectServiceInput) GetId() string { return v.Id }
 
 // GetInput returns __connectServiceInput.Input, and is useful for accessing the field via an interface.
 func (v *__connectServiceInput) GetInput() ServiceConnectInput { return v.Input }
+
+// __createAccessGroupInput is used internally by genqlient
+type __createAccessGroupInput struct {
+	Input AccessGroupCreateInput `json:"input"`
+}
+
+// GetInput returns __createAccessGroupInput.Input, and is useful for accessing the field via an interface.
+func (v *__createAccessGroupInput) GetInput() AccessGroupCreateInput { return v.Input }
 
 // __createCustomDomainInput is used internally by genqlient
 type __createCustomDomainInput struct {
@@ -975,6 +1083,14 @@ type __createVolumeInput struct {
 
 // GetInput returns __createVolumeInput.Input, and is useful for accessing the field via an interface.
 func (v *__createVolumeInput) GetInput() VolumeCreateInput { return v.Input }
+
+// __deleteAccessGroupInput is used internally by genqlient
+type __deleteAccessGroupInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __deleteAccessGroupInput.Id, and is useful for accessing the field via an interface.
+func (v *__deleteAccessGroupInput) GetId() string { return v.Id }
 
 // __deleteCustomDomainInput is used internally by genqlient
 type __deleteCustomDomainInput struct {
@@ -1040,6 +1156,14 @@ type __deleteVolumeInput struct {
 // GetId returns __deleteVolumeInput.Id, and is useful for accessing the field via an interface.
 func (v *__deleteVolumeInput) GetId() string { return v.Id }
 
+// __detachAccessGroupProjectInput is used internally by genqlient
+type __detachAccessGroupProjectInput struct {
+	Input AccessGroupProjectInput `json:"input"`
+}
+
+// GetInput returns __detachAccessGroupProjectInput.Input, and is useful for accessing the field via an interface.
+func (v *__detachAccessGroupProjectInput) GetInput() AccessGroupProjectInput { return v.Input }
+
 // __disconnectServiceInput is used internally by genqlient
 type __disconnectServiceInput struct {
 	Id string `json:"id"`
@@ -1047,6 +1171,50 @@ type __disconnectServiceInput struct {
 
 // GetId returns __disconnectServiceInput.Id, and is useful for accessing the field via an interface.
 func (v *__disconnectServiceInput) GetId() string { return v.Id }
+
+// __getAccessGroupMembersPageInput is used internally by genqlient
+type __getAccessGroupMembersPageInput struct {
+	WorkspaceId string `json:"workspaceId"`
+	GroupAfter  string `json:"groupAfter,omitempty"`
+	After       string `json:"after,omitempty"`
+}
+
+// GetWorkspaceId returns __getAccessGroupMembersPageInput.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupMembersPageInput) GetWorkspaceId() string { return v.WorkspaceId }
+
+// GetGroupAfter returns __getAccessGroupMembersPageInput.GroupAfter, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupMembersPageInput) GetGroupAfter() string { return v.GroupAfter }
+
+// GetAfter returns __getAccessGroupMembersPageInput.After, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupMembersPageInput) GetAfter() string { return v.After }
+
+// __getAccessGroupProjectsPageInput is used internally by genqlient
+type __getAccessGroupProjectsPageInput struct {
+	WorkspaceId string `json:"workspaceId"`
+	GroupAfter  string `json:"groupAfter,omitempty"`
+	After       string `json:"after,omitempty"`
+}
+
+// GetWorkspaceId returns __getAccessGroupProjectsPageInput.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupProjectsPageInput) GetWorkspaceId() string { return v.WorkspaceId }
+
+// GetGroupAfter returns __getAccessGroupProjectsPageInput.GroupAfter, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupProjectsPageInput) GetGroupAfter() string { return v.GroupAfter }
+
+// GetAfter returns __getAccessGroupProjectsPageInput.After, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupProjectsPageInput) GetAfter() string { return v.After }
+
+// __getAccessGroupsInput is used internally by genqlient
+type __getAccessGroupsInput struct {
+	WorkspaceId string `json:"workspaceId"`
+	After       string `json:"after,omitempty"`
+}
+
+// GetWorkspaceId returns __getAccessGroupsInput.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupsInput) GetWorkspaceId() string { return v.WorkspaceId }
+
+// GetAfter returns __getAccessGroupsInput.After, and is useful for accessing the field via an interface.
+func (v *__getAccessGroupsInput) GetAfter() string { return v.After }
 
 // __getEnvironmentInput is used internally by genqlient
 type __getEnvironmentInput struct {
@@ -1148,6 +1316,14 @@ type __getVolumeInstancesInput struct {
 // GetId returns __getVolumeInstancesInput.Id, and is useful for accessing the field via an interface.
 func (v *__getVolumeInstancesInput) GetId() string { return v.Id }
 
+// __getWorkspaceMembersInput is used internally by genqlient
+type __getWorkspaceMembersInput struct {
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// GetWorkspaceId returns __getWorkspaceMembersInput.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *__getWorkspaceMembersInput) GetWorkspaceId() string { return v.WorkspaceId }
+
 // __listCustomDomainsInput is used internally by genqlient
 type __listCustomDomainsInput struct {
 	EnvironmentId string `json:"environmentId"`
@@ -1207,6 +1383,26 @@ func (v *__redeployServiceInstanceInput) GetEnvironmentId() string { return v.En
 
 // GetServiceId returns __redeployServiceInstanceInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *__redeployServiceInstanceInput) GetServiceId() string { return v.ServiceId }
+
+// __removeAccessGroupMemberInput is used internally by genqlient
+type __removeAccessGroupMemberInput struct {
+	Input AccessGroupMemberInput `json:"input"`
+}
+
+// GetInput returns __removeAccessGroupMemberInput.Input, and is useful for accessing the field via an interface.
+func (v *__removeAccessGroupMemberInput) GetInput() AccessGroupMemberInput { return v.Input }
+
+// __updateAccessGroupInput is used internally by genqlient
+type __updateAccessGroupInput struct {
+	Id    string                 `json:"id"`
+	Input AccessGroupUpdateInput `json:"input"`
+}
+
+// GetId returns __updateAccessGroupInput.Id, and is useful for accessing the field via an interface.
+func (v *__updateAccessGroupInput) GetId() string { return v.Id }
+
+// GetInput returns __updateAccessGroupInput.Input, and is useful for accessing the field via an interface.
+func (v *__updateAccessGroupInput) GetInput() AccessGroupUpdateInput { return v.Input }
 
 // __updateCustomDomainInput is used internally by genqlient
 type __updateCustomDomainInput struct {
@@ -1308,6 +1504,46 @@ type __upsertVariableInput struct {
 // GetInput returns __upsertVariableInput.Input, and is useful for accessing the field via an interface.
 func (v *__upsertVariableInput) GetInput() VariableUpsertInput { return v.Input }
 
+// addAccessGroupMemberAccessGroupMemberAddAccessGroupMember includes the requested fields of the GraphQL type AccessGroupMember.
+type addAccessGroupMemberAccessGroupMemberAddAccessGroupMember struct {
+	Id string `json:"id"`
+}
+
+// GetId returns addAccessGroupMemberAccessGroupMemberAddAccessGroupMember.Id, and is useful for accessing the field via an interface.
+func (v *addAccessGroupMemberAccessGroupMemberAddAccessGroupMember) GetId() string { return v.Id }
+
+// addAccessGroupMemberResponse is returned by addAccessGroupMember on success.
+type addAccessGroupMemberResponse struct {
+	// Add a workspace member to an access group.
+	AccessGroupMemberAdd addAccessGroupMemberAccessGroupMemberAddAccessGroupMember `json:"accessGroupMemberAdd"`
+}
+
+// GetAccessGroupMemberAdd returns addAccessGroupMemberResponse.AccessGroupMemberAdd, and is useful for accessing the field via an interface.
+func (v *addAccessGroupMemberResponse) GetAccessGroupMemberAdd() addAccessGroupMemberAccessGroupMemberAddAccessGroupMember {
+	return v.AccessGroupMemberAdd
+}
+
+// attachAccessGroupProjectAccessGroupProjectAttachAccessGroupProject includes the requested fields of the GraphQL type AccessGroupProject.
+type attachAccessGroupProjectAccessGroupProjectAttachAccessGroupProject struct {
+	Id string `json:"id"`
+}
+
+// GetId returns attachAccessGroupProjectAccessGroupProjectAttachAccessGroupProject.Id, and is useful for accessing the field via an interface.
+func (v *attachAccessGroupProjectAccessGroupProjectAttachAccessGroupProject) GetId() string {
+	return v.Id
+}
+
+// attachAccessGroupProjectResponse is returned by attachAccessGroupProject on success.
+type attachAccessGroupProjectResponse struct {
+	// Attach a project to an access group.
+	AccessGroupProjectAttach attachAccessGroupProjectAccessGroupProjectAttachAccessGroupProject `json:"accessGroupProjectAttach"`
+}
+
+// GetAccessGroupProjectAttach returns attachAccessGroupProjectResponse.AccessGroupProjectAttach, and is useful for accessing the field via an interface.
+func (v *attachAccessGroupProjectResponse) GetAccessGroupProjectAttach() attachAccessGroupProjectAccessGroupProjectAttachAccessGroupProject {
+	return v.AccessGroupProjectAttach
+}
+
 // connectServiceResponse is returned by connectService on success.
 type connectServiceResponse struct {
 	// Connect a service to a source
@@ -1381,6 +1617,91 @@ func (v *connectServiceServiceConnectService) __premarshalJSON() (*__premarshalc
 	retval.Name = v.Service.Name
 	retval.ProjectId = v.Service.ProjectId
 	return &retval, nil
+}
+
+// createAccessGroupAccessGroupCreateAccessGroup includes the requested fields of the GraphQL type AccessGroup.
+type createAccessGroupAccessGroupCreateAccessGroup struct {
+	AccessGroup `json:"-"`
+}
+
+// GetId returns createAccessGroupAccessGroupCreateAccessGroup.Id, and is useful for accessing the field via an interface.
+func (v *createAccessGroupAccessGroupCreateAccessGroup) GetId() string { return v.AccessGroup.Id }
+
+// GetName returns createAccessGroupAccessGroupCreateAccessGroup.Name, and is useful for accessing the field via an interface.
+func (v *createAccessGroupAccessGroupCreateAccessGroup) GetName() string { return v.AccessGroup.Name }
+
+// GetRole returns createAccessGroupAccessGroupCreateAccessGroup.Role, and is useful for accessing the field via an interface.
+func (v *createAccessGroupAccessGroupCreateAccessGroup) GetRole() ProjectRole {
+	return v.AccessGroup.Role
+}
+
+// GetWorkspaceId returns createAccessGroupAccessGroupCreateAccessGroup.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *createAccessGroupAccessGroupCreateAccessGroup) GetWorkspaceId() string {
+	return v.AccessGroup.WorkspaceId
+}
+
+func (v *createAccessGroupAccessGroupCreateAccessGroup) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*createAccessGroupAccessGroupCreateAccessGroup
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.createAccessGroupAccessGroupCreateAccessGroup = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.AccessGroup)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalcreateAccessGroupAccessGroupCreateAccessGroup struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	Role ProjectRole `json:"role"`
+
+	WorkspaceId string `json:"workspaceId"`
+}
+
+func (v *createAccessGroupAccessGroupCreateAccessGroup) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *createAccessGroupAccessGroupCreateAccessGroup) __premarshalJSON() (*__premarshalcreateAccessGroupAccessGroupCreateAccessGroup, error) {
+	var retval __premarshalcreateAccessGroupAccessGroupCreateAccessGroup
+
+	retval.Id = v.AccessGroup.Id
+	retval.Name = v.AccessGroup.Name
+	retval.Role = v.AccessGroup.Role
+	retval.WorkspaceId = v.AccessGroup.WorkspaceId
+	return &retval, nil
+}
+
+// createAccessGroupResponse is returned by createAccessGroup on success.
+type createAccessGroupResponse struct {
+	// Create an access group in a workspace.
+	AccessGroupCreate createAccessGroupAccessGroupCreateAccessGroup `json:"accessGroupCreate"`
+}
+
+// GetAccessGroupCreate returns createAccessGroupResponse.AccessGroupCreate, and is useful for accessing the field via an interface.
+func (v *createAccessGroupResponse) GetAccessGroupCreate() createAccessGroupAccessGroupCreateAccessGroup {
+	return v.AccessGroupCreate
 }
 
 // createCustomDomainCustomDomainCreateCustomDomain includes the requested fields of the GraphQL type CustomDomain.
@@ -2020,6 +2341,15 @@ func (v *createVolumeVolumeCreateVolume) __premarshalJSON() (*__premarshalcreate
 	return &retval, nil
 }
 
+// deleteAccessGroupResponse is returned by deleteAccessGroup on success.
+type deleteAccessGroupResponse struct {
+	// Delete an access group.
+	AccessGroupDelete bool `json:"accessGroupDelete"`
+}
+
+// GetAccessGroupDelete returns deleteAccessGroupResponse.AccessGroupDelete, and is useful for accessing the field via an interface.
+func (v *deleteAccessGroupResponse) GetAccessGroupDelete() bool { return v.AccessGroupDelete }
+
 // deleteCustomDomainResponse is returned by deleteCustomDomain on success.
 type deleteCustomDomainResponse struct {
 	// Deletes a custom domain.
@@ -2092,6 +2422,17 @@ type deleteVolumeResponse struct {
 // GetVolumeDelete returns deleteVolumeResponse.VolumeDelete, and is useful for accessing the field via an interface.
 func (v *deleteVolumeResponse) GetVolumeDelete() bool { return v.VolumeDelete }
 
+// detachAccessGroupProjectResponse is returned by detachAccessGroupProject on success.
+type detachAccessGroupProjectResponse struct {
+	// Detach a project from an access group.
+	AccessGroupProjectDetach bool `json:"accessGroupProjectDetach"`
+}
+
+// GetAccessGroupProjectDetach returns detachAccessGroupProjectResponse.AccessGroupProjectDetach, and is useful for accessing the field via an interface.
+func (v *detachAccessGroupProjectResponse) GetAccessGroupProjectDetach() bool {
+	return v.AccessGroupProjectDetach
+}
+
 // disconnectServiceResponse is returned by disconnectService on success.
 type disconnectServiceResponse struct {
 	// Disconnect a service from a repo
@@ -2110,6 +2451,369 @@ type disconnectServiceServiceDisconnectService struct {
 
 // GetId returns disconnectServiceServiceDisconnectService.Id, and is useful for accessing the field via an interface.
 func (v *disconnectServiceServiceDisconnectService) GetId() string { return v.Id }
+
+// getAccessGroupMembersPageResponse is returned by getAccessGroupMembersPage on success.
+type getAccessGroupMembersPageResponse struct {
+	// Get the workspace
+	Workspace getAccessGroupMembersPageWorkspace `json:"workspace"`
+}
+
+// GetWorkspace returns getAccessGroupMembersPageResponse.Workspace, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageResponse) GetWorkspace() getAccessGroupMembersPageWorkspace {
+	return v.Workspace
+}
+
+// getAccessGroupMembersPageWorkspace includes the requested fields of the GraphQL type Workspace.
+type getAccessGroupMembersPageWorkspace struct {
+	AccessGroups getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection `json:"accessGroups"`
+}
+
+// GetAccessGroups returns getAccessGroupMembersPageWorkspace.AccessGroups, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspace) GetAccessGroups() getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection {
+	return v.AccessGroups
+}
+
+// getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection includes the requested fields of the GraphQL type WorkspaceAccessGroupsConnection.
+type getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection struct {
+	Edges []getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge `json:"edges"`
+}
+
+// GetEdges returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection) GetEdges() []getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge {
+	return v.Edges
+}
+
+// getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge includes the requested fields of the GraphQL type WorkspaceAccessGroupsConnectionEdge.
+type getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge struct {
+	Node getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup `json:"node"`
+}
+
+// GetNode returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge) GetNode() getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup {
+	return v.Node
+}
+
+// getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup includes the requested fields of the GraphQL type AccessGroup.
+type getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup struct {
+	Id      string                                                                                                                                                                  `json:"id"`
+	Members getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection `json:"members"`
+}
+
+// GetId returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.Id, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetId() string {
+	return v.Id
+}
+
+// GetMembers returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.Members, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetMembers() getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection {
+	return v.Members
+}
+
+// getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection includes the requested fields of the GraphQL type AccessGroupMembersConnection.
+type getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection struct {
+	Edges    []getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdge `json:"edges"`
+	PageInfo getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo                                `json:"pageInfo"`
+}
+
+// GetEdges returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection) GetEdges() []getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdge {
+	return v.Edges
+}
+
+// GetPageInfo returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnection) GetPageInfo() getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdge includes the requested fields of the GraphQL type AccessGroupMembersConnectionEdge.
+type getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdge struct {
+	Node getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdgeNodeAccessGroupMember `json:"node"`
+}
+
+// GetNode returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdge) GetNode() getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdgeNodeAccessGroupMember {
+	return v.Node
+}
+
+// getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdgeNodeAccessGroupMember includes the requested fields of the GraphQL type AccessGroupMember.
+type getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdgeNodeAccessGroupMember struct {
+	UserId string `json:"userId"`
+}
+
+// GetUserId returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdgeNodeAccessGroupMember.UserId, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionEdgesAccessGroupMembersConnectionEdgeNodeAccessGroupMember) GetUserId() string {
+	return v.UserId
+}
+
+// getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+type getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo struct {
+	HasNextPage bool   `json:"hasNextPage"`
+	EndCursor   string `json:"endCursor"`
+}
+
+// GetHasNextPage returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// GetEndCursor returns getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getAccessGroupMembersPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupMembersAccessGroupMembersConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
+
+// getAccessGroupProjectsPageResponse is returned by getAccessGroupProjectsPage on success.
+type getAccessGroupProjectsPageResponse struct {
+	// Get the workspace
+	Workspace getAccessGroupProjectsPageWorkspace `json:"workspace"`
+}
+
+// GetWorkspace returns getAccessGroupProjectsPageResponse.Workspace, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageResponse) GetWorkspace() getAccessGroupProjectsPageWorkspace {
+	return v.Workspace
+}
+
+// getAccessGroupProjectsPageWorkspace includes the requested fields of the GraphQL type Workspace.
+type getAccessGroupProjectsPageWorkspace struct {
+	AccessGroups getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection `json:"accessGroups"`
+}
+
+// GetAccessGroups returns getAccessGroupProjectsPageWorkspace.AccessGroups, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspace) GetAccessGroups() getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection {
+	return v.AccessGroups
+}
+
+// getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection includes the requested fields of the GraphQL type WorkspaceAccessGroupsConnection.
+type getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection struct {
+	Edges []getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge `json:"edges"`
+}
+
+// GetEdges returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnection) GetEdges() []getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge {
+	return v.Edges
+}
+
+// getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge includes the requested fields of the GraphQL type WorkspaceAccessGroupsConnectionEdge.
+type getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge struct {
+	Node getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup `json:"node"`
+}
+
+// GetNode returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge) GetNode() getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup {
+	return v.Node
+}
+
+// getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup includes the requested fields of the GraphQL type AccessGroup.
+type getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup struct {
+	Id       string                                                                                                                                                                     `json:"id"`
+	Projects getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection `json:"projects"`
+}
+
+// GetId returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.Id, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetId() string {
+	return v.Id
+}
+
+// GetProjects returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.Projects, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetProjects() getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection {
+	return v.Projects
+}
+
+// getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection includes the requested fields of the GraphQL type AccessGroupProjectsConnection.
+type getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection struct {
+	Edges    []getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdge `json:"edges"`
+	PageInfo getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo                                 `json:"pageInfo"`
+}
+
+// GetEdges returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection) GetEdges() []getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdge {
+	return v.Edges
+}
+
+// GetPageInfo returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnection) GetPageInfo() getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdge includes the requested fields of the GraphQL type AccessGroupProjectsConnectionEdge.
+type getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdge struct {
+	Node getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdgeNodeAccessGroupProject `json:"node"`
+}
+
+// GetNode returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdge) GetNode() getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdgeNodeAccessGroupProject {
+	return v.Node
+}
+
+// getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdgeNodeAccessGroupProject includes the requested fields of the GraphQL type AccessGroupProject.
+type getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdgeNodeAccessGroupProject struct {
+	ProjectId string `json:"projectId"`
+}
+
+// GetProjectId returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdgeNodeAccessGroupProject.ProjectId, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionEdgesAccessGroupProjectsConnectionEdgeNodeAccessGroupProject) GetProjectId() string {
+	return v.ProjectId
+}
+
+// getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+type getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo struct {
+	HasNextPage bool   `json:"hasNextPage"`
+	EndCursor   string `json:"endCursor"`
+}
+
+// GetHasNextPage returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// GetEndCursor returns getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getAccessGroupProjectsPageWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroupProjectsAccessGroupProjectsConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
+
+// getAccessGroupsResponse is returned by getAccessGroups on success.
+type getAccessGroupsResponse struct {
+	// Get the workspace
+	Workspace getAccessGroupsWorkspace `json:"workspace"`
+}
+
+// GetWorkspace returns getAccessGroupsResponse.Workspace, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsResponse) GetWorkspace() getAccessGroupsWorkspace { return v.Workspace }
+
+// getAccessGroupsWorkspace includes the requested fields of the GraphQL type Workspace.
+type getAccessGroupsWorkspace struct {
+	AccessGroups getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection `json:"accessGroups"`
+}
+
+// GetAccessGroups returns getAccessGroupsWorkspace.AccessGroups, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspace) GetAccessGroups() getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection {
+	return v.AccessGroups
+}
+
+// getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection includes the requested fields of the GraphQL type WorkspaceAccessGroupsConnection.
+type getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection struct {
+	Edges    []getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge `json:"edges"`
+	PageInfo getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo                                   `json:"pageInfo"`
+}
+
+// GetEdges returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection) GetEdges() []getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge {
+	return v.Edges
+}
+
+// GetPageInfo returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnection) GetPageInfo() getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge includes the requested fields of the GraphQL type WorkspaceAccessGroupsConnectionEdge.
+type getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge struct {
+	Cursor string                                                                                                                     `json:"cursor"`
+	Node   getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup `json:"node"`
+}
+
+// GetCursor returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge.Cursor, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge) GetCursor() string {
+	return v.Cursor
+}
+
+// GetNode returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge.Node, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdge) GetNode() getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup {
+	return v.Node
+}
+
+// getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup includes the requested fields of the GraphQL type AccessGroup.
+type getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup struct {
+	AccessGroup `json:"-"`
+}
+
+// GetId returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.Id, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetId() string {
+	return v.AccessGroup.Id
+}
+
+// GetName returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.Name, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetName() string {
+	return v.AccessGroup.Name
+}
+
+// GetRole returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.Role, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetRole() ProjectRole {
+	return v.AccessGroup.Role
+}
+
+// GetWorkspaceId returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) GetWorkspaceId() string {
+	return v.AccessGroup.WorkspaceId
+}
+
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.AccessGroup)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	Role ProjectRole `json:"role"`
+
+	WorkspaceId string `json:"workspaceId"`
+}
+
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup) __premarshalJSON() (*__premarshalgetAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup, error) {
+	var retval __premarshalgetAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionEdgesWorkspaceAccessGroupsConnectionEdgeNodeAccessGroup
+
+	retval.Id = v.AccessGroup.Id
+	retval.Name = v.AccessGroup.Name
+	retval.Role = v.AccessGroup.Role
+	retval.WorkspaceId = v.AccessGroup.WorkspaceId
+	return &retval, nil
+}
+
+// getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+type getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo struct {
+	HasNextPage bool   `json:"hasNextPage"`
+	EndCursor   string `json:"endCursor"`
+}
+
+// GetHasNextPage returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// GetEndCursor returns getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getAccessGroupsWorkspaceAccessGroupsWorkspaceAccessGroupsConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
 
 // getEnvironmentEnvironment includes the requested fields of the GraphQL type Environment.
 type getEnvironmentEnvironment struct {
@@ -2846,6 +3550,45 @@ type getVolumeInstancesResponse struct {
 // GetProject returns getVolumeInstancesResponse.Project, and is useful for accessing the field via an interface.
 func (v *getVolumeInstancesResponse) GetProject() getVolumeInstancesProject { return v.Project }
 
+// getWorkspaceMembersResponse is returned by getWorkspaceMembers on success.
+type getWorkspaceMembersResponse struct {
+	// Get the workspace
+	Workspace getWorkspaceMembersWorkspace `json:"workspace"`
+}
+
+// GetWorkspace returns getWorkspaceMembersResponse.Workspace, and is useful for accessing the field via an interface.
+func (v *getWorkspaceMembersResponse) GetWorkspace() getWorkspaceMembersWorkspace { return v.Workspace }
+
+// getWorkspaceMembersWorkspace includes the requested fields of the GraphQL type Workspace.
+type getWorkspaceMembersWorkspace struct {
+	Members []getWorkspaceMembersWorkspaceMembersWorkspaceMember `json:"members"`
+}
+
+// GetMembers returns getWorkspaceMembersWorkspace.Members, and is useful for accessing the field via an interface.
+func (v *getWorkspaceMembersWorkspace) GetMembers() []getWorkspaceMembersWorkspaceMembersWorkspaceMember {
+	return v.Members
+}
+
+// getWorkspaceMembersWorkspaceMembersWorkspaceMember includes the requested fields of the GraphQL type WorkspaceMember.
+type getWorkspaceMembersWorkspaceMembersWorkspaceMember struct {
+	Id    string   `json:"id"`
+	Email string   `json:"email"`
+	Name  *string  `json:"name"`
+	Role  TeamRole `json:"role"`
+}
+
+// GetId returns getWorkspaceMembersWorkspaceMembersWorkspaceMember.Id, and is useful for accessing the field via an interface.
+func (v *getWorkspaceMembersWorkspaceMembersWorkspaceMember) GetId() string { return v.Id }
+
+// GetEmail returns getWorkspaceMembersWorkspaceMembersWorkspaceMember.Email, and is useful for accessing the field via an interface.
+func (v *getWorkspaceMembersWorkspaceMembersWorkspaceMember) GetEmail() string { return v.Email }
+
+// GetName returns getWorkspaceMembersWorkspaceMembersWorkspaceMember.Name, and is useful for accessing the field via an interface.
+func (v *getWorkspaceMembersWorkspaceMembersWorkspaceMember) GetName() *string { return v.Name }
+
+// GetRole returns getWorkspaceMembersWorkspaceMembersWorkspaceMember.Role, and is useful for accessing the field via an interface.
+func (v *getWorkspaceMembersWorkspaceMembersWorkspaceMember) GetRole() TeamRole { return v.Role }
+
 // listCustomDomainsDomainsAllDomains includes the requested fields of the GraphQL type AllDomains.
 type listCustomDomainsDomainsAllDomains struct {
 	CustomDomains []listCustomDomainsDomainsAllDomainsCustomDomainsCustomDomain `json:"customDomains"`
@@ -3130,6 +3873,102 @@ type redeployServiceInstanceResponse struct {
 // GetServiceInstanceRedeploy returns redeployServiceInstanceResponse.ServiceInstanceRedeploy, and is useful for accessing the field via an interface.
 func (v *redeployServiceInstanceResponse) GetServiceInstanceRedeploy() bool {
 	return v.ServiceInstanceRedeploy
+}
+
+// removeAccessGroupMemberResponse is returned by removeAccessGroupMember on success.
+type removeAccessGroupMemberResponse struct {
+	// Remove a member from an access group.
+	AccessGroupMemberRemove bool `json:"accessGroupMemberRemove"`
+}
+
+// GetAccessGroupMemberRemove returns removeAccessGroupMemberResponse.AccessGroupMemberRemove, and is useful for accessing the field via an interface.
+func (v *removeAccessGroupMemberResponse) GetAccessGroupMemberRemove() bool {
+	return v.AccessGroupMemberRemove
+}
+
+// updateAccessGroupAccessGroupUpdateAccessGroup includes the requested fields of the GraphQL type AccessGroup.
+type updateAccessGroupAccessGroupUpdateAccessGroup struct {
+	AccessGroup `json:"-"`
+}
+
+// GetId returns updateAccessGroupAccessGroupUpdateAccessGroup.Id, and is useful for accessing the field via an interface.
+func (v *updateAccessGroupAccessGroupUpdateAccessGroup) GetId() string { return v.AccessGroup.Id }
+
+// GetName returns updateAccessGroupAccessGroupUpdateAccessGroup.Name, and is useful for accessing the field via an interface.
+func (v *updateAccessGroupAccessGroupUpdateAccessGroup) GetName() string { return v.AccessGroup.Name }
+
+// GetRole returns updateAccessGroupAccessGroupUpdateAccessGroup.Role, and is useful for accessing the field via an interface.
+func (v *updateAccessGroupAccessGroupUpdateAccessGroup) GetRole() ProjectRole {
+	return v.AccessGroup.Role
+}
+
+// GetWorkspaceId returns updateAccessGroupAccessGroupUpdateAccessGroup.WorkspaceId, and is useful for accessing the field via an interface.
+func (v *updateAccessGroupAccessGroupUpdateAccessGroup) GetWorkspaceId() string {
+	return v.AccessGroup.WorkspaceId
+}
+
+func (v *updateAccessGroupAccessGroupUpdateAccessGroup) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*updateAccessGroupAccessGroupUpdateAccessGroup
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.updateAccessGroupAccessGroupUpdateAccessGroup = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.AccessGroup)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalupdateAccessGroupAccessGroupUpdateAccessGroup struct {
+	Id string `json:"id"`
+
+	Name string `json:"name"`
+
+	Role ProjectRole `json:"role"`
+
+	WorkspaceId string `json:"workspaceId"`
+}
+
+func (v *updateAccessGroupAccessGroupUpdateAccessGroup) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *updateAccessGroupAccessGroupUpdateAccessGroup) __premarshalJSON() (*__premarshalupdateAccessGroupAccessGroupUpdateAccessGroup, error) {
+	var retval __premarshalupdateAccessGroupAccessGroupUpdateAccessGroup
+
+	retval.Id = v.AccessGroup.Id
+	retval.Name = v.AccessGroup.Name
+	retval.Role = v.AccessGroup.Role
+	retval.WorkspaceId = v.AccessGroup.WorkspaceId
+	return &retval, nil
+}
+
+// updateAccessGroupResponse is returned by updateAccessGroup on success.
+type updateAccessGroupResponse struct {
+	// Update an access group's name or role.
+	AccessGroupUpdate updateAccessGroupAccessGroupUpdateAccessGroup `json:"accessGroupUpdate"`
+}
+
+// GetAccessGroupUpdate returns updateAccessGroupResponse.AccessGroupUpdate, and is useful for accessing the field via an interface.
+func (v *updateAccessGroupResponse) GetAccessGroupUpdate() updateAccessGroupAccessGroupUpdateAccessGroup {
+	return v.AccessGroupUpdate
 }
 
 // updateCustomDomainResponse is returned by updateCustomDomain on success.
@@ -3445,6 +4284,70 @@ type upsertVariableResponse struct {
 // GetVariableUpsert returns upsertVariableResponse.VariableUpsert, and is useful for accessing the field via an interface.
 func (v *upsertVariableResponse) GetVariableUpsert() bool { return v.VariableUpsert }
 
+func addAccessGroupMember(
+	ctx context.Context,
+	client graphql.Client,
+	input AccessGroupMemberInput,
+) (*addAccessGroupMemberResponse, error) {
+	req := &graphql.Request{
+		OpName: "addAccessGroupMember",
+		Query: `
+mutation addAccessGroupMember ($input: AccessGroupMemberInput!) {
+	accessGroupMemberAdd(input: $input) {
+		id
+	}
+}
+`,
+		Variables: &__addAccessGroupMemberInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data addAccessGroupMemberResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func attachAccessGroupProject(
+	ctx context.Context,
+	client graphql.Client,
+	input AccessGroupProjectInput,
+) (*attachAccessGroupProjectResponse, error) {
+	req := &graphql.Request{
+		OpName: "attachAccessGroupProject",
+		Query: `
+mutation attachAccessGroupProject ($input: AccessGroupProjectInput!) {
+	accessGroupProjectAttach(input: $input) {
+		id
+	}
+}
+`,
+		Variables: &__attachAccessGroupProjectInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data attachAccessGroupProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func connectService(
 	ctx context.Context,
 	client graphql.Client,
@@ -3473,6 +4376,44 @@ fragment Service on Service {
 	var err error
 
 	var data connectServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func createAccessGroup(
+	ctx context.Context,
+	client graphql.Client,
+	input AccessGroupCreateInput,
+) (*createAccessGroupResponse, error) {
+	req := &graphql.Request{
+		OpName: "createAccessGroup",
+		Query: `
+mutation createAccessGroup ($input: AccessGroupCreateInput!) {
+	accessGroupCreate(input: $input) {
+		... AccessGroup
+	}
+}
+fragment AccessGroup on AccessGroup {
+	id
+	name
+	role
+	workspaceId
+}
+`,
+		Variables: &__createAccessGroupInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data createAccessGroupResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
@@ -3784,6 +4725,36 @@ fragment Volume on Volume {
 	return &data, err
 }
 
+func deleteAccessGroup(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+) (*deleteAccessGroupResponse, error) {
+	req := &graphql.Request{
+		OpName: "deleteAccessGroup",
+		Query: `
+mutation deleteAccessGroup ($id: String!) {
+	accessGroupDelete(id: $id)
+}
+`,
+		Variables: &__deleteAccessGroupInput{
+			Id: id,
+		},
+	}
+	var err error
+
+	var data deleteAccessGroupResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deleteCustomDomain(
 	ctx context.Context,
 	client graphql.Client,
@@ -4024,6 +4995,36 @@ mutation deleteVolume ($id: String!) {
 	return &data, err
 }
 
+func detachAccessGroupProject(
+	ctx context.Context,
+	client graphql.Client,
+	input AccessGroupProjectInput,
+) (*detachAccessGroupProjectResponse, error) {
+	req := &graphql.Request{
+		OpName: "detachAccessGroupProject",
+		Query: `
+mutation detachAccessGroupProject ($input: AccessGroupProjectInput!) {
+	accessGroupProjectDetach(input: $input)
+}
+`,
+		Variables: &__detachAccessGroupProjectInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data detachAccessGroupProjectResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func disconnectService(
 	ctx context.Context,
 	client graphql.Client,
@@ -4045,6 +5046,167 @@ mutation disconnectService ($id: String!) {
 	var err error
 
 	var data disconnectServiceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+// Members and projects are connections of their own and there is no query for a single
+// group, so a group is addressed as the one after the previous group's cursor.
+func getAccessGroupMembersPage(
+	ctx context.Context,
+	client graphql.Client,
+	workspaceId string,
+	groupAfter string,
+	after string,
+) (*getAccessGroupMembersPageResponse, error) {
+	req := &graphql.Request{
+		OpName: "getAccessGroupMembersPage",
+		Query: `
+query getAccessGroupMembersPage ($workspaceId: String!, $groupAfter: String, $after: String) {
+	workspace(workspaceId: $workspaceId) {
+		accessGroups(first: 1, after: $groupAfter) {
+			edges {
+				node {
+					id
+					members(first: 100, after: $after) {
+						edges {
+							node {
+								userId
+							}
+						}
+						pageInfo {
+							hasNextPage
+							endCursor
+						}
+					}
+				}
+			}
+		}
+	}
+}
+`,
+		Variables: &__getAccessGroupMembersPageInput{
+			WorkspaceId: workspaceId,
+			GroupAfter:  groupAfter,
+			After:       after,
+		},
+	}
+	var err error
+
+	var data getAccessGroupMembersPageResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getAccessGroupProjectsPage(
+	ctx context.Context,
+	client graphql.Client,
+	workspaceId string,
+	groupAfter string,
+	after string,
+) (*getAccessGroupProjectsPageResponse, error) {
+	req := &graphql.Request{
+		OpName: "getAccessGroupProjectsPage",
+		Query: `
+query getAccessGroupProjectsPage ($workspaceId: String!, $groupAfter: String, $after: String) {
+	workspace(workspaceId: $workspaceId) {
+		accessGroups(first: 1, after: $groupAfter) {
+			edges {
+				node {
+					id
+					projects(first: 100, after: $after) {
+						edges {
+							node {
+								projectId
+							}
+						}
+						pageInfo {
+							hasNextPage
+							endCursor
+						}
+					}
+				}
+			}
+		}
+	}
+}
+`,
+		Variables: &__getAccessGroupProjectsPageInput{
+			WorkspaceId: workspaceId,
+			GroupAfter:  groupAfter,
+			After:       after,
+		},
+	}
+	var err error
+
+	var data getAccessGroupProjectsPageResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+// There is no query to fetch a single access group, so list the workspace's groups.
+// The page size is only a request size, callers follow `pageInfo` until the last page.
+func getAccessGroups(
+	ctx context.Context,
+	client graphql.Client,
+	workspaceId string,
+	after string,
+) (*getAccessGroupsResponse, error) {
+	req := &graphql.Request{
+		OpName: "getAccessGroups",
+		Query: `
+query getAccessGroups ($workspaceId: String!, $after: String) {
+	workspace(workspaceId: $workspaceId) {
+		accessGroups(first: 100, after: $after) {
+			edges {
+				cursor
+				node {
+					... AccessGroup
+				}
+			}
+			pageInfo {
+				hasNextPage
+				endCursor
+			}
+		}
+	}
+}
+fragment AccessGroup on AccessGroup {
+	id
+	name
+	role
+	workspaceId
+}
+`,
+		Variables: &__getAccessGroupsInput{
+			WorkspaceId: workspaceId,
+			After:       after,
+		},
+	}
+	var err error
+
+	var data getAccessGroupsResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
@@ -4476,6 +5638,43 @@ fragment Volume on Volume {
 	return &data, err
 }
 
+func getWorkspaceMembers(
+	ctx context.Context,
+	client graphql.Client,
+	workspaceId string,
+) (*getWorkspaceMembersResponse, error) {
+	req := &graphql.Request{
+		OpName: "getWorkspaceMembers",
+		Query: `
+query getWorkspaceMembers ($workspaceId: String!) {
+	workspace(workspaceId: $workspaceId) {
+		members {
+			id
+			email
+			name
+			role
+		}
+	}
+}
+`,
+		Variables: &__getWorkspaceMembersInput{
+			WorkspaceId: workspaceId,
+		},
+	}
+	var err error
+
+	var data getWorkspaceMembersResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func listCustomDomains(
 	ctx context.Context,
 	client graphql.Client,
@@ -4638,6 +5837,76 @@ mutation redeployServiceInstance ($environmentId: String!, $serviceId: String!) 
 	var err error
 
 	var data redeployServiceInstanceResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func removeAccessGroupMember(
+	ctx context.Context,
+	client graphql.Client,
+	input AccessGroupMemberInput,
+) (*removeAccessGroupMemberResponse, error) {
+	req := &graphql.Request{
+		OpName: "removeAccessGroupMember",
+		Query: `
+mutation removeAccessGroupMember ($input: AccessGroupMemberInput!) {
+	accessGroupMemberRemove(input: $input)
+}
+`,
+		Variables: &__removeAccessGroupMemberInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data removeAccessGroupMemberResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func updateAccessGroup(
+	ctx context.Context,
+	client graphql.Client,
+	id string,
+	input AccessGroupUpdateInput,
+) (*updateAccessGroupResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateAccessGroup",
+		Query: `
+mutation updateAccessGroup ($id: String!, $input: AccessGroupUpdateInput!) {
+	accessGroupUpdate(id: $id, input: $input) {
+		... AccessGroup
+	}
+}
+fragment AccessGroup on AccessGroup {
+	id
+	name
+	role
+	workspaceId
+}
+`,
+		Variables: &__updateAccessGroupInput{
+			Id:    id,
+			Input: input,
+		},
+	}
+	var err error
+
+	var data updateAccessGroupResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

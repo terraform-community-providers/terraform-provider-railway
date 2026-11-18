@@ -1,0 +1,138 @@
+fragment AccessGroup on AccessGroup {
+  id
+  name
+  role
+  workspaceId
+}
+
+# There is no query to fetch a single access group, so list the workspace's groups.
+# The page size is only a request size, callers follow `pageInfo` until the last page.
+query getAccessGroups(
+  $workspaceId: String!
+  # @genqlient(omitempty: true)
+  $after: String
+) {
+  workspace(workspaceId: $workspaceId) {
+    accessGroups(first: 100, after: $after) {
+      edges {
+        cursor
+        node {
+          ...AccessGroup
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}
+
+# Members and projects are connections of their own and there is no query for a single
+# group, so a group is addressed as the one after the previous group's cursor.
+query getAccessGroupMembersPage(
+  $workspaceId: String!
+  # @genqlient(omitempty: true)
+  $groupAfter: String
+  # @genqlient(omitempty: true)
+  $after: String
+) {
+  workspace(workspaceId: $workspaceId) {
+    accessGroups(first: 1, after: $groupAfter) {
+      edges {
+        node {
+          id
+          members(first: 100, after: $after) {
+            edges {
+              node {
+                userId
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+query getAccessGroupProjectsPage(
+  $workspaceId: String!
+  # @genqlient(omitempty: true)
+  $groupAfter: String
+  # @genqlient(omitempty: true)
+  $after: String
+) {
+  workspace(workspaceId: $workspaceId) {
+    accessGroups(first: 1, after: $groupAfter) {
+      edges {
+        node {
+          id
+          projects(first: 100, after: $after) {
+            edges {
+              node {
+                projectId
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+mutation createAccessGroup(
+  $input: AccessGroupCreateInput!
+) {
+  accessGroupCreate(input: $input) {
+    ...AccessGroup
+  }
+}
+
+mutation updateAccessGroup(
+  $id: String!
+  $input: AccessGroupUpdateInput!
+) {
+  accessGroupUpdate(id: $id, input: $input) {
+    ...AccessGroup
+  }
+}
+
+mutation deleteAccessGroup($id: String!) {
+  accessGroupDelete(id: $id)
+}
+
+mutation addAccessGroupMember(
+  $input: AccessGroupMemberInput!
+) {
+  accessGroupMemberAdd(input: $input) {
+    id
+  }
+}
+
+mutation removeAccessGroupMember(
+  $input: AccessGroupMemberInput!
+) {
+  accessGroupMemberRemove(input: $input)
+}
+
+mutation attachAccessGroupProject(
+  $input: AccessGroupProjectInput!
+) {
+  accessGroupProjectAttach(input: $input) {
+    id
+  }
+}
+
+mutation detachAccessGroupProject(
+  $input: AccessGroupProjectInput!
+) {
+  accessGroupProjectDetach(input: $input)
+}
