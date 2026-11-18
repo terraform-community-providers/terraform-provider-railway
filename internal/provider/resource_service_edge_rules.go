@@ -109,7 +109,7 @@ func (r *ServiceEdgeRulesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	r.apply(ctx, data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.apply(ctx, data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -177,7 +177,7 @@ func (r *ServiceEdgeRulesResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	r.apply(ctx, data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.apply(ctx, data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -229,12 +229,13 @@ func (r *ServiceEdgeRulesResource) ImportState(ctx context.Context, req resource
 }
 
 // apply replaces the whole ruleset of the service with the planned JSON.
-func (r *ServiceEdgeRulesResource) apply(ctx context.Context, data *ServiceEdgeRulesResourceModel, diagnostics *diag.Diagnostics) {
+func (r *ServiceEdgeRulesResource) apply(ctx context.Context, data *ServiceEdgeRulesResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	var rules map[string]interface{}
 
 	if err := json.Unmarshal([]byte(data.Rules.ValueString()), &rules); err != nil || rules == nil {
-		diagnostics.AddError("Invalid Rules", fmt.Sprintf("`rules` must be a JSON object, got error: %v", err))
-		return
+		diags.AddError("Invalid Rules", fmt.Sprintf("`rules` must be a JSON object, got error: %v", err))
+		return diags
 	}
 
 	_, err := updateServiceEdgeRules(ctx, *r.client, UpdateServiceEdgeRulesInput{
@@ -244,8 +245,10 @@ func (r *ServiceEdgeRulesResource) apply(ctx context.Context, data *ServiceEdgeR
 	})
 
 	if err != nil {
-		diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update service edge rules, got error: %s", err))
+		diags.AddError("Client Error", fmt.Sprintf("Unable to update service edge rules, got error: %s", err))
 	}
+
+	return diags
 }
 
 func edgeRulesId(data *ServiceEdgeRulesResourceModel) string {
