@@ -3,12 +3,12 @@
 page_title: "railway_access_group Resource - terraform-provider-railway"
 subcategory: ""
 description: |-
-  Railway access group. Members and projects are managed exclusively by Terraform: any member or project added outside of Terraform is removed on the next apply. Access groups are a beta Railway feature that is only available on eligible plans, see the Railway docs https://docs.railway.com/enterprise/access-groups.
+  Railway access group. The users and projects attached to the group are managed exclusively by Terraform: any user added to the group, or project attached to it, outside of Terraform is removed from the group on the next apply. This only affects the group's own attachments, it never removes users from the workspace or deletes projects. Access groups are a beta Railway feature that is only available on eligible plans, see the Railway docs https://docs.railway.com/enterprise/access-groups.
 ---
 
 # railway_access_group (Resource)
 
-Railway access group. Members and projects are managed exclusively by Terraform: any member or project added outside of Terraform is removed on the next apply. Access groups are a beta Railway feature that is only available on eligible plans, see the [Railway docs](https://docs.railway.com/enterprise/access-groups).
+Railway access group. The users and projects attached to the group are managed exclusively by Terraform: any user added to the group, or project attached to it, outside of Terraform is removed from the group on the next apply. This only affects the group's own attachments, it never removes users from the workspace or deletes projects. Access groups are a beta Railway feature that is only available on eligible plans, see the [Railway docs](https://docs.railway.com/enterprise/access-groups).
 
 ## Example Usage
 

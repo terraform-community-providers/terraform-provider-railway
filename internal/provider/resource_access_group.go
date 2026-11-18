@@ -49,7 +49,7 @@ func (r *AccessGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 	emptySet := types.SetValueMust(types.StringType, []attr.Value{})
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Railway access group. Members and projects are managed exclusively by Terraform: any member or project added outside of Terraform is removed on the next apply. Access groups are a beta Railway feature that is only available on eligible plans, see the [Railway docs](https://docs.railway.com/enterprise/access-groups).",
+		MarkdownDescription: "Railway access group. The users and projects attached to the group are managed exclusively by Terraform: any user added to the group, or project attached to it, outside of Terraform is removed from the group on the next apply. This only affects the group's own attachments, it never removes users from the workspace or deletes projects. Access groups are a beta Railway feature that is only available on eligible plans, see the [Railway docs](https://docs.railway.com/enterprise/access-groups).",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Identifier of the access group.",
