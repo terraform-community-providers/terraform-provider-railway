@@ -692,6 +692,21 @@ func (v *TCPProxyCreateInput) GetEnvironmentId() string { return v.EnvironmentId
 // GetServiceId returns TCPProxyCreateInput.ServiceId, and is useful for accessing the field via an interface.
 func (v *TCPProxyCreateInput) GetServiceId() string { return v.ServiceId }
 
+type UpdateServiceEdgeRulesInput struct {
+	EdgeRules     map[string]interface{} `json:"edgeRules"`
+	EnvironmentId string                 `json:"environmentId"`
+	ServiceId     string                 `json:"serviceId"`
+}
+
+// GetEdgeRules returns UpdateServiceEdgeRulesInput.EdgeRules, and is useful for accessing the field via an interface.
+func (v *UpdateServiceEdgeRulesInput) GetEdgeRules() map[string]interface{} { return v.EdgeRules }
+
+// GetEnvironmentId returns UpdateServiceEdgeRulesInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *UpdateServiceEdgeRulesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns UpdateServiceEdgeRulesInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *UpdateServiceEdgeRulesInput) GetServiceId() string { return v.ServiceId }
+
 type VariableCollectionUpsertInput struct {
 	EnvironmentId string `json:"environmentId"`
 	ProjectId     string `json:"projectId"`
@@ -1072,6 +1087,18 @@ type __getProjectInput struct {
 // GetId returns __getProjectInput.Id, and is useful for accessing the field via an interface.
 func (v *__getProjectInput) GetId() string { return v.Id }
 
+// __getServiceEdgeRulesInput is used internally by genqlient
+type __getServiceEdgeRulesInput struct {
+	EnvironmentId string `json:"environmentId"`
+	ServiceId     string `json:"serviceId"`
+}
+
+// GetEnvironmentId returns __getServiceEdgeRulesInput.EnvironmentId, and is useful for accessing the field via an interface.
+func (v *__getServiceEdgeRulesInput) GetEnvironmentId() string { return v.EnvironmentId }
+
+// GetServiceId returns __getServiceEdgeRulesInput.ServiceId, and is useful for accessing the field via an interface.
+func (v *__getServiceEdgeRulesInput) GetServiceId() string { return v.ServiceId }
+
 // __getServiceInput is used internally by genqlient
 type __getServiceInput struct {
 	Id string `json:"id"`
@@ -1243,6 +1270,14 @@ type __updateServiceDomainInput struct {
 
 // GetInput returns __updateServiceDomainInput.Input, and is useful for accessing the field via an interface.
 func (v *__updateServiceDomainInput) GetInput() ServiceDomainUpdateInput { return v.Input }
+
+// __updateServiceEdgeRulesInput is used internally by genqlient
+type __updateServiceEdgeRulesInput struct {
+	Input UpdateServiceEdgeRulesInput `json:"input"`
+}
+
+// GetInput returns __updateServiceEdgeRulesInput.Input, and is useful for accessing the field via an interface.
+func (v *__updateServiceEdgeRulesInput) GetInput() UpdateServiceEdgeRulesInput { return v.Input }
 
 // __updateServiceInput is used internally by genqlient
 type __updateServiceInput struct {
@@ -2384,6 +2419,37 @@ type getProjectResponse struct {
 // GetProject returns getProjectResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectResponse) GetProject() getProjectProject { return v.Project }
 
+// getServiceEdgeRulesResponse is returned by getServiceEdgeRules on success.
+type getServiceEdgeRulesResponse struct {
+	// Get a service instance belonging to a service and environment
+	ServiceInstance getServiceEdgeRulesServiceInstance `json:"serviceInstance"`
+}
+
+// GetServiceInstance returns getServiceEdgeRulesResponse.ServiceInstance, and is useful for accessing the field via an interface.
+func (v *getServiceEdgeRulesResponse) GetServiceInstance() getServiceEdgeRulesServiceInstance {
+	return v.ServiceInstance
+}
+
+// getServiceEdgeRulesServiceInstance includes the requested fields of the GraphQL type ServiceInstance.
+type getServiceEdgeRulesServiceInstance struct {
+	EdgeConfig getServiceEdgeRulesServiceInstanceEdgeConfig `json:"edgeConfig"`
+}
+
+// GetEdgeConfig returns getServiceEdgeRulesServiceInstance.EdgeConfig, and is useful for accessing the field via an interface.
+func (v *getServiceEdgeRulesServiceInstance) GetEdgeConfig() getServiceEdgeRulesServiceInstanceEdgeConfig {
+	return v.EdgeConfig
+}
+
+// getServiceEdgeRulesServiceInstanceEdgeConfig includes the requested fields of the GraphQL type EdgeConfig.
+type getServiceEdgeRulesServiceInstanceEdgeConfig struct {
+	EdgeRules map[string]interface{} `json:"edgeRules"`
+}
+
+// GetEdgeRules returns getServiceEdgeRulesServiceInstanceEdgeConfig.EdgeRules, and is useful for accessing the field via an interface.
+func (v *getServiceEdgeRulesServiceInstanceEdgeConfig) GetEdgeRules() map[string]interface{} {
+	return v.EdgeRules
+}
+
 // getServiceInstanceResponse is returned by getServiceInstance on success.
 type getServiceInstanceResponse struct {
 	// Get a service instance belonging to a service and environment
@@ -3252,6 +3318,30 @@ type updateServiceDomainResponse struct {
 
 // GetServiceDomainUpdate returns updateServiceDomainResponse.ServiceDomainUpdate, and is useful for accessing the field via an interface.
 func (v *updateServiceDomainResponse) GetServiceDomainUpdate() bool { return v.ServiceDomainUpdate }
+
+// updateServiceEdgeRulesResponse is returned by updateServiceEdgeRules on success.
+type updateServiceEdgeRulesResponse struct {
+	// Replaces the service's edge rules (whole-section replace; null clears). Rules
+	// are boolean expressions over request attributes plus one action
+	// (block/allow/challenge/redirect/cache_override), evaluated at the edge before
+	// requests reach the service. The ruleset is validated server-side; invalid
+	// rulesets are rejected with per-rule diagnostics and nothing is written. Rules
+	// without an id get a server-assigned stable `rul_` id.
+	UpdateServiceEdgeRules updateServiceEdgeRulesUpdateServiceEdgeRulesEdgeConfig `json:"updateServiceEdgeRules"`
+}
+
+// GetUpdateServiceEdgeRules returns updateServiceEdgeRulesResponse.UpdateServiceEdgeRules, and is useful for accessing the field via an interface.
+func (v *updateServiceEdgeRulesResponse) GetUpdateServiceEdgeRules() updateServiceEdgeRulesUpdateServiceEdgeRulesEdgeConfig {
+	return v.UpdateServiceEdgeRules
+}
+
+// updateServiceEdgeRulesUpdateServiceEdgeRulesEdgeConfig includes the requested fields of the GraphQL type EdgeConfig.
+type updateServiceEdgeRulesUpdateServiceEdgeRulesEdgeConfig struct {
+	Id string `json:"id"`
+}
+
+// GetId returns updateServiceEdgeRulesUpdateServiceEdgeRulesEdgeConfig.Id, and is useful for accessing the field via an interface.
+func (v *updateServiceEdgeRulesUpdateServiceEdgeRulesEdgeConfig) GetId() string { return v.Id }
 
 // updateServiceInstanceResponse is returned by updateServiceInstance on success.
 type updateServiceInstanceResponse struct {
@@ -4222,6 +4312,42 @@ fragment Service on Service {
 	return &data, err
 }
 
+func getServiceEdgeRules(
+	ctx context.Context,
+	client graphql.Client,
+	environmentId string,
+	serviceId string,
+) (*getServiceEdgeRulesResponse, error) {
+	req := &graphql.Request{
+		OpName: "getServiceEdgeRules",
+		Query: `
+query getServiceEdgeRules ($environmentId: String!, $serviceId: String!) {
+	serviceInstance(environmentId: $environmentId, serviceId: $serviceId) {
+		edgeConfig {
+			edgeRules
+		}
+	}
+}
+`,
+		Variables: &__getServiceEdgeRulesInput{
+			EnvironmentId: environmentId,
+			ServiceId:     serviceId,
+		},
+	}
+	var err error
+
+	var data getServiceEdgeRulesResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func getServiceInstance(
 	ctx context.Context,
 	client graphql.Client,
@@ -4794,6 +4920,39 @@ mutation updateServiceDomain ($input: ServiceDomainUpdateInput!) {
 	var err error
 
 	var data updateServiceDomainResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+// Passing a null `edgeRules` clears the rules.
+func updateServiceEdgeRules(
+	ctx context.Context,
+	client graphql.Client,
+	input UpdateServiceEdgeRulesInput,
+) (*updateServiceEdgeRulesResponse, error) {
+	req := &graphql.Request{
+		OpName: "updateServiceEdgeRules",
+		Query: `
+mutation updateServiceEdgeRules ($input: UpdateServiceEdgeRulesInput!) {
+	updateServiceEdgeRules(input: $input) {
+		id
+	}
+}
+`,
+		Variables: &__updateServiceEdgeRulesInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data updateServiceEdgeRulesResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

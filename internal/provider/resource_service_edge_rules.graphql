@@ -1,0 +1,19 @@
+query getServiceEdgeRules(
+  $environmentId: String!
+  $serviceId: String!
+) {
+  serviceInstance(environmentId: $environmentId, serviceId: $serviceId) {
+    edgeConfig {
+      edgeRules
+    }
+  }
+}
+
+# Passing a null `edgeRules` clears the rules.
+mutation updateServiceEdgeRules(
+  $input: UpdateServiceEdgeRulesInput!
+) {
+  updateServiceEdgeRules(input: $input) {
+    id
+  }
+}
