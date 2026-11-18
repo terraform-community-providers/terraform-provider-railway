@@ -1,3 +1,9 @@
+## Unreleased
+
+### Enhancements
+* Added `railway_access_group` resource, which requires a Railway plan that includes access groups
+* Added `railway_workspace_members` data source
+
 ## 0.6.3
 
 ### Enhancements

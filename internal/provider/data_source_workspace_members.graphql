@@ -1,0 +1,11 @@
+query getWorkspaceMembers($workspaceId: String!) {
+  workspace(workspaceId: $workspaceId) {
+    members {
+      id
+      email
+      # @genqlient(pointer: true)
+      name
+      role
+    }
+  }
+}
