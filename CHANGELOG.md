@@ -1,3 +1,8 @@
+## Unreleased
+
+### Enhancements
+* Added `railway_service_edge_rules` resource
+
 ## 0.6.3
 
 ### Enhancements
